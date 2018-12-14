@@ -1,10 +1,10 @@
 Package: afttest
 Type: Package
-Title: R Package for Checking Semi-Parametric Accelerated Failure Time Models
-Version: 1.0-5
-Date: 2018-10-26
+Title: R Package for Checking Semi-Parametric Accelerated Failure Time Models (Univariate)
+Version: 1.0-6
+Date: 2018-12-14
 Author: WooJung Bae, Dongrak Choi, Sangwook Kang, Jun Yan
-Maintainer: WooJung (Matthew) Bae <woojung.bae@ufl.edu>
+Maintainer: WooJung Bae <woojung.bae@ufl.edu>
 Description: An R package which performs lately proposed model checking methods for the AFT model in terms of the rank-based approach. It provides functions used to verify whether the observed data fit the specific model assumptions such as a functional form of each covariate, a link function, and an omnibus test. The p-value offered in this package is based on the Kolmogorov-type supremum test and the variance of the proposed test statistics is estimated through the re-sampling method. Furthermore, a graphical technique to compare the shape of the observed residual to a number of the approximated realizations is provided.
 License: GPL (>= 3)
 LazyData: true

@@ -99,7 +99,7 @@ afttest = function(formula, path = 200, testtype = c("omni","link","form"), eqTy
   
   dataset = get_all_vars(formula)
   
-   varnames = noquote(all.vars(formula))
+  varnames = noquote(all.vars(formula))
   var.length = ncol(dataset)
   cov.length = var.length - 2
   
