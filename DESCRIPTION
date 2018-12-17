@@ -11,7 +11,7 @@ LazyData: true
 Imports: Rcpp, survival, aftgee, ggplot2, gridExtra
 LinkingTo: Rcpp, RcppArmadillo
 Encoding: UTF-8
-RoxygenNote: 6.1.0.9000
+RoxygenNote: 6.1.1
 Collate: 
     'RcppExports.R'
     'afttest.R'

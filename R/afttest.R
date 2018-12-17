@@ -51,9 +51,6 @@
 #' library(afttest)
 #' library(survival)
 #' 
-#' library("afttest")
-#' library("survival")
-#' 
 #' set.seed(1)
 #' 
 #' cgd_data = subset(cgd,enum==1,c(tstop,status,treat,age,steroids))

@@ -117,8 +117,6 @@ arma::vec target_score_mns(arma::vec beta, arma::vec Time, arma::vec Delta, arma
 
 List dfsane_mis(arma::vec beta, arma::vec Time, arma::vec Delta, arma::mat Covari, arma::vec targetvector){
 
-  int p = Covari.n_cols;
-
   arma::vec b_old = beta;
   arma::vec F_old = target_score_mis(b_old,Time,Delta,Covari,targetvector);
 
