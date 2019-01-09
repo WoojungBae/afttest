@@ -43,22 +43,23 @@ and the default option is "1, which represents the first covariate
 in the formula argument.}
 }
 \value{
-The afttest function gives the list as a result. The result
-consists of the number of path ($Path), estimated beta ($Beta), estimated
-standard error of beta ($SE), observed failure time ($Time), delta
-($Delta), covariates ($Covari), time transformed residual ($Resid),
-estimated standard error of the observed process ($std.boot), the observed
-process ($obs path), a number of simulated processes ($app path), the
-standardized observed process ($obs std.path), standardized processes
-of realizations ($ap std.path) and two kinds of p-value obtained by
-unstandardized tests and standardized tests ($p value and $std.p value).
-Note that estimated beta ($Beta), estimated standard error of beta ($SE)
-are the results from aftsrr function in aftgee package (Chiou et al., 2014).
-For the omnibus test, the observed process and realizations is composed of
-the nXn matrix that rows represents the t and columns represents the x in
-time transformed residual order. The observed process and simulated
-processes for checking the functional form and link function are given by
-the nX1 vector which is a function of z in time transformed residual order.
+The function afttest gives the list as a result. The result 
+consists of the number of paths ($path), the estimated beta ($beta), 
+the observed failure time ($Time), the right censoring indicator ($Delta), 
+the covariates ($Covari), the time-transformed residual ($Resid), the 
+estimated standard error of the observed process ($SE_process), the 
+observed process ($obs_process), a number of the simulated processes 
+($app_process), the standardized observed process ($obs_std_process), 
+the standardized processes of realizations ($app_std_process) and two 
+kinds of the p-value obtained by the unstandardized test and the 
+standardized test ($p_value and $p_std_value). Now, we offer two types of 
+p-values for all tests even though the p-value for the standardized test 
+is only used for an omnibus test. For an omnibus test, the observed process 
+and the realizations are composed of the n by n matrix that rows represent 
+the t and columns represent the x in the time-transformed residual order. 
+The observed process and the simulated processes for checking a functional 
+form and a link function are given by the n by 1 vector which is a function 
+of x in the time-transformed residual order.
 }
 \description{
 It gives several test statistics for cheking the aft model assumptions.
