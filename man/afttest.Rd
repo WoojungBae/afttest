@@ -4,9 +4,14 @@
 \alias{afttest}
 \title{afttest}
 \usage{
-afttest(formula, path = 200, testtype = c("omni", "link", "form"),
-  eqType = c("mis", "mns"), optimType = c("DFSANE", "Nelder-Mead",
-  "BFGS", "CG", "L-BFGS-B", "SANN", "Brent"), form = 1)
+afttest(
+  formula,
+  path = 200,
+  testtype = c("omni", "link", "form"),
+  eqType = c("mis", "mns"),
+  optimType = c("DFSANE", "Nelder-Mead", "BFGS", "CG", "L-BFGS-B", "SANN", "Brent"),
+  form = 1
+)
 }
 \arguments{
 \item{formula}{The argument formula specifies the model to be fitted with
