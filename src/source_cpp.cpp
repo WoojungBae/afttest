@@ -457,11 +457,9 @@ List omni_mis_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
-  
   arma::vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
-  
   arma::vec given_data_g = exp(resid);
   
   double bw_g = 1.06 * stddev(given_data_g) * pow(n,-0.2);
@@ -488,9 +486,7 @@ List omni_mis_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   }
   
   // -----------------------------f0----------------------------
-  
   arma::vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
-  
   arma::vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
   
   arma::vec Condi_Ehat = zero_vec_n;
@@ -529,7 +525,6 @@ List omni_mis_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   // -----------------------------------------------------------
   // ------------------------Sample Path------------------------
   // -----------------------------------------------------------
-  
   List app_path(path);
   for(int itt=0; itt<path; itt++){
     
@@ -687,11 +682,9 @@ List omni_mns_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
-  
   arma::vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
-  
   arma::vec given_data_g = exp(resid);
   
   double bw_g = 1.06 * stddev(given_data_g) * pow(n,-0.2);
@@ -718,9 +711,7 @@ List omni_mns_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   }
   
   // -----------------------------f0----------------------------
-  
   arma::vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
-  
   arma::vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
   
   arma::vec Condi_Ehat = zero_vec_n;
@@ -759,7 +750,6 @@ List omni_mns_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   // -----------------------------------------------------------
   // ------------------------Sample Path------------------------
   // -----------------------------------------------------------
-  
   List app_path(path);
   for(int itt=0; itt<path; itt++){
     
@@ -915,11 +905,9 @@ List link_mis_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
-  
   arma::vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
-  
   arma::vec given_data_g = exp(resid);
   
   double bw_g = 1.06 * stddev(given_data_g) * pow(n,-0.2);
@@ -946,9 +934,7 @@ List link_mis_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   }
   
   // -----------------------------f0----------------------------
-  
   arma::vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
-  
   arma::vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
   
   arma::vec Condi_Ehat = zero_vec_n;
@@ -987,7 +973,6 @@ List link_mis_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   // -----------------------------------------------------------
   // ------------------------Sample Path------------------------
   // -----------------------------------------------------------
-  
   List app_path(path);
   for(int itt=0; itt<path; itt++){
     
@@ -1144,11 +1129,9 @@ List link_mns_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
-  
   arma::vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
-  
   arma::vec given_data_g = exp(resid);
   
   double bw_g = 1.06 * stddev(given_data_g) * pow(n,-0.2);
@@ -1175,9 +1158,7 @@ List link_mns_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   }
   
   // -----------------------------f0----------------------------
-  
   arma::vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
-  
   arma::vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
   
   arma::vec Condi_Ehat = zero_vec_n;
@@ -1216,7 +1197,6 @@ List link_mns_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   // -----------------------------------------------------------
   // ------------------------Sample Path------------------------
   // -----------------------------------------------------------
-  
   List app_path(path);
   for(int itt=0; itt<path; itt++){
     
@@ -1374,11 +1354,9 @@ List form_mis_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
-  
   arma::vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
-  
   arma::vec given_data_g = exp(resid);
   
   double bw_g = 1.06 * stddev(given_data_g) * pow(n,-0.2);
@@ -1405,9 +1383,7 @@ List form_mis_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   }
   
   // -----------------------------f0----------------------------
-  
   arma::vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
-  
   arma::vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
   
   arma::vec Condi_Ehat = zero_vec_n;
@@ -1446,7 +1422,6 @@ List form_mis_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   // -----------------------------------------------------------
   // ------------------------Sample Path------------------------
   // -----------------------------------------------------------
-  
   List app_path(path);
   for(int itt=0; itt<path; itt++){
     
@@ -1604,11 +1579,9 @@ List form_mns_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
-  
   arma::vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
-  
   arma::vec given_data_g = exp(resid);
   
   double bw_g = 1.06 * stddev(given_data_g) * pow(n,-0.2);
@@ -1635,9 +1608,7 @@ List form_mns_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   }
   
   // -----------------------------f0----------------------------
-  
   arma::vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
-  
   arma::vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
   
   arma::vec Condi_Ehat = zero_vec_n;
@@ -1676,7 +1647,6 @@ List form_mns_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   // -----------------------------------------------------------
   // ------------------------Sample Path------------------------
   // -----------------------------------------------------------
-  
   List app_path(path);
   for(int itt=0; itt<path; itt++){
     
@@ -1832,11 +1802,9 @@ List omni_mis_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
-  
   arma::vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
-  
   arma::vec given_data_g = exp(resid);
   
   double bw_g = 1.06 * stddev(given_data_g) * pow(n,-0.2);
@@ -1863,9 +1831,7 @@ List omni_mis_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
   }
   
   // -----------------------------f0----------------------------
-  
   arma::vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
-  
   arma::vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
   
   arma::vec Condi_Ehat = zero_vec_n;
@@ -1904,7 +1870,6 @@ List omni_mis_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
   // -----------------------------------------------------------
   // ------------------------Sample Path------------------------
   // -----------------------------------------------------------
-  
   List app_path(path);
   for(int itt=0; itt<path; itt++){
     
@@ -2053,11 +2018,9 @@ List omni_mns_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
-  
   arma::vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
-  
   arma::vec given_data_g = exp(resid);
   
   double bw_g = 1.06 * stddev(given_data_g) * pow(n,-0.2);
@@ -2084,9 +2047,7 @@ List omni_mns_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
   }
   
   // -----------------------------f0----------------------------
-  
   arma::vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
-  
   arma::vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
   
   arma::vec Condi_Ehat = zero_vec_n;
@@ -2272,11 +2233,9 @@ List link_mis_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
-  
   arma::vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
-  
   arma::vec given_data_g = exp(resid);
   
   double bw_g = 1.06 * stddev(given_data_g) * pow(n,-0.2);
@@ -2303,9 +2262,7 @@ List link_mis_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
   }
   
   // -----------------------------f0----------------------------
-  
   arma::vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
-  
   arma::vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
   
   arma::vec Condi_Ehat = zero_vec_n;
@@ -2492,11 +2449,9 @@ List link_mns_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
-  
   arma::vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
-  
   arma::vec given_data_g = exp(resid);
   
   double bw_g = 1.06 * stddev(given_data_g) * pow(n,-0.2);
@@ -2523,9 +2478,7 @@ List link_mns_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
   }
   
   // -----------------------------f0----------------------------
-  
   arma::vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
-  
   arma::vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
   
   arma::vec Condi_Ehat = zero_vec_n;
@@ -2713,11 +2666,9 @@ List form_mis_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
-  
   arma::vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
-  
   arma::vec given_data_g = exp(resid);
   
   double bw_g = 1.06 * stddev(given_data_g) * pow(n,-0.2);
@@ -2744,9 +2695,7 @@ List form_mis_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
   }
   
   // -----------------------------f0----------------------------
-  
   arma::vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
-  
   arma::vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
   
   arma::vec Condi_Ehat = zero_vec_n;
@@ -2934,11 +2883,9 @@ List form_mns_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
-  
   arma::vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
-  
   arma::vec given_data_g = exp(resid);
   
   double bw_g = 1.06 * stddev(given_data_g) * pow(n,-0.2);
@@ -2965,9 +2912,7 @@ List form_mns_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
   }
   
   // -----------------------------f0----------------------------
-  
   arma::vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
-  
   arma::vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
   
   arma::vec Condi_Ehat = zero_vec_n;

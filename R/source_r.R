@@ -8,8 +8,7 @@
 #' @param path The argument path is for the number of the simulation paths
 #' that is plotted in the graph. Therefore it needs to be equal or less than
 #' the number of paths used in by afttest function, otherwise it is given as
-#' the number of paths used in by afttest function. The default option for
-#' argument path is set to be 100.
+#' the number of paths used in by afttest function. The default is set to be 100.
 #' @param std The option for the argument std is "unstd" and "std". In this 
 #' argument, "unstd" is the default.
 #' @return Basically, a graph from the afttestplot is based on the packages
@@ -128,8 +127,7 @@ plotting_omni=function(result,path,std){
 #' @param path The argument path is for the number of the simulation paths
 #' that is plotted in the graph. Therefore it needs to be equal or less than
 #' the number of paths used in by afttest function, otherwise it is given as
-#' the number of paths used in by afttest function. The default option for
-#' argument path is set to be 100.
+#' the number of paths used in by afttest function. The default is set to be 100.
 #' @param std The option for the argument std is "unstd" and "std". In this 
 #' argument, "unstd" is the default.
 #' @return Basically, a graph from the afttestplot is based on the packages
@@ -218,8 +216,7 @@ plotting_link=function(result,path,std){
 #' @param path The argument path is for the number of the simulation paths
 #' that is plotted in the graph. Therefore it needs to be equal or less than
 #' the number of paths used in by afttest function, otherwise it is given as
-#' the number of paths used in by afttest function. The default option for
-#' argument path is set to be 100.
+#' the number of paths used in by afttest function. The default is set to be 100.
 #' @param std The option for the argument std is "unstd" and "std". In this 
 #' argument, "unstd" is the default.
 #' @return Basically, a graph from the afttestplot is based on the packages
