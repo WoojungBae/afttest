@@ -187,7 +187,7 @@ List dfsane_mis(arma::vec beta, arma::vec Time, arma::vec Delta, arma::mat Covar
 //       sig_k = sig_k;
 //     }
 // 
-//     if ((sig_min>abs(sig_k))*(sig_max<abs(sig_k))){
+//     if ((sig_min>abs(sig_k)) && (sig_max<abs(sig_k))){
 //       if (tol_f<1e-10){
 //         sig_k = 1e+5;
 //       } else if (tol_f>1){
@@ -306,7 +306,7 @@ List dfsane_mns(arma::vec beta, arma::vec Time, arma::vec Delta, arma::mat Covar
       sig_k = sig_k;
     }
     
-    if ((sig_min>abs(sig_k))*(sig_max<abs(sig_k))){
+    if ((sig_min>abs(sig_k)) && (sig_max<abs(sig_k))){
       if (tol_f<1e-10){
         sig_k = 1e+5;
       } else if (tol_f>1){
