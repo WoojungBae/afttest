@@ -7,20 +7,20 @@ using namespace Rcpp;
 //' @importFrom Rcpp evalCpp
 //' @exportPattern "^[[:alpha:]]+"
 
-double target_score2_mis(arma::vec beta, arma::vec Time, arma::vec Delta, arma::mat Covari, arma::vec targetvector){
+double target_score2_mis(vec beta, vec Time, vec Delta, mat Covari, vec targetvector){
   
   int n = Covari.n_rows;
   int p = Covari.n_cols;
   
-  arma::vec resid = log(Time) + Covari*beta;
+  vec resid = log(Time) + Covari*beta;
   
-  arma::uvec index_resid = sort_index(resid);
+  uvec index_resid = sort_index(resid);
   
   Delta = Delta(index_resid);
   Covari = Covari.rows(index_resid);
   resid = resid(index_resid);
   
-  arma::mat tempmat_np = zeros(n,p); arma::vec tempvec_n = zeros(n); arma::vec F_vec = zeros(p);
+  mat tempmat_np = zeros(n,p); vec tempvec_n = zeros(n); vec F_vec = zeros(p);
   for(int it=0; it<n; it++){
     tempmat_np = Covari.row(it) - Covari.each_row();
     tempvec_n = sqrt(sum(tempmat_np%tempmat_np,1));
@@ -38,20 +38,20 @@ double target_score2_mis(arma::vec beta, arma::vec Time, arma::vec Delta, arma::
   return SumOfSqure;
 }
 
-double target_score2_mns(arma::vec beta, arma::vec Time, arma::vec Delta, arma::mat Covari, arma::vec targetvector){
+double target_score2_mns(vec beta, vec Time, vec Delta, mat Covari, vec targetvector){
   
   int n = Covari.n_rows;
   int p = Covari.n_cols;
   
-  arma::vec resid = log(Time) + Covari*beta;
+  vec resid = log(Time) + Covari*beta;
   
-  arma::uvec index_resid = sort_index(resid);
+  uvec index_resid = sort_index(resid);
   
   Delta = Delta(index_resid);
   Covari = Covari.rows(index_resid);
   resid = resid(index_resid);
   
-  arma::mat tempmat_np = zeros(n,p); arma::vec F_vec = zeros(p);
+  mat tempmat_np = zeros(n,p); vec F_vec = zeros(p);
   for(int it=0; it<n; it++){
     tempmat_np = Covari.row(it) - Covari.each_row();
     F_vec += sum(tempmat_np.each_col()%conv_to<vec>::from((resid>=resid(it))),0).t()*Delta(it);
@@ -63,20 +63,20 @@ double target_score2_mns(arma::vec beta, arma::vec Time, arma::vec Delta, arma::
   return SumOfSqure;
 }
 
-arma::vec target_score_mis(arma::vec beta, arma::vec Time, arma::vec Delta, arma::mat Covari, arma::vec targetvector){
+vec target_score_mis(vec beta, vec Time, vec Delta, mat Covari, vec targetvector){
   
   int n = Covari.n_rows;
   int p = Covari.n_cols;
   
-  arma::vec resid = log(Time) + Covari*beta;
+  vec resid = log(Time) + Covari*beta;
   
-  arma::uvec index_resid = sort_index(resid);
+  uvec index_resid = sort_index(resid);
   
   Delta = Delta(index_resid);
   Covari = Covari.rows(index_resid);
   resid = resid(index_resid);
   
-  arma::mat tempmat_np = zeros(n,p); arma::vec tempvec_n = zeros(n); arma::vec F_vec = zeros(p);
+  mat tempmat_np = zeros(n,p); vec tempvec_n = zeros(n); vec F_vec = zeros(p);
   for(int it=0; it<n; it++){
     tempmat_np = Covari.row(it) - Covari.each_row();
     tempvec_n = sqrt(sum(tempmat_np%tempmat_np,1));
@@ -92,20 +92,20 @@ arma::vec target_score_mis(arma::vec beta, arma::vec Time, arma::vec Delta, arma
   return F_vec;
 }
 
-arma::vec target_score_mns(arma::vec beta, arma::vec Time, arma::vec Delta, arma::mat Covari, arma::vec targetvector){
+vec target_score_mns(vec beta, vec Time, vec Delta, mat Covari, vec targetvector){
   
   int n = Covari.n_rows;
   int p = Covari.n_cols;
   
-  arma::vec resid = log(Time) + Covari*beta;
+  vec resid = log(Time) + Covari*beta;
   
-  arma::uvec index_resid = sort_index(resid);
+  uvec index_resid = sort_index(resid);
   
   Delta = Delta(index_resid);
   Covari = Covari.rows(index_resid);
   resid = resid(index_resid);
   
-  arma::mat tempmat_np = zeros(n,p); arma::vec F_vec = zeros(p);
+  mat tempmat_np = zeros(n,p); vec F_vec = zeros(p);
   for(int it=0; it<n; it++){
     tempmat_np = Covari.row(it) - Covari.each_row();
     F_vec += sum(tempmat_np.each_col()%conv_to<vec>::from((resid>=resid(it))),0).t()*Delta(it);
@@ -115,14 +115,14 @@ arma::vec target_score_mns(arma::vec beta, arma::vec Time, arma::vec Delta, arma
   return F_vec;
 }
 
-List dfsane_mis(arma::vec beta, arma::vec Time, arma::vec Delta, arma::mat Covari, arma::vec targetvector){
+List dfsane_mis(vec beta, vec Time, vec Delta, mat Covari, vec targetvector){
 
-  arma::vec b_old = beta;
-  arma::vec F_old = target_score_mis(b_old,Time,Delta,Covari,targetvector);
+  vec b_old = beta;
+  vec F_old = target_score_mis(b_old,Time,Delta,Covari,targetvector);
 
   double a_k = (1/sqrt(sum(F_old%F_old))); if (a_k>1){a_k=1;}
   
-  arma::vec b_new; arma::vec F_new; double tol_f;
+  vec b_new; vec F_new; double tol_f;
   double optim_tol=1e-7; double tolerance=optim_tol+1; int ittt=0; int maxit=200;
   while(tolerance>optim_tol){
     
@@ -130,8 +130,8 @@ List dfsane_mis(arma::vec beta, arma::vec Time, arma::vec Delta, arma::mat Covar
     
     F_new = target_score_mis(b_new,Time,Delta,Covari,targetvector);
     
-    arma::vec s_k = b_new - b_old;
-    arma::vec y_k = F_new - F_old;
+    vec s_k = b_new - b_old;
+    vec y_k = F_new - F_old;
     
     double tol_y = sum(y_k%y_k);
     tol_f = sum(F_new%F_new);
@@ -154,18 +154,18 @@ List dfsane_mis(arma::vec beta, arma::vec Time, arma::vec Delta, arma::mat Covar
   return List::create(tol_f,b_new);
 }
 
-// List dfsane_mis(arma::vec beta, arma::vec Time, arma::vec Delta, arma::mat Covari, arma::vec targetvector){
+// List dfsane_mis(vec beta, vec Time, vec Delta, mat Covari, vec targetvector){
 // 
-//   arma::vec b_old = beta;
-//   arma::vec F_old = target_score_mis(b_old,Time,Delta,Covari,targetvector);
+//   vec b_old = beta;
+//   vec F_old = target_score_mis(b_old,Time,Delta,Covari,targetvector);
 //   double sig_k = (1/sqrt(sum(F_old%F_old))); if (sig_k>1){sig_k=1;}
 // 
-//   arma::vec b_new = b_old - sig_k*F_old;
+//   vec b_new = b_old - sig_k*F_old;
 // 
-//   arma::vec F_new = target_score_mis(b_new,Time,Delta,Covari,targetvector);
+//   vec F_new = target_score_mis(b_new,Time,Delta,Covari,targetvector);
 // 
-//   arma::vec s_k = b_new - b_old;
-//   arma::vec y_k = F_new - F_old;
+//   vec s_k = b_new - b_old;
+//   vec y_k = F_new - F_old;
 // 
 //   double tol_0 = sum(F_old%F_old);
 //   double tol_s = sum(s_k%s_k);
@@ -174,7 +174,7 @@ List dfsane_mis(arma::vec beta, arma::vec Time, arma::vec Delta, arma::mat Covar
 // 
 //   double tolerance=tol_f+1; double optim_tol=1e-7; double tau_min=0.1; double tau_max=0.5;
 //   double sig_min=1e-10; double sig_max=1e+10; double alp_p=1; double alp_m=1; double gam=1e-4;
-//   double M=1; arma::vec f_bar=zeros(M); double it=1; double maxit=500;
+//   double M=1; vec f_bar=zeros(M); double it=1; double maxit=500;
 // 
 //   while(tolerance>optim_tol){
 // 
@@ -197,22 +197,22 @@ List dfsane_mis(arma::vec beta, arma::vec Time, arma::vec Delta, arma::mat Covar
 //       }
 //     }
 // 
-//     arma::vec d_k = - sig_k * F_new;
+//     vec d_k = - sig_k * F_new;
 // 
 //     // STEP 2
 //     int step_tol = 0; int itt = it - M * floor(it/M); f_bar(itt) = tol_f; double a_k =0;
 //     while(step_tol == 0){
 // 
 //       // alpha_plus
-//       arma::vec b_new_p = b_new + alp_p * d_k;
-//       arma::vec F_new_p = target_score_mis(b_new_p,Time,Delta,Covari,targetvector);
+//       vec b_new_p = b_new + alp_p * d_k;
+//       vec F_new_p = target_score_mis(b_new_p,Time,Delta,Covari,targetvector);
 // 
 //       double RHS_p = sum(F_new_p%F_new_p);
 //       double LHS_p = f_bar.max() + eta_k - gam * pow(alp_p,2) * tol_f;
 // 
 //       // alpha_minus
-//       arma::vec b_new_m = b_new - alp_m * d_k;
-//       arma::vec F_new_m = target_score_mis(b_new_m,Time,Delta,Covari,targetvector);
+//       vec b_new_m = b_new - alp_m * d_k;
+//       vec F_new_m = target_score_mis(b_new_m,Time,Delta,Covari,targetvector);
 // 
 //       double RHS_m = sum(F_new_m%F_new_m);
 //       double LHS_m = f_bar.max() + eta_k - gam * pow(alp_m,2) * tol_f;
@@ -273,18 +273,18 @@ List dfsane_mis(arma::vec beta, arma::vec Time, arma::vec Delta, arma::mat Covar
 //   return List::create(tol_f,b_new);
 // }
 
-List dfsane_mns(arma::vec beta, arma::vec Time, arma::vec Delta, arma::mat Covari, arma::vec targetvector){
+List dfsane_mns(vec beta, vec Time, vec Delta, mat Covari, vec targetvector){
   
-  arma::vec b_old = beta;
-  arma::vec F_old = target_score_mns(b_old,Time,Delta,Covari,targetvector);
+  vec b_old = beta;
+  vec F_old = target_score_mns(b_old,Time,Delta,Covari,targetvector);
   double sig_k = (1/sqrt(sum(F_old%F_old))); if (sig_k>1){sig_k=1;}
   
-  arma::vec b_new = b_old - sig_k*F_old;
+  vec b_new = b_old - sig_k*F_old;
   
-  arma::vec F_new = target_score_mns(b_new,Time,Delta,Covari,targetvector);
+  vec F_new = target_score_mns(b_new,Time,Delta,Covari,targetvector);
   
-  arma::vec s_k = b_new - b_old;
-  arma::vec y_k = F_new - F_old;
+  vec s_k = b_new - b_old;
+  vec y_k = F_new - F_old;
   
   double tol_0 = sum(F_old%F_old);
   double tol_s = sum(s_k%s_k);
@@ -293,7 +293,7 @@ List dfsane_mns(arma::vec beta, arma::vec Time, arma::vec Delta, arma::mat Covar
   
   double tolerance=tol_f+1; double optim_tol=1e-7; double tau_min=0.1; double tau_max=0.5; 
   double sig_min=1e-10; double sig_max=1e+10; double alp_p=1; double alp_m=1; double gam=1e-4; 
-  double M=1; arma::vec f_bar=zeros(M); double it=1; double maxit=500;
+  double M=1; vec f_bar=zeros(M); double it=1; double maxit=500;
   
   while(tolerance>optim_tol){
     
@@ -316,22 +316,22 @@ List dfsane_mns(arma::vec beta, arma::vec Time, arma::vec Delta, arma::mat Covar
       }
     }
     
-    arma::vec d_k = - sig_k * F_new;
+    vec d_k = - sig_k * F_new;
     
     // STEP 2
     int step_tol = 0; int itt = it - M * floor(it/M); f_bar(itt) = tol_f; double a_k =0;
     while(step_tol == 0){
       
       // alpha_plus
-      arma::vec b_new_p = b_new + alp_p * d_k;
-      arma::vec F_new_p = target_score_mns(b_new_p,Time,Delta,Covari,targetvector);
+      vec b_new_p = b_new + alp_p * d_k;
+      vec F_new_p = target_score_mns(b_new_p,Time,Delta,Covari,targetvector);
       
       double RHS_p = sum(F_new_p%F_new_p);
       double LHS_p = f_bar.max() + eta_k - gam * pow(alp_p,2) * tol_f;
       
       // alpha_minus
-      arma::vec b_new_m = b_new - alp_m * d_k;
-      arma::vec F_new_m = target_score_mns(b_new_m,Time,Delta,Covari,targetvector);
+      vec b_new_m = b_new - alp_m * d_k;
+      vec F_new_m = target_score_mns(b_new_m,Time,Delta,Covari,targetvector);
       
       double RHS_m = sum(F_new_m%F_new_m);
       double LHS_m = f_bar.max() + eta_k - gam * pow(alp_m,2) * tol_f;
@@ -392,7 +392,7 @@ List dfsane_mns(arma::vec beta, arma::vec Time, arma::vec Delta, arma::mat Covar
   return List::create(tol_f,b_new);
 }
 
-List omni_mis_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma::mat Covari, String optimType){
+List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType){
   
   Rcpp::Environment stats("package:stats"); 
   Rcpp::Function optim = stats["optim"];
@@ -400,30 +400,30 @@ List omni_mis_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   int n = Covari.n_rows;
   int p = Covari.n_cols;
   
-  arma::vec zero_vec_1 = zeros(1);
-  arma::vec zero_vec_p = zeros(p);
-  arma::vec zero_vec_n = zeros(n);
-  arma::mat zero_mat_np = zeros(n,p);
-  arma::mat zero_mat_nn = zeros(n,n);
+  vec zero_vec_1 = zeros(1);
+  vec zero_vec_p = zeros(p);
+  vec zero_vec_n = zeros(n);
+  mat zero_mat_np = zeros(n,p);
+  mat zero_mat_nn = zeros(n,n);
   
-  arma::vec ones_vec_1 = ones(1);
+  vec ones_vec_1 = ones(1);
   
-  arma::vec tempvec_p(p);
-  arma::vec tempvec_n(n);
-  arma::mat tempmat_np(n,p);
-  arma::mat tempmat_nn(n,n);
+  vec tempvec_p(p);
+  vec tempvec_n(n);
+  mat tempmat_np(n,p);
+  mat tempmat_nn(n,n);
   
-  arma::vec resid = log(Time) + Covari*b;
+  vec resid = log(Time) + Covari*b;
   
-  arma::uvec index_resid = sort_index(resid);
+  uvec index_resid = sort_index(resid);
   
   Time = Time(index_resid);
   Delta = Delta(index_resid);
   Covari = Covari.rows(index_resid);
   resid = resid(index_resid);
   
-  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); arma::vec S_0_t = zero_vec_n; arma::mat S_1_t = zero_mat_np; arma::mat S_pi_t_z = zero_mat_nn;
-  arma::mat sorted_Covari = sort(Covari);
+  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
+  mat sorted_Covari = sort(Covari);
   tempvec_n = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
@@ -432,39 +432,39 @@ List omni_mis_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
     pi_i_z(it) = tempvec_n;
     N_i_t(it) = (resid>=resid(it))*Delta(it);
     Y_i_t(it) = (resid<=resid(it))*1;
-    S_0_t += as<arma::vec>(Y_i_t(it));
-    S_1_t += as<arma::vec>(Y_i_t(it))*((Covari.row(it)));
-    S_pi_t_z += (as<arma::vec>(Y_i_t(it)))*(as<arma::rowvec>(pi_i_z(it)));
+    S_0_t += as<vec>(Y_i_t(it));
+    S_1_t += as<vec>(Y_i_t(it))*((Covari.row(it)));
+    S_pi_t_z += (as<vec>(Y_i_t(it)))*(as<rowvec>(pi_i_z(it)));
   }
   
-  arma::vec Lambdahat_0_t = cumsum(Delta/S_0_t);
+  vec Lambdahat_0_t = cumsum(Delta/S_0_t);
   
-  arma::vec dLambdahat_0_t = diff(join_cols(zero_vec_1,Lambdahat_0_t));
+  vec dLambdahat_0_t = diff(join_cols(zero_vec_1,Lambdahat_0_t));
   
-  arma::mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
+  mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
   
-  List Mhat_i_t(n); arma::mat obs_path = zero_mat_nn;
+  List Mhat_i_t(n); mat obs_path = zero_mat_nn;
   for(int it=0; it<n; it++){
-    Mhat_i_t(it) = as<arma::vec>(N_i_t(it))-(cumsum(as<arma::vec>(Y_i_t(it))%(dLambdahat_0_t)));
-    obs_path += (as<arma::vec>(Mhat_i_t(it)))*(as<arma::rowvec>(pi_i_z(it)))/sqrt(n);
+    Mhat_i_t(it) = as<vec>(N_i_t(it))-(cumsum(as<vec>(Y_i_t(it))%(dLambdahat_0_t)));
+    obs_path += (as<vec>(Mhat_i_t(it)))*(as<rowvec>(pi_i_z(it)))/sqrt(n);
   }
   
   List dMhat_i_t(n);
   for(int it=0; it<n; it++){
-    dMhat_i_t(it) = diff(join_cols(zero_vec_1,as<arma::vec>(Mhat_i_t(it))));
+    dMhat_i_t(it) = diff(join_cols(zero_vec_1,as<vec>(Mhat_i_t(it))));
   }
   
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
-  arma::vec pred_data = exp(resid);
+  vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
-  arma::vec given_data_g = exp(resid);
+  vec given_data_g = exp(resid);
   
   double bw_g = 1.06 * stddev(given_data_g) * pow(n,-0.2);
   
-  arma::vec ghat_0_t = zeros(n);
+  vec ghat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
       ghat_0_t(it) += R::dnorm(pred_data(it),given_data_g(itt),bw_g,FALSE);
@@ -476,32 +476,32 @@ List omni_mis_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   tempvec_n = ghat_0_t%Time;
   for(int itt=0; itt<p; itt++){
     
-    arma::vec Covari_col = Covari.col(itt);
+    vec Covari_col = Covari.col(itt);
     
     tempmat_nn = zero_mat_nn;
     for(int it=0; it<n; it++){
-      tempmat_nn += tempvec_n*((as<arma::rowvec>(pi_i_z(it)))*Covari_col(it));
+      tempmat_nn += tempvec_n*((as<rowvec>(pi_i_z(it)))*Covari_col(it));
     }
     ghat_t_z(itt) = tempmat_nn/n;
   }
   
   // -----------------------------f0----------------------------
-  arma::vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
-  arma::vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
+  vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
+  vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
   
-  arma::vec Condi_Ehat = zero_vec_n;
+  vec Condi_Ehat = zero_vec_n;
   for(int it=0; it<n; it++){
     Condi_Ehat(it) = sum(join_cols(zeros(it+1),ones(n-it-1))%resid%dFhat_0_e)/(1-Fhat_0_e(it));
   }
   Condi_Ehat.replace(datum::nan,0);
   
-  arma::vec rhat_i = Delta%resid+(1-Delta)%Condi_Ehat;
+  vec rhat_i = Delta%resid+(1-Delta)%Condi_Ehat;
   
-  arma::vec given_data_f = exp(rhat_i);
+  vec given_data_f = exp(rhat_i);
   
   double bw_f = 1.06 * stddev(given_data_f) * pow(n,-0.2);
   
-  arma::vec fhat_0_t = zeros(n);
+  vec fhat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
       fhat_0_t(it) += R::dnorm(pred_data(it),given_data_f(itt),bw_f,FALSE);
@@ -513,11 +513,11 @@ List omni_mis_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   tempvec_n = fhat_0_t%Time;
   for(int itt=0; itt<p; itt++){
     
-    arma::vec Covari_col = Covari.col(itt);
+    vec Covari_col = Covari.col(itt);
     
     tempmat_nn = zero_mat_nn;
     for(int it=0; it<n; it++){
-      tempmat_nn += tempvec_n*((as<arma::rowvec>(pi_i_z(it)))*(Delta(it)*Covari_col(it)));
+      tempmat_nn += tempvec_n*((as<rowvec>(pi_i_z(it)))*(Delta(it)*Covari_col(it)));
     }
     fhat_t_z(itt) = tempmat_nn/n;
   }
@@ -528,17 +528,17 @@ List omni_mis_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   List app_path(path);
   for(int itt=0; itt<path; itt++){
     
-    arma::vec phi_i(n); arma::vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
+    vec phi_i(n); vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
     while(tolerance>tol){
       
       phi_i = rnorm(n);
       
       tempvec_n = zero_vec_n; tempmat_np = zero_mat_np;
       for(int it=0; it<n; it++){
-        tempvec_n += as<arma::vec>(dMhat_i_t(it))*phi_i(it);
-        tempmat_np += (as<arma::vec>(dMhat_i_t(it))*((Covari.row(it))))*phi_i(it);
+        tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
+        tempmat_np += (as<vec>(dMhat_i_t(it))*((Covari.row(it))))*phi_i(it);
       }
-      arma::vec U_phi_inf = (sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0)/n).t();
+      vec U_phi_inf = (sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0)/n).t();
       
       Rcpp::List b_s_opt_results = optim(Rcpp::_["par"]    = b,
                                          Rcpp::_["fn"]     = Rcpp::InternalFunction(&target_score2_mis),
@@ -548,42 +548,42 @@ List omni_mis_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
                                          Rcpp::_["Covari"] = Covari,
                                          Rcpp::_["targetvector"] = U_phi_inf);
       
-      arma::vec b_s = as<arma::vec>(b_s_opt_results[0]);
+      vec b_s = as<vec>(b_s_opt_results[0]);
       
       tolerance = as<double>(b_s_opt_results[1]);;
     }
     
     tempmat_nn = zero_mat_nn;
     for(int it=0; it<n; it++){
-      tempmat_nn += ((((as<arma::rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<arma::vec>(dMhat_i_t(it))))*phi_i(it));
+      tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<vec>(dMhat_i_t(it))))*phi_i(it));
     }
-    arma::mat U_pi_phi_t_z = cumsum(tempmat_nn);
+    mat U_pi_phi_t_z = cumsum(tempmat_nn);
     
-    arma::vec resid_s = log(Time) + Covari*b_s;
+    vec resid_s = log(Time) + Covari*b_s;
     
-    arma::uvec index_resid_s = sort_index(resid_s);
+    uvec index_resid_s = sort_index(resid_s);
     
-    arma::vec Delta_s = Delta(index_resid_s);
+    vec Delta_s = Delta(index_resid_s);
     resid_s = resid_s(index_resid_s);
     
-    List N_i_t_s(n); List Y_i_t_s(n); arma::vec S_0_t_s = zero_vec_n;
+    List N_i_t_s(n); List Y_i_t_s(n); vec S_0_t_s = zero_vec_n;
     for(int it=0; it<n; it++){
       N_i_t_s(it) = (resid_s>=resid_s(it))*Delta_s(it);
       Y_i_t_s(it) = (resid_s<=resid_s(it))*1;
-      S_0_t_s += as<arma::vec>(Y_i_t_s(it));
+      S_0_t_s += as<vec>(Y_i_t_s(it));
     }
     
-    arma::vec Lambdahat_0_t_s = cumsum(Delta_s/S_0_t_s);
+    vec Lambdahat_0_t_s = cumsum(Delta_s/S_0_t_s);
     
-    arma::mat term1 = U_pi_phi_t_z/sqrt(n);
+    mat term1 = U_pi_phi_t_z/sqrt(n);
     
-    arma::mat term2 = zero_mat_nn;
+    mat term2 = zero_mat_nn;
     tempvec_p = (b-b_s)*sqrt(n);
     for(int it=0; it<p; it++){
-      term2 += (as<arma::mat>(fhat_t_z(it))+cumsum((as<arma::mat>(ghat_t_z(it)).each_col())%dLambdahat_0_t))*(tempvec_p(it));
+      term2 += (as<mat>(fhat_t_z(it))+cumsum((as<mat>(ghat_t_z(it)).each_col())%dLambdahat_0_t))*(tempvec_p(it));
     }
     
-    arma::mat term3 = cumsum((S_pi_t_z.each_col())%diff(join_cols(zero_vec_1,Lambdahat_0_t-Lambdahat_0_t_s)))/sqrt(n);
+    mat term3 = cumsum((S_pi_t_z.each_col())%diff(join_cols(zero_vec_1,Lambdahat_0_t-Lambdahat_0_t_s)))/sqrt(n);
     
     app_path(itt) = term1 - term2 - term3;
   }
@@ -592,23 +592,27 @@ List omni_mis_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   for(int it=0; it<path; it++){
     tempmat_n2path(_,it) = (as<NumericVector>(app_path(it)));
   }
-  arma::mat se_boot = reshape(stddev(as<arma::mat>(tempmat_n2path),0,1),n,n);
+  vec mat_se_boot = stddev(as<mat>(tempmat_n2path),0,1);
+  uvec ind_se_boot = find(mat_se_boot == 0);
+  int num_se_boot = ind_se_boot.size();
+  mat_se_boot(ind_se_boot) = ones(num_se_boot);
+  mat se_boot = reshape(mat_se_boot,n,n);
   
-  List app_std_path(path); arma::vec absmax_app_path(path); arma::vec absmax_app_std_path(path);
+  List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
-    absmax_app_path(it) = (abs(as<arma::mat>(app_path(it)))).max();
-    app_std_path(it) = (as<arma::mat>(app_path(it))/se_boot);
-    absmax_app_std_path(it) = (abs(as<arma::mat>(app_std_path(it)))).max();
+    absmax_app_path(it) = (abs(as<mat>(app_path(it)))).max();
+    app_std_path(it) = (as<mat>(app_path(it))/se_boot);
+    absmax_app_std_path(it) = (abs(as<mat>(app_std_path(it)))).max();
   }
   
-  arma::mat obs_std_path = obs_path/se_boot;
+  mat obs_std_path = obs_path/se_boot;
   double absmax_obs_path = (abs(obs_path)).max();
   double absmax_obs_std_path = (abs(obs_std_path)).max();
   
-  arma::uvec find_unstd = (find(absmax_app_path>absmax_obs_path));
+  uvec find_unstd = (find(absmax_app_path>absmax_obs_path));
   double p_value = (find_unstd.size()); p_value = p_value/path;
   
-  arma::uvec find_std = (find(absmax_app_std_path>absmax_obs_std_path));
+  uvec find_std = (find(absmax_app_std_path>absmax_obs_std_path));
   double p_std_value = (find_std.size()); p_std_value = p_std_value/path;
   
   return List::create(_["TestType"]="Omni",_["path"]=path,_["beta"]=b,_["Time"]=Time,
@@ -617,7 +621,7 @@ List omni_mis_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
                           _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
 }
 
-List omni_mns_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma::mat Covari, String optimType){
+List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType){
   
   Rcpp::Environment stats("package:stats"); 
   Rcpp::Function optim = stats["optim"];
@@ -625,30 +629,30 @@ List omni_mns_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   int n = Covari.n_rows;
   int p = Covari.n_cols;
   
-  arma::vec zero_vec_1 = zeros(1);
-  arma::vec zero_vec_p = zeros(p);
-  arma::vec zero_vec_n = zeros(n);
-  arma::mat zero_mat_np = zeros(n,p);
-  arma::mat zero_mat_nn = zeros(n,n);
+  vec zero_vec_1 = zeros(1);
+  vec zero_vec_p = zeros(p);
+  vec zero_vec_n = zeros(n);
+  mat zero_mat_np = zeros(n,p);
+  mat zero_mat_nn = zeros(n,n);
   
-  arma::vec ones_vec_1 = ones(1);
+  vec ones_vec_1 = ones(1);
   
-  arma::vec tempvec_p(p);
-  arma::vec tempvec_n(n);
-  arma::mat tempmat_np(n,p);
-  arma::mat tempmat_nn(n,n);
+  vec tempvec_p(p);
+  vec tempvec_n(n);
+  mat tempmat_np(n,p);
+  mat tempmat_nn(n,n);
   
-  arma::vec resid = log(Time) + Covari*b;
+  vec resid = log(Time) + Covari*b;
   
-  arma::uvec index_resid = sort_index(resid);
+  uvec index_resid = sort_index(resid);
   
   Time = Time(index_resid);
   Delta = Delta(index_resid);
   Covari = Covari.rows(index_resid);
   resid = resid(index_resid);
   
-  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); arma::vec S_0_t = zero_vec_n; arma::mat S_1_t = zero_mat_np; arma::mat S_pi_t_z = zero_mat_nn;
-  arma::mat sorted_Covari = sort(Covari);
+  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
+  mat sorted_Covari = sort(Covari);
   tempvec_n = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
@@ -657,39 +661,39 @@ List omni_mns_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
     pi_i_z(it) = tempvec_n;
     N_i_t(it) = (resid>=resid(it))*Delta(it);
     Y_i_t(it) = (resid<=resid(it))*1;
-    S_0_t += as<arma::vec>(Y_i_t(it));
-    S_1_t += as<arma::vec>(Y_i_t(it))*((Covari.row(it)));
-    S_pi_t_z += (as<arma::vec>(Y_i_t(it)))*(as<arma::rowvec>(pi_i_z(it)));
+    S_0_t += as<vec>(Y_i_t(it));
+    S_1_t += as<vec>(Y_i_t(it))*((Covari.row(it)));
+    S_pi_t_z += (as<vec>(Y_i_t(it)))*(as<rowvec>(pi_i_z(it)));
   }
   
-  arma::vec Lambdahat_0_t = cumsum(Delta/S_0_t);
+  vec Lambdahat_0_t = cumsum(Delta/S_0_t);
   
-  arma::vec dLambdahat_0_t = diff(join_cols(zero_vec_1,Lambdahat_0_t));
+  vec dLambdahat_0_t = diff(join_cols(zero_vec_1,Lambdahat_0_t));
   
-  arma::mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
+  mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
   
-  List Mhat_i_t(n); arma::mat obs_path = zero_mat_nn;
+  List Mhat_i_t(n); mat obs_path = zero_mat_nn;
   for(int it=0; it<n; it++){
-    Mhat_i_t(it) = as<arma::vec>(N_i_t(it))-(cumsum(as<arma::vec>(Y_i_t(it))%(dLambdahat_0_t)));
-    obs_path += (as<arma::vec>(Mhat_i_t(it)))*(as<arma::rowvec>(pi_i_z(it)))/sqrt(n);
+    Mhat_i_t(it) = as<vec>(N_i_t(it))-(cumsum(as<vec>(Y_i_t(it))%(dLambdahat_0_t)));
+    obs_path += (as<vec>(Mhat_i_t(it)))*(as<rowvec>(pi_i_z(it)))/sqrt(n);
   }
   
   List dMhat_i_t(n);
   for(int it=0; it<n; it++){
-    dMhat_i_t(it) = diff(join_cols(zero_vec_1,as<arma::vec>(Mhat_i_t(it))));
+    dMhat_i_t(it) = diff(join_cols(zero_vec_1,as<vec>(Mhat_i_t(it))));
   }
   
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
-  arma::vec pred_data = exp(resid);
+  vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
-  arma::vec given_data_g = exp(resid);
+  vec given_data_g = exp(resid);
   
   double bw_g = 1.06 * stddev(given_data_g) * pow(n,-0.2);
   
-  arma::vec ghat_0_t = zeros(n);
+  vec ghat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
       ghat_0_t(it) += R::dnorm(pred_data(it),given_data_g(itt),bw_g,FALSE);
@@ -701,32 +705,32 @@ List omni_mns_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   tempvec_n = ghat_0_t%Time;
   for(int itt=0; itt<p; itt++){
     
-    arma::vec Covari_col = Covari.col(itt);
+    vec Covari_col = Covari.col(itt);
     
     tempmat_nn = zero_mat_nn;
     for(int it=0; it<n; it++){
-      tempmat_nn += tempvec_n*((as<arma::rowvec>(pi_i_z(it)))*Covari_col(it));
+      tempmat_nn += tempvec_n*((as<rowvec>(pi_i_z(it)))*Covari_col(it));
     }
     ghat_t_z(itt) = tempmat_nn/n;
   }
   
   // -----------------------------f0----------------------------
-  arma::vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
-  arma::vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
+  vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
+  vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
   
-  arma::vec Condi_Ehat = zero_vec_n;
+  vec Condi_Ehat = zero_vec_n;
   for(int it=0; it<n; it++){
     Condi_Ehat(it) = sum(join_cols(zeros(it+1),ones(n-it-1))%resid%dFhat_0_e)/(1-Fhat_0_e(it));
   }
   Condi_Ehat.replace(datum::nan,0);
   
-  arma::vec rhat_i = Delta%resid+(1-Delta)%Condi_Ehat;
+  vec rhat_i = Delta%resid+(1-Delta)%Condi_Ehat;
   
-  arma::vec given_data_f = exp(rhat_i);
+  vec given_data_f = exp(rhat_i);
   
   double bw_f = 1.06 * stddev(given_data_f) * pow(n,-0.2);
   
-  arma::vec fhat_0_t = zeros(n);
+  vec fhat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
       fhat_0_t(it) += R::dnorm(pred_data(it),given_data_f(itt),bw_f,FALSE);
@@ -738,11 +742,11 @@ List omni_mns_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   tempvec_n = fhat_0_t%Time;
   for(int itt=0; itt<p; itt++){
     
-    arma::vec Covari_col = Covari.col(itt);
+    vec Covari_col = Covari.col(itt);
     
     tempmat_nn = zero_mat_nn;
     for(int it=0; it<n; it++){
-      tempmat_nn += tempvec_n*((as<arma::rowvec>(pi_i_z(it)))*(Delta(it)*Covari_col(it)));
+      tempmat_nn += tempvec_n*((as<rowvec>(pi_i_z(it)))*(Delta(it)*Covari_col(it)));
     }
     fhat_t_z(itt) = tempmat_nn/n;
   }
@@ -753,17 +757,17 @@ List omni_mns_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   List app_path(path);
   for(int itt=0; itt<path; itt++){
     
-    arma::vec phi_i(n); arma::vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
+    vec phi_i(n); vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
     while(tolerance>tol){
       
       phi_i = rnorm(n);
       
       tempvec_n = zero_vec_n; tempmat_np = zero_mat_np;
       for(int it=0; it<n; it++){
-        tempvec_n += as<arma::vec>(dMhat_i_t(it))*phi_i(it);
-        tempmat_np += (as<arma::vec>(dMhat_i_t(it))*((Covari.row(it))))*phi_i(it);
+        tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
+        tempmat_np += (as<vec>(dMhat_i_t(it))*((Covari.row(it))))*phi_i(it);
       }
-      arma::vec U_phi_inf = (sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0)/n).t();
+      vec U_phi_inf = (sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0)/n).t();
       
       Rcpp::List b_s_opt_results = optim(Rcpp::_["par"]    = b,
                                          Rcpp::_["fn"]     = Rcpp::InternalFunction(&target_score2_mns),
@@ -773,42 +777,42 @@ List omni_mns_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
                                          Rcpp::_["Covari"] = Covari,
                                          Rcpp::_["targetvector"] = U_phi_inf);
       
-      arma::vec b_s = as<arma::vec>(b_s_opt_results[0]);
+      vec b_s = as<vec>(b_s_opt_results[0]);
       
       tolerance = as<double>(b_s_opt_results[1]);;
     }
     
     tempmat_nn = zero_mat_nn;
     for(int it=0; it<n; it++){
-      tempmat_nn += ((((as<arma::rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<arma::vec>(dMhat_i_t(it))))*phi_i(it));
+      tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<vec>(dMhat_i_t(it))))*phi_i(it));
     }
-    arma::mat U_pi_phi_t_z = cumsum(tempmat_nn);
+    mat U_pi_phi_t_z = cumsum(tempmat_nn);
     
-    arma::vec resid_s = log(Time) + Covari*b_s;
+    vec resid_s = log(Time) + Covari*b_s;
     
-    arma::uvec index_resid_s = sort_index(resid_s);
+    uvec index_resid_s = sort_index(resid_s);
     
-    arma::vec Delta_s = Delta(index_resid_s);
+    vec Delta_s = Delta(index_resid_s);
     resid_s = resid_s(index_resid_s);
     
-    List N_i_t_s(n); List Y_i_t_s(n); arma::vec S_0_t_s = zero_vec_n;
+    List N_i_t_s(n); List Y_i_t_s(n); vec S_0_t_s = zero_vec_n;
     for(int it=0; it<n; it++){
       N_i_t_s(it) = (resid_s>=resid_s(it))*Delta_s(it);
       Y_i_t_s(it) = (resid_s<=resid_s(it))*1;
-      S_0_t_s += as<arma::vec>(Y_i_t_s(it));
+      S_0_t_s += as<vec>(Y_i_t_s(it));
     }
     
-    arma::vec Lambdahat_0_t_s = cumsum(Delta_s/S_0_t_s);
+    vec Lambdahat_0_t_s = cumsum(Delta_s/S_0_t_s);
     
-    arma::mat term1 = U_pi_phi_t_z/sqrt(n);
+    mat term1 = U_pi_phi_t_z/sqrt(n);
     
-    arma::mat term2 = zero_mat_nn;
+    mat term2 = zero_mat_nn;
     tempvec_p = (b-b_s)*sqrt(n);
     for(int it=0; it<p; it++){
-      term2 += (as<arma::mat>(fhat_t_z(it))+cumsum((as<arma::mat>(ghat_t_z(it)).each_col())%dLambdahat_0_t))*(tempvec_p(it));
+      term2 += (as<mat>(fhat_t_z(it))+cumsum((as<mat>(ghat_t_z(it)).each_col())%dLambdahat_0_t))*(tempvec_p(it));
     }
     
-    arma::mat term3 = cumsum((S_pi_t_z.each_col())%diff(join_cols(zero_vec_1,Lambdahat_0_t-Lambdahat_0_t_s)))/sqrt(n);
+    mat term3 = cumsum((S_pi_t_z.each_col())%diff(join_cols(zero_vec_1,Lambdahat_0_t-Lambdahat_0_t_s)))/sqrt(n);
     
     app_path(itt) = term1 - term2 - term3;
   }
@@ -817,23 +821,27 @@ List omni_mns_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   for(int it=0; it<path; it++){
     tempmat_n2path(_,it) = (as<NumericVector>(app_path(it)));
   }
-  arma::mat se_boot = reshape(stddev(as<arma::mat>(tempmat_n2path),0,1),n,n);
+  vec mat_se_boot = stddev(as<mat>(tempmat_n2path),0,1);
+  uvec ind_se_boot = find(mat_se_boot == 0);
+  int num_se_boot = ind_se_boot.size();
+  mat_se_boot(ind_se_boot) = ones(num_se_boot);
+  mat se_boot = reshape(mat_se_boot,n,n);
   
-  List app_std_path(path); arma::vec absmax_app_path(path); arma::vec absmax_app_std_path(path);
+  List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
-    absmax_app_path(it) = (abs(as<arma::mat>(app_path(it)))).max();
-    app_std_path(it) = (as<arma::mat>(app_path(it))/se_boot);
-    absmax_app_std_path(it) = (abs(as<arma::mat>(app_std_path(it)))).max();
+    absmax_app_path(it) = (abs(as<mat>(app_path(it)))).max();
+    app_std_path(it) = (as<mat>(app_path(it))/se_boot);
+    absmax_app_std_path(it) = (abs(as<mat>(app_std_path(it)))).max();
   }
   
-  arma::mat obs_std_path = obs_path/se_boot;
+  mat obs_std_path = obs_path/se_boot;
   double absmax_obs_path = (abs(obs_path)).max();
   double absmax_obs_std_path = (abs(obs_std_path)).max();
   
-  arma::uvec find_unstd = (find(absmax_app_path>absmax_obs_path));
+  uvec find_unstd = (find(absmax_app_path>absmax_obs_path));
   double p_value = (find_unstd.size()); p_value = p_value/path;
   
-  arma::uvec find_std = (find(absmax_app_std_path>absmax_obs_std_path));
+  uvec find_std = (find(absmax_app_std_path>absmax_obs_std_path));
   double p_std_value = (find_std.size()); p_std_value = p_std_value/path;
   
   return List::create(_["TestType"]="Omni",_["path"]=path,_["beta"]=b,_["Time"]=Time,
@@ -842,7 +850,7 @@ List omni_mns_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
                           _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
 }
 
-List link_mis_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma::mat Covari, String optimType){
+List link_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType){
   
   Rcpp::Environment stats("package:stats"); 
   Rcpp::Function optim = stats["optim"];
@@ -850,30 +858,30 @@ List link_mis_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   int n = Covari.n_rows;
   int p = Covari.n_cols;
   
-  arma::vec zero_vec_1 = zeros(1);
-  arma::vec zero_vec_p = zeros(p);
-  arma::vec zero_vec_n = zeros(n);
-  arma::mat zero_mat_np = zeros(n,p);
-  arma::mat zero_mat_nn = zeros(n,n);
+  vec zero_vec_1 = zeros(1);
+  vec zero_vec_p = zeros(p);
+  vec zero_vec_n = zeros(n);
+  mat zero_mat_np = zeros(n,p);
+  mat zero_mat_nn = zeros(n,n);
   
-  arma::vec ones_vec_1 = ones(1);
+  vec ones_vec_1 = ones(1);
   
-  arma::vec tempvec_p(p);
-  arma::vec tempvec_n(n);
-  arma::mat tempmat_np(n,p);
-  arma::mat tempmat_nn(n,n);
+  vec tempvec_p(p);
+  vec tempvec_n(n);
+  mat tempmat_np(n,p);
+  mat tempmat_nn(n,n);
   
-  arma::vec resid = log(Time) + Covari*b;
+  vec resid = log(Time) + Covari*b;
   
-  arma::uvec index_resid = sort_index(resid);
+  uvec index_resid = sort_index(resid);
   
   Time = Time(index_resid);
   Delta = Delta(index_resid);
   Covari = Covari.rows(index_resid);
   resid = resid(index_resid);
   
-  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); arma::vec S_0_t = zero_vec_n; arma::mat S_1_t = zero_mat_np; arma::mat S_pi_t_z = zero_mat_nn;
-  arma::mat sorted_Covari = sort(Covari);
+  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
+  mat sorted_Covari = sort(Covari);
   tempvec_n = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
@@ -882,37 +890,37 @@ List link_mis_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
     pi_i_z(it) = tempvec_n;
     N_i_t(it) = (resid>=resid(it))*Delta(it);
     Y_i_t(it) = (resid<=resid(it))*1;
-    S_0_t += as<arma::vec>(Y_i_t(it));
-    S_1_t += as<arma::vec>(Y_i_t(it))*((Covari.row(it)));
-    S_pi_t_z += (as<arma::vec>(Y_i_t(it)))*(as<arma::rowvec>(pi_i_z(it)));
+    S_0_t += as<vec>(Y_i_t(it));
+    S_1_t += as<vec>(Y_i_t(it))*((Covari.row(it)));
+    S_pi_t_z += (as<vec>(Y_i_t(it)))*(as<rowvec>(pi_i_z(it)));
   }
   
-  arma::vec Lambdahat_0_t = cumsum(Delta/S_0_t);
+  vec Lambdahat_0_t = cumsum(Delta/S_0_t);
   
-  arma::vec dLambdahat_0_t = diff(join_cols(zero_vec_1,Lambdahat_0_t));
+  vec dLambdahat_0_t = diff(join_cols(zero_vec_1,Lambdahat_0_t));
   
-  arma::mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
+  mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
   
-  List Mhat_i_t(n); List dMhat_i_t(n); arma::vec obs_path = zero_vec_n;
+  List Mhat_i_t(n); List dMhat_i_t(n); vec obs_path = zero_vec_n;
   for(int it=0; it<n; it++){
-    tempvec_n = as<arma::vec>(N_i_t(it))-(cumsum(as<arma::vec>(Y_i_t(it))%(dLambdahat_0_t)));
+    tempvec_n = as<vec>(N_i_t(it))-(cumsum(as<vec>(Y_i_t(it))%(dLambdahat_0_t)));
     Mhat_i_t(it) = tempvec_n;
     dMhat_i_t(it) = diff(join_cols(zero_vec_1,tempvec_n));
-    obs_path += (tempvec_n(n-1))*(as<arma::vec>(pi_i_z(it)));
+    obs_path += (tempvec_n(n-1))*(as<vec>(pi_i_z(it)));
   }
   obs_path = obs_path/sqrt(n);
   
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
-  arma::vec pred_data = exp(resid);
+  vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
-  arma::vec given_data_g = exp(resid);
+  vec given_data_g = exp(resid);
   
   double bw_g = 1.06 * stddev(given_data_g) * pow(n,-0.2);
   
-  arma::vec ghat_0_t = zeros(n);
+  vec ghat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
       ghat_0_t(it) += R::dnorm(pred_data(it),given_data_g(itt),bw_g,FALSE);
@@ -924,32 +932,32 @@ List link_mis_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   tempvec_n = ghat_0_t%Time;
   for(int itt=0; itt<p; itt++){
     
-    arma::vec Covari_col = Covari.col(itt);
+    vec Covari_col = Covari.col(itt);
     
     tempmat_nn = zero_mat_nn;
     for(int it=0; it<n; it++){
-      tempmat_nn += tempvec_n*((as<arma::rowvec>(pi_i_z(it)))*Covari_col(it));
+      tempmat_nn += tempvec_n*((as<rowvec>(pi_i_z(it)))*Covari_col(it));
     }
     ghat_t_z(itt) = tempmat_nn/n;
   }
   
   // -----------------------------f0----------------------------
-  arma::vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
-  arma::vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
+  vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
+  vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
   
-  arma::vec Condi_Ehat = zero_vec_n;
+  vec Condi_Ehat = zero_vec_n;
   for(int it=0; it<n; it++){
     Condi_Ehat(it) = sum(join_cols(zeros(it+1),ones(n-it-1))%resid%dFhat_0_e)/(1-Fhat_0_e(it));
   }
   Condi_Ehat.replace(datum::nan,0);
   
-  arma::vec rhat_i = Delta%resid+(1-Delta)%Condi_Ehat;
+  vec rhat_i = Delta%resid+(1-Delta)%Condi_Ehat;
   
-  arma::vec given_data_f = exp(rhat_i);
+  vec given_data_f = exp(rhat_i);
   
   double bw_f = 1.06 * stddev(given_data_f) * pow(n,-0.2);
   
-  arma::vec fhat_0_t = zeros(n);
+  vec fhat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
       fhat_0_t(it) += R::dnorm(pred_data(it),given_data_f(itt),bw_f,FALSE);
@@ -961,11 +969,11 @@ List link_mis_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   double tempvec_1 = fhat_0_t(n-1)*Time(n-1);
   for(int itt=0; itt<p; itt++){
     
-    arma::vec Covari_col = Covari.col(itt);
+    vec Covari_col = Covari.col(itt);
     
     tempvec_n = zero_vec_n;
     for(int it=0; it<n; it++){
-      tempvec_n += tempvec_1*((as<arma::vec>(pi_i_z(it)))*(Delta(it)*Covari_col(it)));
+      tempvec_n += tempvec_1*((as<vec>(pi_i_z(it)))*(Delta(it)*Covari_col(it)));
     }
     fhat_inf_z(itt) = tempvec_n/n;
   }
@@ -976,17 +984,17 @@ List link_mis_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   List app_path(path);
   for(int itt=0; itt<path; itt++){
     
-    arma::vec phi_i(n); arma::vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
+    vec phi_i(n); vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
     while(tolerance>tol){
       
       phi_i = rnorm(n);
       
       tempvec_n = zero_vec_n; tempmat_np = zero_mat_np;
       for(int it=0; it<n; it++){
-        tempvec_n += as<arma::vec>(dMhat_i_t(it))*phi_i(it);
-        tempmat_np += (as<arma::vec>(dMhat_i_t(it))*((Covari.row(it))))*phi_i(it);
+        tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
+        tempmat_np += (as<vec>(dMhat_i_t(it))*((Covari.row(it))))*phi_i(it);
       }
-      arma::vec U_phi_inf = (sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0)/n).t();
+      vec U_phi_inf = (sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0)/n).t();
       
       Rcpp::List b_s_opt_results = optim(Rcpp::_["par"]    = b,
                                          Rcpp::_["fn"]     = Rcpp::InternalFunction(&target_score2_mis),
@@ -996,42 +1004,42 @@ List link_mis_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
                                          Rcpp::_["Covari"] = Covari,
                                          Rcpp::_["targetvector"] = U_phi_inf);
       
-      arma::vec b_s = as<arma::vec>(b_s_opt_results[0]);
+      vec b_s = as<vec>(b_s_opt_results[0]);
       
       tolerance = as<double>(b_s_opt_results[1]);;
     }
     
     tempmat_nn = zero_mat_nn;
     for(int it=0; it<n; it++){
-      tempmat_nn += ((((as<arma::rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<arma::vec>(dMhat_i_t(it))))*phi_i(it));
+      tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<vec>(dMhat_i_t(it))))*phi_i(it));
     }
-    arma::mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
+    mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
     
-    arma::vec resid_s = log(Time) + Covari*b_s;
+    vec resid_s = log(Time) + Covari*b_s;
     
-    arma::uvec index_resid_s = sort_index(resid_s);
+    uvec index_resid_s = sort_index(resid_s);
     
-    arma::vec Delta_s = Delta(index_resid_s);
+    vec Delta_s = Delta(index_resid_s);
     resid_s = resid_s(index_resid_s);
     
-    List N_i_t_s(n); List Y_i_t_s(n); arma::vec S_0_t_s = zero_vec_n;
+    List N_i_t_s(n); List Y_i_t_s(n); vec S_0_t_s = zero_vec_n;
     for(int it=0; it<n; it++){
       N_i_t_s(it) = (resid_s>=resid_s(it))*Delta_s(it);
       Y_i_t_s(it) = (resid_s<=resid_s(it))*1;
-      S_0_t_s += as<arma::vec>(Y_i_t_s(it));
+      S_0_t_s += as<vec>(Y_i_t_s(it));
     }
     
-    arma::vec Lambdahat_0_t_s = cumsum(Delta_s/S_0_t_s);
+    vec Lambdahat_0_t_s = cumsum(Delta_s/S_0_t_s);
     
-    arma::vec term1 = U_pi_phi_inf_z/sqrt(n);
+    vec term1 = U_pi_phi_inf_z/sqrt(n);
     
-    arma::vec term2 = zero_vec_n;
+    vec term2 = zero_vec_n;
     tempvec_p = (b-b_s)*sqrt(n);
     for(int it=0; it<p; it++){
-      term2 += (as<arma::vec>(fhat_inf_z(it))+(sum((as<arma::mat>(ghat_t_z(it)).each_col())%dLambdahat_0_t)).t())*(tempvec_p(it));
+      term2 += (as<vec>(fhat_inf_z(it))+(sum((as<mat>(ghat_t_z(it)).each_col())%dLambdahat_0_t)).t())*(tempvec_p(it));
     }
     
-    arma::vec term3 = (sum((S_pi_t_z.each_col())%diff(join_cols(zero_vec_1,Lambdahat_0_t-Lambdahat_0_t_s)))).t()/sqrt(n);
+    vec term3 = (sum((S_pi_t_z.each_col())%diff(join_cols(zero_vec_1,Lambdahat_0_t-Lambdahat_0_t_s)))).t()/sqrt(n);
     
     app_path(itt) = term1 - term2 - term3;
     
@@ -1041,23 +1049,26 @@ List link_mis_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   for(int it=0; it<path; it++){
     tempmat_npath(_,it) = (as<NumericVector>(app_path(it)));
   }
-  arma::mat se_boot = stddev(as<arma::mat>(tempmat_npath),0,1);
+  vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
+  uvec ind_se_boot = find(se_boot == 0);
+  int num_se_boot = ind_se_boot.size();
+  se_boot(ind_se_boot) = ones(num_se_boot);
   
-  List app_std_path(path); arma::vec absmax_app_path(path); arma::vec absmax_app_std_path(path);
+  List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
-    absmax_app_path(it) = (abs(as<arma::vec>(app_path(it)))).max();
-    app_std_path(it) = (as<arma::vec>(app_path(it))/se_boot);
-    absmax_app_std_path(it) = (abs(as<arma::vec>(app_std_path(it)))).max();
+    absmax_app_path(it) = (abs(as<vec>(app_path(it)))).max();
+    app_std_path(it) = (as<vec>(app_path(it))/se_boot);
+    absmax_app_std_path(it) = (abs(as<vec>(app_std_path(it)))).max();
   }
   
-  arma::vec obs_std_path = obs_path/se_boot;
+  vec obs_std_path = obs_path/se_boot;
   double absmax_obs_path = (abs(obs_path)).max();
   double absmax_obs_std_path = (abs(obs_std_path)).max();
   
-  arma::uvec find_unstd = (find(absmax_app_path>absmax_obs_path));
+  uvec find_unstd = (find(absmax_app_path>absmax_obs_path));
   double p_value = (find_unstd.size()); p_value = p_value/path;
   
-  arma::uvec find_std = (find(absmax_app_std_path>absmax_obs_std_path));
+  uvec find_std = (find(absmax_app_std_path>absmax_obs_std_path));
   double p_std_value = (find_std.size()); p_std_value = p_std_value/path;
   
   return List::create(_["TestType"]="Link",_["path"]=path,_["beta"]=b,_["Time"]=Time,
@@ -1066,7 +1077,7 @@ List link_mis_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
                           _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
 }
 
-List link_mns_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma::mat Covari, String optimType){
+List link_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType){
   
   Rcpp::Environment stats("package:stats"); 
   Rcpp::Function optim = stats["optim"];
@@ -1074,30 +1085,30 @@ List link_mns_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   int n = Covari.n_rows;
   int p = Covari.n_cols;
   
-  arma::vec zero_vec_1 = zeros(1);
-  arma::vec zero_vec_p = zeros(p);
-  arma::vec zero_vec_n = zeros(n);
-  arma::mat zero_mat_np = zeros(n,p);
-  arma::mat zero_mat_nn = zeros(n,n);
+  vec zero_vec_1 = zeros(1);
+  vec zero_vec_p = zeros(p);
+  vec zero_vec_n = zeros(n);
+  mat zero_mat_np = zeros(n,p);
+  mat zero_mat_nn = zeros(n,n);
   
-  arma::vec ones_vec_1 = ones(1);
+  vec ones_vec_1 = ones(1);
   
-  arma::vec tempvec_p(p);
-  arma::vec tempvec_n(n);
-  arma::mat tempmat_np(n,p);
-  arma::mat tempmat_nn(n,n);
+  vec tempvec_p(p);
+  vec tempvec_n(n);
+  mat tempmat_np(n,p);
+  mat tempmat_nn(n,n);
   
-  arma::vec resid = log(Time) + Covari*b;
+  vec resid = log(Time) + Covari*b;
   
-  arma::uvec index_resid = sort_index(resid);
+  uvec index_resid = sort_index(resid);
   
   Time = Time(index_resid);
   Delta = Delta(index_resid);
   Covari = Covari.rows(index_resid);
   resid = resid(index_resid);
   
-  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); arma::vec S_0_t = zero_vec_n; arma::mat S_1_t = zero_mat_np; arma::mat S_pi_t_z = zero_mat_nn;
-  arma::mat sorted_Covari = sort(Covari);
+  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
+  mat sorted_Covari = sort(Covari);
   tempvec_n = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
@@ -1106,37 +1117,37 @@ List link_mns_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
     pi_i_z(it) = tempvec_n;
     N_i_t(it) = (resid>=resid(it))*Delta(it);
     Y_i_t(it) = (resid<=resid(it))*1;
-    S_0_t += as<arma::vec>(Y_i_t(it));
-    S_1_t += as<arma::vec>(Y_i_t(it))*((Covari.row(it)));
-    S_pi_t_z += (as<arma::vec>(Y_i_t(it)))*(as<arma::rowvec>(pi_i_z(it)));
+    S_0_t += as<vec>(Y_i_t(it));
+    S_1_t += as<vec>(Y_i_t(it))*((Covari.row(it)));
+    S_pi_t_z += (as<vec>(Y_i_t(it)))*(as<rowvec>(pi_i_z(it)));
   }
   
-  arma::vec Lambdahat_0_t = cumsum(Delta/S_0_t);
+  vec Lambdahat_0_t = cumsum(Delta/S_0_t);
   
-  arma::vec dLambdahat_0_t = diff(join_cols(zero_vec_1,Lambdahat_0_t));
+  vec dLambdahat_0_t = diff(join_cols(zero_vec_1,Lambdahat_0_t));
   
-  arma::mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
+  mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
   
-  List Mhat_i_t(n); List dMhat_i_t(n); arma::vec obs_path = zero_vec_n;
+  List Mhat_i_t(n); List dMhat_i_t(n); vec obs_path = zero_vec_n;
   for(int it=0; it<n; it++){
-    tempvec_n = as<arma::vec>(N_i_t(it))-(cumsum(as<arma::vec>(Y_i_t(it))%(dLambdahat_0_t)));
+    tempvec_n = as<vec>(N_i_t(it))-(cumsum(as<vec>(Y_i_t(it))%(dLambdahat_0_t)));
     Mhat_i_t(it) = tempvec_n;
     dMhat_i_t(it) = diff(join_cols(zero_vec_1,tempvec_n));
-    obs_path += (tempvec_n(n-1))*(as<arma::vec>(pi_i_z(it)));
+    obs_path += (tempvec_n(n-1))*(as<vec>(pi_i_z(it)));
   }
   obs_path = obs_path/sqrt(n);
   
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
-  arma::vec pred_data = exp(resid);
+  vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
-  arma::vec given_data_g = exp(resid);
+  vec given_data_g = exp(resid);
   
   double bw_g = 1.06 * stddev(given_data_g) * pow(n,-0.2);
   
-  arma::vec ghat_0_t = zeros(n);
+  vec ghat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
       ghat_0_t(it) += R::dnorm(pred_data(it),given_data_g(itt),bw_g,FALSE);
@@ -1148,32 +1159,32 @@ List link_mns_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   tempvec_n = ghat_0_t%Time;
   for(int itt=0; itt<p; itt++){
     
-    arma::vec Covari_col = Covari.col(itt);
+    vec Covari_col = Covari.col(itt);
     
     tempmat_nn = zero_mat_nn;
     for(int it=0; it<n; it++){
-      tempmat_nn += tempvec_n*((as<arma::rowvec>(pi_i_z(it)))*Covari_col(it));
+      tempmat_nn += tempvec_n*((as<rowvec>(pi_i_z(it)))*Covari_col(it));
     }
     ghat_t_z(itt) = tempmat_nn/n;
   }
   
   // -----------------------------f0----------------------------
-  arma::vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
-  arma::vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
+  vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
+  vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
   
-  arma::vec Condi_Ehat = zero_vec_n;
+  vec Condi_Ehat = zero_vec_n;
   for(int it=0; it<n; it++){
     Condi_Ehat(it) = sum(join_cols(zeros(it+1),ones(n-it-1))%resid%dFhat_0_e)/(1-Fhat_0_e(it));
   }
   Condi_Ehat.replace(datum::nan,0);
   
-  arma::vec rhat_i = Delta%resid+(1-Delta)%Condi_Ehat;
+  vec rhat_i = Delta%resid+(1-Delta)%Condi_Ehat;
   
-  arma::vec given_data_f = exp(rhat_i);
+  vec given_data_f = exp(rhat_i);
   
   double bw_f = 1.06 * stddev(given_data_f) * pow(n,-0.2);
   
-  arma::vec fhat_0_t = zeros(n);
+  vec fhat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
       fhat_0_t(it) += R::dnorm(pred_data(it),given_data_f(itt),bw_f,FALSE);
@@ -1185,11 +1196,11 @@ List link_mns_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   double tempvec_1 = fhat_0_t(n-1)*Time(n-1);
   for(int itt=0; itt<p; itt++){
     
-    arma::vec Covari_col = Covari.col(itt);
+    vec Covari_col = Covari.col(itt);
     
     tempvec_n = zero_vec_n;
     for(int it=0; it<n; it++){
-      tempvec_n += tempvec_1*((as<arma::vec>(pi_i_z(it)))*(Delta(it)*Covari_col(it)));
+      tempvec_n += tempvec_1*((as<vec>(pi_i_z(it)))*(Delta(it)*Covari_col(it)));
     }
     fhat_inf_z(itt) = tempvec_n/n;
   }
@@ -1200,17 +1211,17 @@ List link_mns_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   List app_path(path);
   for(int itt=0; itt<path; itt++){
     
-    arma::vec phi_i(n); arma::vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
+    vec phi_i(n); vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
     while(tolerance>tol){
       
       phi_i = rnorm(n);
       
       tempvec_n = zero_vec_n; tempmat_np = zero_mat_np;
       for(int it=0; it<n; it++){
-        tempvec_n += as<arma::vec>(dMhat_i_t(it))*phi_i(it);
-        tempmat_np += (as<arma::vec>(dMhat_i_t(it))*((Covari.row(it))))*phi_i(it);
+        tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
+        tempmat_np += (as<vec>(dMhat_i_t(it))*((Covari.row(it))))*phi_i(it);
       }
-      arma::vec U_phi_inf = (sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0)/n).t();
+      vec U_phi_inf = (sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0)/n).t();
       
       Rcpp::List b_s_opt_results = optim(Rcpp::_["par"]    = b,
                                          Rcpp::_["fn"]     = Rcpp::InternalFunction(&target_score2_mns),
@@ -1220,42 +1231,42 @@ List link_mns_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
                                          Rcpp::_["Covari"] = Covari,
                                          Rcpp::_["targetvector"] = U_phi_inf);
       
-      arma::vec b_s = as<arma::vec>(b_s_opt_results[0]);
+      vec b_s = as<vec>(b_s_opt_results[0]);
       
       tolerance = as<double>(b_s_opt_results[1]);;
     }
     
     tempmat_nn = zero_mat_nn;
     for(int it=0; it<n; it++){
-      tempmat_nn += ((((as<arma::rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<arma::vec>(dMhat_i_t(it))))*phi_i(it));
+      tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<vec>(dMhat_i_t(it))))*phi_i(it));
     }
-    arma::mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
+    mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
     
-    arma::vec resid_s = log(Time) + Covari*b_s;
+    vec resid_s = log(Time) + Covari*b_s;
     
-    arma::uvec index_resid_s = sort_index(resid_s);
+    uvec index_resid_s = sort_index(resid_s);
     
-    arma::vec Delta_s = Delta(index_resid_s);
+    vec Delta_s = Delta(index_resid_s);
     resid_s = resid_s(index_resid_s);
     
-    List N_i_t_s(n); List Y_i_t_s(n); arma::vec S_0_t_s = zero_vec_n;
+    List N_i_t_s(n); List Y_i_t_s(n); vec S_0_t_s = zero_vec_n;
     for(int it=0; it<n; it++){
       N_i_t_s(it) = (resid_s>=resid_s(it))*Delta_s(it);
       Y_i_t_s(it) = (resid_s<=resid_s(it))*1;
-      S_0_t_s += as<arma::vec>(Y_i_t_s(it));
+      S_0_t_s += as<vec>(Y_i_t_s(it));
     }
     
-    arma::vec Lambdahat_0_t_s = cumsum(Delta_s/S_0_t_s);
+    vec Lambdahat_0_t_s = cumsum(Delta_s/S_0_t_s);
     
-    arma::vec term1 = U_pi_phi_inf_z/sqrt(n);
+    vec term1 = U_pi_phi_inf_z/sqrt(n);
     
-    arma::vec term2 = zero_vec_n;
+    vec term2 = zero_vec_n;
     tempvec_p = (b-b_s)*sqrt(n);
     for(int it=0; it<p; it++){
-      term2 += (as<arma::vec>(fhat_inf_z(it))+(sum((as<arma::mat>(ghat_t_z(it)).each_col())%dLambdahat_0_t)).t())*(tempvec_p(it));
+      term2 += (as<vec>(fhat_inf_z(it))+(sum((as<mat>(ghat_t_z(it)).each_col())%dLambdahat_0_t)).t())*(tempvec_p(it));
     }
     
-    arma::vec term3 = (sum((S_pi_t_z.each_col())%diff(join_cols(zero_vec_1,Lambdahat_0_t-Lambdahat_0_t_s)))).t()/sqrt(n);
+    vec term3 = (sum((S_pi_t_z.each_col())%diff(join_cols(zero_vec_1,Lambdahat_0_t-Lambdahat_0_t_s)))).t()/sqrt(n);
     
     app_path(itt) = term1 - term2 - term3;
     
@@ -1265,23 +1276,26 @@ List link_mns_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   for(int it=0; it<path; it++){
     tempmat_npath(_,it) = (as<NumericVector>(app_path(it)));
   }
-  arma::mat se_boot = stddev(as<arma::mat>(tempmat_npath),0,1);
+  vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
+  uvec ind_se_boot = find(se_boot == 0);
+  int num_se_boot = ind_se_boot.size();
+  se_boot(ind_se_boot) = ones(num_se_boot);
   
-  List app_std_path(path); arma::vec absmax_app_path(path); arma::vec absmax_app_std_path(path);
+  List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
-    absmax_app_path(it) = (abs(as<arma::vec>(app_path(it)))).max();
-    app_std_path(it) = (as<arma::vec>(app_path(it))/se_boot);
-    absmax_app_std_path(it) = (abs(as<arma::vec>(app_std_path(it)))).max();
+    absmax_app_path(it) = (abs(as<vec>(app_path(it)))).max();
+    app_std_path(it) = (as<vec>(app_path(it))/se_boot);
+    absmax_app_std_path(it) = (abs(as<vec>(app_std_path(it)))).max();
   }
   
-  arma::vec obs_std_path = obs_path/se_boot;
+  vec obs_std_path = obs_path/se_boot;
   double absmax_obs_path = (abs(obs_path)).max();
   double absmax_obs_std_path = (abs(obs_std_path)).max();
   
-  arma::uvec find_unstd = (find(absmax_app_path>absmax_obs_path));
+  uvec find_unstd = (find(absmax_app_path>absmax_obs_path));
   double p_value = (find_unstd.size()); p_value = p_value/path;
   
-  arma::uvec find_std = (find(absmax_app_std_path>absmax_obs_std_path));
+  uvec find_std = (find(absmax_app_std_path>absmax_obs_std_path));
   double p_std_value = (find_std.size()); p_std_value = p_std_value/path;
   
   return List::create(_["TestType"]="Link",_["path"]=path,_["beta"]=b,_["Time"]=Time,
@@ -1290,7 +1304,7 @@ List link_mns_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
                           _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
 }
 
-List form_mis_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma::mat Covari, String optimType, int form){
+List form_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int form){
   
   Rcpp::Environment stats("package:stats"); 
   Rcpp::Function optim = stats["optim"];
@@ -1298,31 +1312,31 @@ List form_mis_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   int n = Covari.n_rows;
   int p = Covari.n_cols;
   
-  arma::vec zero_vec_1 = zeros(1);
-  arma::vec zero_vec_p = zeros(p);
-  arma::vec zero_vec_n = zeros(n);
-  arma::mat zero_mat_np = zeros(n,p);
-  arma::mat zero_mat_nn = zeros(n,n);
+  vec zero_vec_1 = zeros(1);
+  vec zero_vec_p = zeros(p);
+  vec zero_vec_n = zeros(n);
+  mat zero_mat_np = zeros(n,p);
+  mat zero_mat_nn = zeros(n,n);
   
-  arma::vec ones_vec_1 = ones(1);
+  vec ones_vec_1 = ones(1);
   
-  arma::vec tempvec_p(p);
-  arma::vec tempvec_n(n);
-  arma::mat tempmat_np(n,p);
-  arma::mat tempmat_nn(n,n);
+  vec tempvec_p(p);
+  vec tempvec_n(n);
+  mat tempmat_np(n,p);
+  mat tempmat_nn(n,n);
   
-  arma::vec resid = log(Time) + Covari*b;
+  vec resid = log(Time) + Covari*b;
   
-  arma::uvec index_resid = sort_index(resid);
+  uvec index_resid = sort_index(resid);
   
   Time = Time(index_resid);
   Delta = Delta(index_resid);
   Covari = Covari.rows(index_resid);
   resid = resid(index_resid);
   
-  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); arma::vec S_0_t = zero_vec_n; arma::mat S_1_t = zero_mat_np; arma::mat S_pi_t_z = zero_mat_nn;
-  arma::vec form_Covari = Covari.col(form-1);
-  arma::vec sorted_form_Covari = sort(form_Covari);
+  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
+  vec form_Covari = Covari.col(form-1);
+  vec sorted_form_Covari = sort(form_Covari);
   tempvec_n = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
@@ -1331,37 +1345,37 @@ List form_mis_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
     pi_i_z(it) = tempvec_n;
     N_i_t(it) = (resid>=resid(it))*Delta(it);
     Y_i_t(it) = (resid<=resid(it))*1;
-    S_0_t += as<arma::vec>(Y_i_t(it));
-    S_1_t += as<arma::vec>(Y_i_t(it))*((Covari.row(it)));
-    S_pi_t_z += (as<arma::vec>(Y_i_t(it)))*(as<arma::rowvec>(pi_i_z(it)));
+    S_0_t += as<vec>(Y_i_t(it));
+    S_1_t += as<vec>(Y_i_t(it))*((Covari.row(it)));
+    S_pi_t_z += (as<vec>(Y_i_t(it)))*(as<rowvec>(pi_i_z(it)));
   }
   
-  arma::vec Lambdahat_0_t = cumsum(Delta/S_0_t);
+  vec Lambdahat_0_t = cumsum(Delta/S_0_t);
   
-  arma::vec dLambdahat_0_t = diff(join_cols(zero_vec_1,Lambdahat_0_t));
+  vec dLambdahat_0_t = diff(join_cols(zero_vec_1,Lambdahat_0_t));
   
-  arma::mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
+  mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
   
-  List Mhat_i_t(n); List dMhat_i_t(n); arma::vec obs_path = zero_vec_n;
+  List Mhat_i_t(n); List dMhat_i_t(n); vec obs_path = zero_vec_n;
   for(int it=0; it<n; it++){
-    tempvec_n = as<arma::vec>(N_i_t(it))-(cumsum(as<arma::vec>(Y_i_t(it))%(dLambdahat_0_t)));
+    tempvec_n = as<vec>(N_i_t(it))-(cumsum(as<vec>(Y_i_t(it))%(dLambdahat_0_t)));
     Mhat_i_t(it) = tempvec_n;
     dMhat_i_t(it) = diff(join_cols(zero_vec_1,tempvec_n));
-    obs_path += (tempvec_n(n-1))*(as<arma::vec>(pi_i_z(it)));
+    obs_path += (tempvec_n(n-1))*(as<vec>(pi_i_z(it)));
   }
   obs_path = obs_path/sqrt(n);
   
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
-  arma::vec pred_data = exp(resid);
+  vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
-  arma::vec given_data_g = exp(resid);
+  vec given_data_g = exp(resid);
   
   double bw_g = 1.06 * stddev(given_data_g) * pow(n,-0.2);
   
-  arma::vec ghat_0_t = zeros(n);
+  vec ghat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
       ghat_0_t(it) += R::dnorm(pred_data(it),given_data_g(itt),bw_g,FALSE);
@@ -1373,32 +1387,32 @@ List form_mis_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   tempvec_n = ghat_0_t%Time;
   for(int itt=0; itt<p; itt++){
     
-    arma::vec Covari_col = Covari.col(itt);
+    vec Covari_col = Covari.col(itt);
     
     tempmat_nn = zero_mat_nn;
     for(int it=0; it<n; it++){
-      tempmat_nn += tempvec_n*((as<arma::rowvec>(pi_i_z(it)))*Covari_col(it));
+      tempmat_nn += tempvec_n*((as<rowvec>(pi_i_z(it)))*Covari_col(it));
     }
     ghat_t_z(itt) = tempmat_nn/n;
   }
   
   // -----------------------------f0----------------------------
-  arma::vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
-  arma::vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
+  vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
+  vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
   
-  arma::vec Condi_Ehat = zero_vec_n;
+  vec Condi_Ehat = zero_vec_n;
   for(int it=0; it<n; it++){
     Condi_Ehat(it) = sum(join_cols(zeros(it+1),ones(n-it-1))%resid%dFhat_0_e)/(1-Fhat_0_e(it));
   }
   Condi_Ehat.replace(datum::nan,0);
   
-  arma::vec rhat_i = Delta%resid+(1-Delta)%Condi_Ehat;
+  vec rhat_i = Delta%resid+(1-Delta)%Condi_Ehat;
   
-  arma::vec given_data_f = exp(rhat_i);
+  vec given_data_f = exp(rhat_i);
   
   double bw_f = 1.06 * stddev(given_data_f) * pow(n,-0.2);
   
-  arma::vec fhat_0_t = zeros(n);
+  vec fhat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
       fhat_0_t(it) += R::dnorm(pred_data(it),given_data_f(itt),bw_f,FALSE);
@@ -1410,11 +1424,11 @@ List form_mis_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   double tempvec_1 = fhat_0_t(n-1)*Time(n-1);
   for(int itt=0; itt<p; itt++){
     
-    arma::vec Covari_col = Covari.col(itt);
+    vec Covari_col = Covari.col(itt);
     
     tempvec_n = zero_vec_n;
     for(int it=0; it<n; it++){
-      tempvec_n += tempvec_1*((as<arma::vec>(pi_i_z(it)))*(Delta(it)*Covari_col(it)));
+      tempvec_n += tempvec_1*((as<vec>(pi_i_z(it)))*(Delta(it)*Covari_col(it)));
     }
     fhat_inf_z(itt) = tempvec_n/n;
   }
@@ -1425,17 +1439,17 @@ List form_mis_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   List app_path(path);
   for(int itt=0; itt<path; itt++){
     
-    arma::vec phi_i(n); arma::vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
+    vec phi_i(n); vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
     while(tolerance>tol){
       
       phi_i = rnorm(n);
       
       tempvec_n = zero_vec_n; tempmat_np = zero_mat_np;
       for(int it=0; it<n; it++){
-        tempvec_n += as<arma::vec>(dMhat_i_t(it))*phi_i(it);
-        tempmat_np += (as<arma::vec>(dMhat_i_t(it))*((Covari.row(it))))*phi_i(it);
+        tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
+        tempmat_np += (as<vec>(dMhat_i_t(it))*((Covari.row(it))))*phi_i(it);
       }
-      arma::vec U_phi_inf = (sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0)/n).t();
+      vec U_phi_inf = (sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0)/n).t();
       
       Rcpp::List b_s_opt_results = optim(Rcpp::_["par"]    = b,
                                          Rcpp::_["fn"]     = Rcpp::InternalFunction(&target_score2_mis),
@@ -1445,42 +1459,42 @@ List form_mis_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
                                          Rcpp::_["Covari"] = Covari,
                                          Rcpp::_["targetvector"] = U_phi_inf);
       
-      arma::vec b_s = as<arma::vec>(b_s_opt_results[0]);
+      vec b_s = as<vec>(b_s_opt_results[0]);
       
       tolerance = as<double>(b_s_opt_results[1]);;
     }
     
     tempmat_nn = zero_mat_nn;
     for(int it=0; it<n; it++){
-      tempmat_nn += ((((as<arma::rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<arma::vec>(dMhat_i_t(it))))*phi_i(it));
+      tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<vec>(dMhat_i_t(it))))*phi_i(it));
     }
-    arma::mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
+    mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
     
-    arma::vec resid_s = log(Time) + Covari*b_s;
+    vec resid_s = log(Time) + Covari*b_s;
     
-    arma::uvec index_resid_s = sort_index(resid_s);
+    uvec index_resid_s = sort_index(resid_s);
     
-    arma::vec Delta_s = Delta(index_resid_s);
+    vec Delta_s = Delta(index_resid_s);
     resid_s = resid_s(index_resid_s);
     
-    List N_i_t_s(n); List Y_i_t_s(n); arma::vec S_0_t_s = zero_vec_n;
+    List N_i_t_s(n); List Y_i_t_s(n); vec S_0_t_s = zero_vec_n;
     for(int it=0; it<n; it++){
       N_i_t_s(it) = (resid_s>=resid_s(it))*Delta_s(it);
       Y_i_t_s(it) = (resid_s<=resid_s(it))*1;
-      S_0_t_s += as<arma::vec>(Y_i_t_s(it));
+      S_0_t_s += as<vec>(Y_i_t_s(it));
     }
     
-    arma::vec Lambdahat_0_t_s = cumsum(Delta_s/S_0_t_s);
+    vec Lambdahat_0_t_s = cumsum(Delta_s/S_0_t_s);
     
-    arma::vec term1 = U_pi_phi_inf_z/sqrt(n);
+    vec term1 = U_pi_phi_inf_z/sqrt(n);
     
-    arma::vec term2 = zero_vec_n;
+    vec term2 = zero_vec_n;
     tempvec_p = (b-b_s)*sqrt(n);
     for(int it=0; it<p; it++){
-      term2 += (as<arma::vec>(fhat_inf_z(it))+(sum((as<arma::mat>(ghat_t_z(it)).each_col())%dLambdahat_0_t)).t())*(tempvec_p(it));
+      term2 += (as<vec>(fhat_inf_z(it))+(sum((as<mat>(ghat_t_z(it)).each_col())%dLambdahat_0_t)).t())*(tempvec_p(it));
     }
     
-    arma::vec term3 = (sum((S_pi_t_z.each_col())%diff(join_cols(zero_vec_1,Lambdahat_0_t-Lambdahat_0_t_s)))).t()/sqrt(n);
+    vec term3 = (sum((S_pi_t_z.each_col())%diff(join_cols(zero_vec_1,Lambdahat_0_t-Lambdahat_0_t_s)))).t()/sqrt(n);
     
     app_path(itt) = term1 - term2 - term3;
     
@@ -1490,23 +1504,26 @@ List form_mis_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   for(int it=0; it<path; it++){
     tempmat_npath(_,it) = (as<NumericVector>(app_path(it)));
   }
-  arma::mat se_boot = stddev(as<arma::mat>(tempmat_npath),0,1);
+  vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
+  uvec ind_se_boot = find(se_boot == 0);
+  int num_se_boot = ind_se_boot.size();
+  se_boot(ind_se_boot) = ones(num_se_boot);
   
-  List app_std_path(path); arma::vec absmax_app_path(path); arma::vec absmax_app_std_path(path);
+  List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
-    absmax_app_path(it) = (abs(as<arma::vec>(app_path(it)))).max();
-    app_std_path(it) = (as<arma::vec>(app_path(it))/se_boot);
-    absmax_app_std_path(it) = (abs(as<arma::vec>(app_std_path(it)))).max();
+    absmax_app_path(it) = (abs(as<vec>(app_path(it)))).max();
+    app_std_path(it) = (as<vec>(app_path(it))/se_boot);
+    absmax_app_std_path(it) = (abs(as<vec>(app_std_path(it)))).max();
   }
   
-  arma::vec obs_std_path = obs_path/se_boot;
+  vec obs_std_path = obs_path/se_boot;
   double absmax_obs_path = (abs(obs_path)).max();
   double absmax_obs_std_path = (abs(obs_std_path)).max();
   
-  arma::uvec find_unstd = (find(absmax_app_path>absmax_obs_path));
+  uvec find_unstd = (find(absmax_app_path>absmax_obs_path));
   double p_value = (find_unstd.size()); p_value = p_value/path;
   
-  arma::uvec find_std = (find(absmax_app_std_path>absmax_obs_std_path));
+  uvec find_std = (find(absmax_app_std_path>absmax_obs_std_path));
   double p_std_value = (find_std.size()); p_std_value = p_std_value/path;
   
   return List::create(_["TestType"]="Form",_["path"]=path,_["beta"]=b,_["Time"]=Time,
@@ -1515,7 +1532,7 @@ List form_mis_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
                           _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
 }
 
-List form_mns_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma::mat Covari, String optimType, int form){
+List form_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int form){
   
   Rcpp::Environment stats("package:stats"); 
   Rcpp::Function optim = stats["optim"];
@@ -1523,31 +1540,31 @@ List form_mns_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   int n = Covari.n_rows;
   int p = Covari.n_cols;
   
-  arma::vec zero_vec_1 = zeros(1);
-  arma::vec zero_vec_p = zeros(p);
-  arma::vec zero_vec_n = zeros(n);
-  arma::mat zero_mat_np = zeros(n,p);
-  arma::mat zero_mat_nn = zeros(n,n);
+  vec zero_vec_1 = zeros(1);
+  vec zero_vec_p = zeros(p);
+  vec zero_vec_n = zeros(n);
+  mat zero_mat_np = zeros(n,p);
+  mat zero_mat_nn = zeros(n,n);
   
-  arma::vec ones_vec_1 = ones(1);
+  vec ones_vec_1 = ones(1);
   
-  arma::vec tempvec_p(p);
-  arma::vec tempvec_n(n);
-  arma::mat tempmat_np(n,p);
-  arma::mat tempmat_nn(n,n);
+  vec tempvec_p(p);
+  vec tempvec_n(n);
+  mat tempmat_np(n,p);
+  mat tempmat_nn(n,n);
   
-  arma::vec resid = log(Time) + Covari*b;
+  vec resid = log(Time) + Covari*b;
   
-  arma::uvec index_resid = sort_index(resid);
+  uvec index_resid = sort_index(resid);
   
   Time = Time(index_resid);
   Delta = Delta(index_resid);
   Covari = Covari.rows(index_resid);
   resid = resid(index_resid);
   
-  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); arma::vec S_0_t = zero_vec_n; arma::mat S_1_t = zero_mat_np; arma::mat S_pi_t_z = zero_mat_nn;
-  arma::vec form_Covari = Covari.col(form-1);
-  arma::vec sorted_form_Covari = sort(form_Covari);
+  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
+  vec form_Covari = Covari.col(form-1);
+  vec sorted_form_Covari = sort(form_Covari);
   tempvec_n = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
@@ -1556,37 +1573,37 @@ List form_mns_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
     pi_i_z(it) = tempvec_n;
     N_i_t(it) = (resid>=resid(it))*Delta(it);
     Y_i_t(it) = (resid<=resid(it))*1;
-    S_0_t += as<arma::vec>(Y_i_t(it));
-    S_1_t += as<arma::vec>(Y_i_t(it))*((Covari.row(it)));
-    S_pi_t_z += (as<arma::vec>(Y_i_t(it)))*(as<arma::rowvec>(pi_i_z(it)));
+    S_0_t += as<vec>(Y_i_t(it));
+    S_1_t += as<vec>(Y_i_t(it))*((Covari.row(it)));
+    S_pi_t_z += (as<vec>(Y_i_t(it)))*(as<rowvec>(pi_i_z(it)));
   }
   
-  arma::vec Lambdahat_0_t = cumsum(Delta/S_0_t);
+  vec Lambdahat_0_t = cumsum(Delta/S_0_t);
   
-  arma::vec dLambdahat_0_t = diff(join_cols(zero_vec_1,Lambdahat_0_t));
+  vec dLambdahat_0_t = diff(join_cols(zero_vec_1,Lambdahat_0_t));
   
-  arma::mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
+  mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
   
-  List Mhat_i_t(n); List dMhat_i_t(n); arma::vec obs_path = zero_vec_n;
+  List Mhat_i_t(n); List dMhat_i_t(n); vec obs_path = zero_vec_n;
   for(int it=0; it<n; it++){
-    tempvec_n = as<arma::vec>(N_i_t(it))-(cumsum(as<arma::vec>(Y_i_t(it))%(dLambdahat_0_t)));
+    tempvec_n = as<vec>(N_i_t(it))-(cumsum(as<vec>(Y_i_t(it))%(dLambdahat_0_t)));
     Mhat_i_t(it) = tempvec_n;
     dMhat_i_t(it) = diff(join_cols(zero_vec_1,tempvec_n));
-    obs_path += (tempvec_n(n-1))*(as<arma::vec>(pi_i_z(it)));
+    obs_path += (tempvec_n(n-1))*(as<vec>(pi_i_z(it)));
   }
   obs_path = obs_path/sqrt(n);
   
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
-  arma::vec pred_data = exp(resid);
+  vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
-  arma::vec given_data_g = exp(resid);
+  vec given_data_g = exp(resid);
   
   double bw_g = 1.06 * stddev(given_data_g) * pow(n,-0.2);
   
-  arma::vec ghat_0_t = zeros(n);
+  vec ghat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
       ghat_0_t(it) += R::dnorm(pred_data(it),given_data_g(itt),bw_g,FALSE);
@@ -1598,32 +1615,32 @@ List form_mns_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   tempvec_n = ghat_0_t%Time;
   for(int itt=0; itt<p; itt++){
     
-    arma::vec Covari_col = Covari.col(itt);
+    vec Covari_col = Covari.col(itt);
     
     tempmat_nn = zero_mat_nn;
     for(int it=0; it<n; it++){
-      tempmat_nn += tempvec_n*((as<arma::rowvec>(pi_i_z(it)))*Covari_col(it));
+      tempmat_nn += tempvec_n*((as<rowvec>(pi_i_z(it)))*Covari_col(it));
     }
     ghat_t_z(itt) = tempmat_nn/n;
   }
   
   // -----------------------------f0----------------------------
-  arma::vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
-  arma::vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
+  vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
+  vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
   
-  arma::vec Condi_Ehat = zero_vec_n;
+  vec Condi_Ehat = zero_vec_n;
   for(int it=0; it<n; it++){
     Condi_Ehat(it) = sum(join_cols(zeros(it+1),ones(n-it-1))%resid%dFhat_0_e)/(1-Fhat_0_e(it));
   }
   Condi_Ehat.replace(datum::nan,0);
   
-  arma::vec rhat_i = Delta%resid+(1-Delta)%Condi_Ehat;
+  vec rhat_i = Delta%resid+(1-Delta)%Condi_Ehat;
   
-  arma::vec given_data_f = exp(rhat_i);
+  vec given_data_f = exp(rhat_i);
   
   double bw_f = 1.06 * stddev(given_data_f) * pow(n,-0.2);
   
-  arma::vec fhat_0_t = zeros(n);
+  vec fhat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
       fhat_0_t(it) += R::dnorm(pred_data(it),given_data_f(itt),bw_f,FALSE);
@@ -1635,11 +1652,11 @@ List form_mns_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   double tempvec_1 = fhat_0_t(n-1)*Time(n-1);
   for(int itt=0; itt<p; itt++){
     
-    arma::vec Covari_col = Covari.col(itt);
+    vec Covari_col = Covari.col(itt);
     
     tempvec_n = zero_vec_n;
     for(int it=0; it<n; it++){
-      tempvec_n += tempvec_1*((as<arma::vec>(pi_i_z(it)))*(Delta(it)*Covari_col(it)));
+      tempvec_n += tempvec_1*((as<vec>(pi_i_z(it)))*(Delta(it)*Covari_col(it)));
     }
     fhat_inf_z(itt) = tempvec_n/n;
   }
@@ -1650,17 +1667,17 @@ List form_mns_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   List app_path(path);
   for(int itt=0; itt<path; itt++){
     
-    arma::vec phi_i(n); arma::vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
+    vec phi_i(n); vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
     while(tolerance>tol){
       
       phi_i = rnorm(n);
       
       tempvec_n = zero_vec_n; tempmat_np = zero_mat_np;
       for(int it=0; it<n; it++){
-        tempvec_n += as<arma::vec>(dMhat_i_t(it))*phi_i(it);
-        tempmat_np += (as<arma::vec>(dMhat_i_t(it))*((Covari.row(it))))*phi_i(it);
+        tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
+        tempmat_np += (as<vec>(dMhat_i_t(it))*((Covari.row(it))))*phi_i(it);
       }
-      arma::vec U_phi_inf = (sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0)/n).t();
+      vec U_phi_inf = (sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0)/n).t();
       
       Rcpp::List b_s_opt_results = optim(Rcpp::_["par"]    = b,
                                          Rcpp::_["fn"]     = Rcpp::InternalFunction(&target_score2_mns),
@@ -1670,42 +1687,42 @@ List form_mns_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
                                          Rcpp::_["Covari"] = Covari,
                                          Rcpp::_["targetvector"] = U_phi_inf);
       
-      arma::vec b_s = as<arma::vec>(b_s_opt_results[0]);
+      vec b_s = as<vec>(b_s_opt_results[0]);
       
       tolerance = as<double>(b_s_opt_results[1]);;
     }
     
     tempmat_nn = zero_mat_nn;
     for(int it=0; it<n; it++){
-      tempmat_nn += ((((as<arma::rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<arma::vec>(dMhat_i_t(it))))*phi_i(it));
+      tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<vec>(dMhat_i_t(it))))*phi_i(it));
     }
-    arma::mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
+    mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
     
-    arma::vec resid_s = log(Time) + Covari*b_s;
+    vec resid_s = log(Time) + Covari*b_s;
     
-    arma::uvec index_resid_s = sort_index(resid_s);
+    uvec index_resid_s = sort_index(resid_s);
     
-    arma::vec Delta_s = Delta(index_resid_s);
+    vec Delta_s = Delta(index_resid_s);
     resid_s = resid_s(index_resid_s);
     
-    List N_i_t_s(n); List Y_i_t_s(n); arma::vec S_0_t_s = zero_vec_n;
+    List N_i_t_s(n); List Y_i_t_s(n); vec S_0_t_s = zero_vec_n;
     for(int it=0; it<n; it++){
       N_i_t_s(it) = (resid_s>=resid_s(it))*Delta_s(it);
       Y_i_t_s(it) = (resid_s<=resid_s(it))*1;
-      S_0_t_s += as<arma::vec>(Y_i_t_s(it));
+      S_0_t_s += as<vec>(Y_i_t_s(it));
     }
     
-    arma::vec Lambdahat_0_t_s = cumsum(Delta_s/S_0_t_s);
+    vec Lambdahat_0_t_s = cumsum(Delta_s/S_0_t_s);
     
-    arma::vec term1 = U_pi_phi_inf_z/sqrt(n);
+    vec term1 = U_pi_phi_inf_z/sqrt(n);
     
-    arma::vec term2 = zero_vec_n;
+    vec term2 = zero_vec_n;
     tempvec_p = (b-b_s)*sqrt(n);
     for(int it=0; it<p; it++){
-      term2 += (as<arma::vec>(fhat_inf_z(it))+(sum((as<arma::mat>(ghat_t_z(it)).each_col())%dLambdahat_0_t)).t())*(tempvec_p(it));
+      term2 += (as<vec>(fhat_inf_z(it))+(sum((as<mat>(ghat_t_z(it)).each_col())%dLambdahat_0_t)).t())*(tempvec_p(it));
     }
     
-    arma::vec term3 = (sum((S_pi_t_z.each_col())%diff(join_cols(zero_vec_1,Lambdahat_0_t-Lambdahat_0_t_s)))).t()/sqrt(n);
+    vec term3 = (sum((S_pi_t_z.each_col())%diff(join_cols(zero_vec_1,Lambdahat_0_t-Lambdahat_0_t_s)))).t()/sqrt(n);
     
     app_path(itt) = term1 - term2 - term3;
     
@@ -1715,23 +1732,26 @@ List form_mns_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
   for(int it=0; it<path; it++){
     tempmat_npath(_,it) = (as<NumericVector>(app_path(it)));
   }
-  arma::mat se_boot = stddev(as<arma::mat>(tempmat_npath),0,1);
+  vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
+  uvec ind_se_boot = find(se_boot == 0);
+  int num_se_boot = ind_se_boot.size();
+  se_boot(ind_se_boot) = ones(num_se_boot);
   
-  List app_std_path(path); arma::vec absmax_app_path(path); arma::vec absmax_app_std_path(path);
+  List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
-    absmax_app_path(it) = (abs(as<arma::vec>(app_path(it)))).max();
-    app_std_path(it) = (as<arma::vec>(app_path(it))/se_boot);
-    absmax_app_std_path(it) = (abs(as<arma::vec>(app_std_path(it)))).max();
+    absmax_app_path(it) = (abs(as<vec>(app_path(it)))).max();
+    app_std_path(it) = (as<vec>(app_path(it))/se_boot);
+    absmax_app_std_path(it) = (abs(as<vec>(app_std_path(it)))).max();
   }
   
-  arma::vec obs_std_path = obs_path/se_boot;
+  vec obs_std_path = obs_path/se_boot;
   double absmax_obs_path = (abs(obs_path)).max();
   double absmax_obs_std_path = (abs(obs_std_path)).max();
   
-  arma::uvec find_unstd = (find(absmax_app_path>absmax_obs_path));
+  uvec find_unstd = (find(absmax_app_path>absmax_obs_path));
   double p_value = (find_unstd.size()); p_value = p_value/path;
   
-  arma::uvec find_std = (find(absmax_app_std_path>absmax_obs_std_path));
+  uvec find_std = (find(absmax_app_std_path>absmax_obs_std_path));
   double p_std_value = (find_std.size()); p_std_value = p_std_value/path;
   
   return List::create(_["TestType"]="Form",_["path"]=path,_["beta"]=b,_["Time"]=Time,
@@ -1740,35 +1760,35 @@ List form_mns_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma
                           _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
 }
 
-List omni_mis_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma::mat Covari){
+List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari){
   
   int n = Covari.n_rows;
   int p = Covari.n_cols;
   
-  arma::vec zero_vec_1 = zeros(1);
-  arma::vec zero_vec_p = zeros(p);
-  arma::vec zero_vec_n = zeros(n);
-  arma::mat zero_mat_np = zeros(n,p);
-  arma::mat zero_mat_nn = zeros(n,n);
+  vec zero_vec_1 = zeros(1);
+  vec zero_vec_p = zeros(p);
+  vec zero_vec_n = zeros(n);
+  mat zero_mat_np = zeros(n,p);
+  mat zero_mat_nn = zeros(n,n);
   
-  arma::vec ones_vec_1 = ones(1);
+  vec ones_vec_1 = ones(1);
   
-  arma::vec tempvec_p(p);
-  arma::vec tempvec_n(n);
-  arma::mat tempmat_np(n,p);
-  arma::mat tempmat_nn(n,n);
+  vec tempvec_p(p);
+  vec tempvec_n(n);
+  mat tempmat_np(n,p);
+  mat tempmat_nn(n,n);
   
-  arma::vec resid = log(Time) + Covari*b;
+  vec resid = log(Time) + Covari*b;
   
-  arma::uvec index_resid = sort_index(resid);
+  uvec index_resid = sort_index(resid);
   
   Time = Time(index_resid);
   Delta = Delta(index_resid);
   Covari = Covari.rows(index_resid);
   resid = resid(index_resid);
   
-  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); arma::vec S_0_t = zero_vec_n; arma::mat S_1_t = zero_mat_np; arma::mat S_pi_t_z = zero_mat_nn;
-  arma::mat sorted_Covari = sort(Covari);
+  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
+  mat sorted_Covari = sort(Covari);
   tempvec_n = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
@@ -1777,39 +1797,39 @@ List omni_mis_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
     pi_i_z(it) = tempvec_n;
     N_i_t(it) = (resid>=resid(it))*Delta(it);
     Y_i_t(it) = (resid<=resid(it))*1;
-    S_0_t += as<arma::vec>(Y_i_t(it));
-    S_1_t += as<arma::vec>(Y_i_t(it))*((Covari.row(it)));
-    S_pi_t_z += (as<arma::vec>(Y_i_t(it)))*(as<arma::rowvec>(pi_i_z(it)));
+    S_0_t += as<vec>(Y_i_t(it));
+    S_1_t += as<vec>(Y_i_t(it))*((Covari.row(it)));
+    S_pi_t_z += (as<vec>(Y_i_t(it)))*(as<rowvec>(pi_i_z(it)));
   }
   
-  arma::vec Lambdahat_0_t = cumsum(Delta/S_0_t);
+  vec Lambdahat_0_t = cumsum(Delta/S_0_t);
   
-  arma::vec dLambdahat_0_t = diff(join_cols(zero_vec_1,Lambdahat_0_t));
+  vec dLambdahat_0_t = diff(join_cols(zero_vec_1,Lambdahat_0_t));
   
-  arma::mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
+  mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
   
-  List Mhat_i_t(n); arma::mat obs_path = zero_mat_nn;
+  List Mhat_i_t(n); mat obs_path = zero_mat_nn;
   for(int it=0; it<n; it++){
-    Mhat_i_t(it) = as<arma::vec>(N_i_t(it))-(cumsum(as<arma::vec>(Y_i_t(it))%(dLambdahat_0_t)));
-    obs_path += (as<arma::vec>(Mhat_i_t(it)))*(as<arma::rowvec>(pi_i_z(it)))/sqrt(n);
+    Mhat_i_t(it) = as<vec>(N_i_t(it))-(cumsum(as<vec>(Y_i_t(it))%(dLambdahat_0_t)));
+    obs_path += (as<vec>(Mhat_i_t(it)))*(as<rowvec>(pi_i_z(it)))/sqrt(n);
   }
   
   List dMhat_i_t(n);
   for(int it=0; it<n; it++){
-    dMhat_i_t(it) = diff(join_cols(zero_vec_1,as<arma::vec>(Mhat_i_t(it))));
+    dMhat_i_t(it) = diff(join_cols(zero_vec_1,as<vec>(Mhat_i_t(it))));
   }
   
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
-  arma::vec pred_data = exp(resid);
+  vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
-  arma::vec given_data_g = exp(resid);
+  vec given_data_g = exp(resid);
   
   double bw_g = 1.06 * stddev(given_data_g) * pow(n,-0.2);
   
-  arma::vec ghat_0_t = zeros(n);
+  vec ghat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
       ghat_0_t(it) += R::dnorm(pred_data(it),given_data_g(itt),bw_g,FALSE);
@@ -1821,32 +1841,32 @@ List omni_mis_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
   tempvec_n = ghat_0_t%Time;
   for(int itt=0; itt<p; itt++){
     
-    arma::vec Covari_col = Covari.col(itt);
+    vec Covari_col = Covari.col(itt);
     
     tempmat_nn = zero_mat_nn;
     for(int it=0; it<n; it++){
-      tempmat_nn += tempvec_n*((as<arma::rowvec>(pi_i_z(it)))*Covari_col(it));
+      tempmat_nn += tempvec_n*((as<rowvec>(pi_i_z(it)))*Covari_col(it));
     }
     ghat_t_z(itt) = tempmat_nn/n;
   }
   
   // -----------------------------f0----------------------------
-  arma::vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
-  arma::vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
+  vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
+  vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
   
-  arma::vec Condi_Ehat = zero_vec_n;
+  vec Condi_Ehat = zero_vec_n;
   for(int it=0; it<n; it++){
     Condi_Ehat(it) = sum(join_cols(zeros(it+1),ones(n-it-1))%resid%dFhat_0_e)/(1-Fhat_0_e(it));
   }
   Condi_Ehat.replace(datum::nan,0);
   
-  arma::vec rhat_i = Delta%resid+(1-Delta)%Condi_Ehat;
+  vec rhat_i = Delta%resid+(1-Delta)%Condi_Ehat;
   
-  arma::vec given_data_f = exp(rhat_i);
+  vec given_data_f = exp(rhat_i);
   
   double bw_f = 1.06 * stddev(given_data_f) * pow(n,-0.2);
   
-  arma::vec fhat_0_t = zeros(n);
+  vec fhat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
       fhat_0_t(it) += R::dnorm(pred_data(it),given_data_f(itt),bw_f,FALSE);
@@ -1858,11 +1878,11 @@ List omni_mis_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
   tempvec_n = fhat_0_t%Time;
   for(int itt=0; itt<p; itt++){
     
-    arma::vec Covari_col = Covari.col(itt);
+    vec Covari_col = Covari.col(itt);
     
     tempmat_nn = zero_mat_nn;
     for(int it=0; it<n; it++){
-      tempmat_nn += tempvec_n*((as<arma::rowvec>(pi_i_z(it)))*(Delta(it)*Covari_col(it)));
+      tempmat_nn += tempvec_n*((as<rowvec>(pi_i_z(it)))*(Delta(it)*Covari_col(it)));
     }
     fhat_t_z(itt) = tempmat_nn/n;
   }
@@ -1873,56 +1893,56 @@ List omni_mis_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
   List app_path(path);
   for(int itt=0; itt<path; itt++){
     
-    arma::vec phi_i(n); arma::vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
+    vec phi_i(n); vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
     while(tolerance>tol){
       
       phi_i = rnorm(n);
       
       tempvec_n = zero_vec_n; tempmat_np = zero_mat_np;
       for(int it=0; it<n; it++){
-        tempvec_n += as<arma::vec>(dMhat_i_t(it))*phi_i(it);
-        tempmat_np += (as<arma::vec>(dMhat_i_t(it))*((Covari.row(it))))*phi_i(it);
+        tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
+        tempmat_np += (as<vec>(dMhat_i_t(it))*((Covari.row(it))))*phi_i(it);
       }
-      arma::vec U_phi_inf = (sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0)/n).t();
+      vec U_phi_inf = (sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0)/n).t();
       
       List b_s_result = dfsane_mis(b, Time, Delta, Covari, U_phi_inf);
       
-      b_s = as<arma::vec>(b_s_result[1]);
+      b_s = as<vec>(b_s_result[1]);
       
       tolerance = as<double>(b_s_result[0]);
     }
     
     tempmat_nn = zero_mat_nn;
     for(int it=0; it<n; it++){
-      tempmat_nn += ((((as<arma::rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<arma::vec>(dMhat_i_t(it))))*phi_i(it));
+      tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<vec>(dMhat_i_t(it))))*phi_i(it));
     }
-    arma::mat U_pi_phi_t_z = cumsum(tempmat_nn);
+    mat U_pi_phi_t_z = cumsum(tempmat_nn);
     
-    arma::vec resid_s = log(Time) + Covari*b_s;
+    vec resid_s = log(Time) + Covari*b_s;
     
-    arma::uvec index_resid_s = sort_index(resid_s);
+    uvec index_resid_s = sort_index(resid_s);
     
-    arma::vec Delta_s = Delta(index_resid_s);
+    vec Delta_s = Delta(index_resid_s);
     resid_s = resid_s(index_resid_s);
     
-    List N_i_t_s(n); List Y_i_t_s(n); arma::vec S_0_t_s = zero_vec_n;
+    List N_i_t_s(n); List Y_i_t_s(n); vec S_0_t_s = zero_vec_n;
     for(int it=0; it<n; it++){
       N_i_t_s(it) = (resid_s>=resid_s(it))*Delta_s(it);
       Y_i_t_s(it) = (resid_s<=resid_s(it))*1;
-      S_0_t_s += as<arma::vec>(Y_i_t_s(it));
+      S_0_t_s += as<vec>(Y_i_t_s(it));
     }
     
-    arma::vec Lambdahat_0_t_s = cumsum(Delta_s/S_0_t_s);
+    vec Lambdahat_0_t_s = cumsum(Delta_s/S_0_t_s);
     
-    arma::mat term1 = U_pi_phi_t_z/sqrt(n);
+    mat term1 = U_pi_phi_t_z/sqrt(n);
     
-    arma::mat term2 = zero_mat_nn;
+    mat term2 = zero_mat_nn;
     tempvec_p = (b-b_s)*sqrt(n);
     for(int it=0; it<p; it++){
-      term2 += (as<arma::mat>(fhat_t_z(it))+cumsum((as<arma::mat>(ghat_t_z(it)).each_col())%dLambdahat_0_t))*(tempvec_p(it));
+      term2 += (as<mat>(fhat_t_z(it))+cumsum((as<mat>(ghat_t_z(it)).each_col())%dLambdahat_0_t))*(tempvec_p(it));
     }
     
-    arma::mat term3 = cumsum((S_pi_t_z.each_col())%diff(join_cols(zero_vec_1,Lambdahat_0_t-Lambdahat_0_t_s)))/sqrt(n);
+    mat term3 = cumsum((S_pi_t_z.each_col())%diff(join_cols(zero_vec_1,Lambdahat_0_t-Lambdahat_0_t_s)))/sqrt(n);
     
     app_path(itt) = term1 - term2 - term3;
   }
@@ -1931,23 +1951,27 @@ List omni_mis_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
   for(int it=0; it<path; it++){
     tempmat_n2path(_,it) = (as<NumericVector>(app_path(it)));
   }
-  arma::mat se_boot = reshape(stddev(as<arma::mat>(tempmat_n2path),0,1),n,n);
+  vec mat_se_boot = stddev(as<mat>(tempmat_n2path),0,1);
+  uvec ind_se_boot = find(mat_se_boot == 0);
+  int num_se_boot = ind_se_boot.size();
+  mat_se_boot(ind_se_boot) = ones(num_se_boot);
+  mat se_boot = reshape(mat_se_boot,n,n);
   
-  List app_std_path(path); arma::vec absmax_app_path(path); arma::vec absmax_app_std_path(path);
+  List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
-    absmax_app_path(it) = (abs(as<arma::mat>(app_path(it)))).max();
-    app_std_path(it) = (as<arma::mat>(app_path(it))/se_boot);
-    absmax_app_std_path(it) = (abs(as<arma::mat>(app_std_path(it)))).max();
+    absmax_app_path(it) = (abs(as<mat>(app_path(it)))).max();
+    app_std_path(it) = (as<mat>(app_path(it))/se_boot);
+    absmax_app_std_path(it) = (abs(as<mat>(app_std_path(it)))).max();
   }
   
-  arma::mat obs_std_path = obs_path/se_boot;
+  mat obs_std_path = obs_path/se_boot;
   double absmax_obs_path = (abs(obs_path)).max();
   double absmax_obs_std_path = (abs(obs_std_path)).max();
   
-  arma::uvec find_unstd = (find(absmax_app_path>absmax_obs_path));
+  uvec find_unstd = (find(absmax_app_path>absmax_obs_path));
   double p_value = (find_unstd.size()); p_value = p_value/path;
   
-  arma::uvec find_std = (find(absmax_app_std_path>absmax_obs_std_path));
+  uvec find_std = (find(absmax_app_std_path>absmax_obs_std_path));
   double p_std_value = (find_std.size()); p_std_value = p_std_value/path;
   
   return List::create(_["TestType"]="Omni",_["path"]=path,_["beta"]=b,_["Time"]=Time,
@@ -1956,35 +1980,35 @@ List omni_mis_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
                           _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
 }
 
-List omni_mns_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma::mat Covari){
+List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari){
   
   int n = Covari.n_rows;
   int p = Covari.n_cols;
   
-  arma::vec zero_vec_1 = zeros(1);
-  arma::vec zero_vec_p = zeros(p);
-  arma::vec zero_vec_n = zeros(n);
-  arma::mat zero_mat_np = zeros(n,p);
-  arma::mat zero_mat_nn = zeros(n,n);
+  vec zero_vec_1 = zeros(1);
+  vec zero_vec_p = zeros(p);
+  vec zero_vec_n = zeros(n);
+  mat zero_mat_np = zeros(n,p);
+  mat zero_mat_nn = zeros(n,n);
   
-  arma::vec ones_vec_1 = ones(1);
+  vec ones_vec_1 = ones(1);
   
-  arma::vec tempvec_p(p);
-  arma::vec tempvec_n(n);
-  arma::mat tempmat_np(n,p);
-  arma::mat tempmat_nn(n,n);
+  vec tempvec_p(p);
+  vec tempvec_n(n);
+  mat tempmat_np(n,p);
+  mat tempmat_nn(n,n);
   
-  arma::vec resid = log(Time) + Covari*b;
+  vec resid = log(Time) + Covari*b;
   
-  arma::uvec index_resid = sort_index(resid);
+  uvec index_resid = sort_index(resid);
   
   Time = Time(index_resid);
   Delta = Delta(index_resid);
   Covari = Covari.rows(index_resid);
   resid = resid(index_resid);
   
-  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); arma::vec S_0_t = zero_vec_n; arma::mat S_1_t = zero_mat_np; arma::mat S_pi_t_z = zero_mat_nn;
-  arma::mat sorted_Covari = sort(Covari);
+  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
+  mat sorted_Covari = sort(Covari);
   tempvec_n = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
@@ -1993,39 +2017,39 @@ List omni_mns_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
     pi_i_z(it) = tempvec_n;
     N_i_t(it) = (resid>=resid(it))*Delta(it);
     Y_i_t(it) = (resid<=resid(it))*1;
-    S_0_t += as<arma::vec>(Y_i_t(it));
-    S_1_t += as<arma::vec>(Y_i_t(it))*((Covari.row(it)));
-    S_pi_t_z += (as<arma::vec>(Y_i_t(it)))*(as<arma::rowvec>(pi_i_z(it)));
+    S_0_t += as<vec>(Y_i_t(it));
+    S_1_t += as<vec>(Y_i_t(it))*((Covari.row(it)));
+    S_pi_t_z += (as<vec>(Y_i_t(it)))*(as<rowvec>(pi_i_z(it)));
   }
   
-  arma::vec Lambdahat_0_t = cumsum(Delta/S_0_t);
+  vec Lambdahat_0_t = cumsum(Delta/S_0_t);
   
-  arma::vec dLambdahat_0_t = diff(join_cols(zero_vec_1,Lambdahat_0_t));
+  vec dLambdahat_0_t = diff(join_cols(zero_vec_1,Lambdahat_0_t));
   
-  arma::mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
+  mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
   
-  List Mhat_i_t(n); arma::mat obs_path = zero_mat_nn;
+  List Mhat_i_t(n); mat obs_path = zero_mat_nn;
   for(int it=0; it<n; it++){
-    Mhat_i_t(it) = as<arma::vec>(N_i_t(it))-(cumsum(as<arma::vec>(Y_i_t(it))%(dLambdahat_0_t)));
-    obs_path += (as<arma::vec>(Mhat_i_t(it)))*(as<arma::rowvec>(pi_i_z(it)))/sqrt(n);
+    Mhat_i_t(it) = as<vec>(N_i_t(it))-(cumsum(as<vec>(Y_i_t(it))%(dLambdahat_0_t)));
+    obs_path += (as<vec>(Mhat_i_t(it)))*(as<rowvec>(pi_i_z(it)))/sqrt(n);
   }
   
   List dMhat_i_t(n);
   for(int it=0; it<n; it++){
-    dMhat_i_t(it) = diff(join_cols(zero_vec_1,as<arma::vec>(Mhat_i_t(it))));
+    dMhat_i_t(it) = diff(join_cols(zero_vec_1,as<vec>(Mhat_i_t(it))));
   }
   
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
-  arma::vec pred_data = exp(resid);
+  vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
-  arma::vec given_data_g = exp(resid);
+  vec given_data_g = exp(resid);
   
   double bw_g = 1.06 * stddev(given_data_g) * pow(n,-0.2);
   
-  arma::vec ghat_0_t = zeros(n);
+  vec ghat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
       ghat_0_t(it) += R::dnorm(pred_data(it),given_data_g(itt),bw_g,FALSE);
@@ -2037,32 +2061,32 @@ List omni_mns_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
   tempvec_n = ghat_0_t%Time;
   for(int itt=0; itt<p; itt++){
     
-    arma::vec Covari_col = Covari.col(itt);
+    vec Covari_col = Covari.col(itt);
     
     tempmat_nn = zero_mat_nn;
     for(int it=0; it<n; it++){
-      tempmat_nn += tempvec_n*((as<arma::rowvec>(pi_i_z(it)))*Covari_col(it));
+      tempmat_nn += tempvec_n*((as<rowvec>(pi_i_z(it)))*Covari_col(it));
     }
     ghat_t_z(itt) = tempmat_nn/n;
   }
   
   // -----------------------------f0----------------------------
-  arma::vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
-  arma::vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
+  vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
+  vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
   
-  arma::vec Condi_Ehat = zero_vec_n;
+  vec Condi_Ehat = zero_vec_n;
   for(int it=0; it<n; it++){
     Condi_Ehat(it) = sum(join_cols(zeros(it+1),ones(n-it-1))%resid%dFhat_0_e)/(1-Fhat_0_e(it));
   }
   Condi_Ehat.replace(datum::nan,0);
   
-  arma::vec rhat_i = Delta%resid+(1-Delta)%Condi_Ehat;
+  vec rhat_i = Delta%resid+(1-Delta)%Condi_Ehat;
   
-  arma::vec given_data_f = exp(rhat_i);
+  vec given_data_f = exp(rhat_i);
   
   double bw_f = 1.06 * stddev(given_data_f) * pow(n,-0.2);
   
-  arma::vec fhat_0_t = zeros(n);
+  vec fhat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
       fhat_0_t(it) += R::dnorm(pred_data(it),given_data_f(itt),bw_f,FALSE);
@@ -2074,11 +2098,11 @@ List omni_mns_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
   tempvec_n = fhat_0_t%Time;
   for(int itt=0; itt<p; itt++){
     
-    arma::vec Covari_col = Covari.col(itt);
+    vec Covari_col = Covari.col(itt);
     
     tempmat_nn = zero_mat_nn;
     for(int it=0; it<n; it++){
-      tempmat_nn += tempvec_n*((as<arma::rowvec>(pi_i_z(it)))*(Delta(it)*Covari_col(it)));
+      tempmat_nn += tempvec_n*((as<rowvec>(pi_i_z(it)))*(Delta(it)*Covari_col(it)));
     }
     fhat_t_z(itt) = tempmat_nn/n;
   }
@@ -2090,56 +2114,56 @@ List omni_mns_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
   List app_path(path);
   for(int itt=0; itt<path; itt++){
     
-    arma::vec phi_i(n); arma::vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
+    vec phi_i(n); vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
     while(tolerance>tol){
       
       phi_i = rnorm(n);
       
       tempvec_n = zero_vec_n; tempmat_np = zero_mat_np;
       for(int it=0; it<n; it++){
-        tempvec_n += as<arma::vec>(dMhat_i_t(it))*phi_i(it);
-        tempmat_np += (as<arma::vec>(dMhat_i_t(it))*((Covari.row(it))))*phi_i(it);
+        tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
+        tempmat_np += (as<vec>(dMhat_i_t(it))*((Covari.row(it))))*phi_i(it);
       }
-      arma::vec U_phi_inf = (sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0)/n).t();
+      vec U_phi_inf = (sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0)/n).t();
       
       List b_s_result = dfsane_mns(b, Time, Delta, Covari, U_phi_inf);
       
-      b_s = as<arma::vec>(b_s_result[1]);
+      b_s = as<vec>(b_s_result[1]);
       
       tolerance = as<double>(b_s_result[0]);
     }
     
     tempmat_nn = zero_mat_nn;
     for(int it=0; it<n; it++){
-      tempmat_nn += ((((as<arma::rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<arma::vec>(dMhat_i_t(it))))*phi_i(it));
+      tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<vec>(dMhat_i_t(it))))*phi_i(it));
     }
-    arma::mat U_pi_phi_t_z = cumsum(tempmat_nn);
+    mat U_pi_phi_t_z = cumsum(tempmat_nn);
     
-    arma::vec resid_s = log(Time) + Covari*b_s;
+    vec resid_s = log(Time) + Covari*b_s;
     
-    arma::uvec index_resid_s = sort_index(resid_s);
+    uvec index_resid_s = sort_index(resid_s);
     
-    arma::vec Delta_s = Delta(index_resid_s);
+    vec Delta_s = Delta(index_resid_s);
     resid_s = resid_s(index_resid_s);
     
-    List N_i_t_s(n); List Y_i_t_s(n); arma::vec S_0_t_s = zero_vec_n;
+    List N_i_t_s(n); List Y_i_t_s(n); vec S_0_t_s = zero_vec_n;
     for(int it=0; it<n; it++){
       N_i_t_s(it) = (resid_s>=resid_s(it))*Delta_s(it);
       Y_i_t_s(it) = (resid_s<=resid_s(it))*1;
-      S_0_t_s += as<arma::vec>(Y_i_t_s(it));
+      S_0_t_s += as<vec>(Y_i_t_s(it));
     }
     
-    arma::vec Lambdahat_0_t_s = cumsum(Delta_s/S_0_t_s);
+    vec Lambdahat_0_t_s = cumsum(Delta_s/S_0_t_s);
     
-    arma::mat term1 = U_pi_phi_t_z/sqrt(n);
+    mat term1 = U_pi_phi_t_z/sqrt(n);
     
-    arma::mat term2 = zero_mat_nn;
+    mat term2 = zero_mat_nn;
     tempvec_p = (b-b_s)*sqrt(n);
     for(int it=0; it<p; it++){
-      term2 += (as<arma::mat>(fhat_t_z(it))+cumsum((as<arma::mat>(ghat_t_z(it)).each_col())%dLambdahat_0_t))*(tempvec_p(it));
+      term2 += (as<mat>(fhat_t_z(it))+cumsum((as<mat>(ghat_t_z(it)).each_col())%dLambdahat_0_t))*(tempvec_p(it));
     }
     
-    arma::mat term3 = cumsum((S_pi_t_z.each_col())%diff(join_cols(zero_vec_1,Lambdahat_0_t-Lambdahat_0_t_s)))/sqrt(n);
+    mat term3 = cumsum((S_pi_t_z.each_col())%diff(join_cols(zero_vec_1,Lambdahat_0_t-Lambdahat_0_t_s)))/sqrt(n);
     
     app_path(itt) = term1 - term2 - term3;
   }
@@ -2148,23 +2172,27 @@ List omni_mns_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
   for(int it=0; it<path; it++){
     tempmat_n2path(_,it) = (as<NumericVector>(app_path(it)));
   }
-  arma::mat se_boot = reshape(stddev(as<arma::mat>(tempmat_n2path),0,1),n,n);
+  vec mat_se_boot = stddev(as<mat>(tempmat_n2path),0,1);
+  uvec ind_se_boot = find(mat_se_boot == 0);
+  int num_se_boot = ind_se_boot.size();
+  mat_se_boot(ind_se_boot) = ones(num_se_boot);
+  mat se_boot = reshape(mat_se_boot,n,n);
   
-  List app_std_path(path); arma::vec absmax_app_path(path); arma::vec absmax_app_std_path(path);
+  List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
-    absmax_app_path(it) = (abs(as<arma::mat>(app_path(it)))).max();
-    app_std_path(it) = (as<arma::mat>(app_path(it))/se_boot);
-    absmax_app_std_path(it) = (abs(as<arma::mat>(app_std_path(it)))).max();
+    absmax_app_path(it) = (abs(as<mat>(app_path(it)))).max();
+    app_std_path(it) = (as<mat>(app_path(it))/se_boot);
+    absmax_app_std_path(it) = (abs(as<mat>(app_std_path(it)))).max();
   }
   
-  arma::mat obs_std_path = obs_path/se_boot;
+  mat obs_std_path = obs_path/se_boot;
   double absmax_obs_path = (abs(obs_path)).max();
   double absmax_obs_std_path = (abs(obs_std_path)).max();
   
-  arma::uvec find_unstd = (find(absmax_app_path>absmax_obs_path));
+  uvec find_unstd = (find(absmax_app_path>absmax_obs_path));
   double p_value = (find_unstd.size()); p_value = p_value/path;
   
-  arma::uvec find_std = (find(absmax_app_std_path>absmax_obs_std_path));
+  uvec find_std = (find(absmax_app_std_path>absmax_obs_std_path));
   double p_std_value = (find_std.size()); p_std_value = p_std_value/path;
   
   return List::create(_["TestType"]="Omni",_["path"]=path,_["beta"]=b,_["Time"]=Time,
@@ -2173,35 +2201,35 @@ List omni_mns_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
                           _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
 }
 
-List link_mis_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma::mat Covari){
+List link_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari){
   
   int n = Covari.n_rows;
   int p = Covari.n_cols;
   
-  arma::vec zero_vec_1 = zeros(1);
-  arma::vec zero_vec_p = zeros(p);
-  arma::vec zero_vec_n = zeros(n);
-  arma::mat zero_mat_np = zeros(n,p);
-  arma::mat zero_mat_nn = zeros(n,n);
+  vec zero_vec_1 = zeros(1);
+  vec zero_vec_p = zeros(p);
+  vec zero_vec_n = zeros(n);
+  mat zero_mat_np = zeros(n,p);
+  mat zero_mat_nn = zeros(n,n);
   
-  arma::vec ones_vec_1 = ones(1);
+  vec ones_vec_1 = ones(1);
   
-  arma::vec tempvec_p(p);
-  arma::vec tempvec_n(n);
-  arma::mat tempmat_np(n,p);
-  arma::mat tempmat_nn(n,n);
+  vec tempvec_p(p);
+  vec tempvec_n(n);
+  mat tempmat_np(n,p);
+  mat tempmat_nn(n,n);
   
-  arma::vec resid = log(Time) + Covari*b;
+  vec resid = log(Time) + Covari*b;
   
-  arma::uvec index_resid = sort_index(resid);
+  uvec index_resid = sort_index(resid);
   
   Time = Time(index_resid);
   Delta = Delta(index_resid);
   Covari = Covari.rows(index_resid);
   resid = resid(index_resid);
   
-  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); arma::vec S_0_t = zero_vec_n; arma::mat S_1_t = zero_mat_np; arma::mat S_pi_t_z = zero_mat_nn;
-  arma::mat sorted_Covari = sort(Covari);
+  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
+  mat sorted_Covari = sort(Covari);
   tempvec_n = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
@@ -2210,37 +2238,37 @@ List link_mis_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
     pi_i_z(it) = tempvec_n;
     N_i_t(it) = (resid>=resid(it))*Delta(it);
     Y_i_t(it) = (resid<=resid(it))*1;
-    S_0_t += as<arma::vec>(Y_i_t(it));
-    S_1_t += as<arma::vec>(Y_i_t(it))*((Covari.row(it)));
-    S_pi_t_z += (as<arma::vec>(Y_i_t(it)))*(as<arma::rowvec>(pi_i_z(it)));
+    S_0_t += as<vec>(Y_i_t(it));
+    S_1_t += as<vec>(Y_i_t(it))*((Covari.row(it)));
+    S_pi_t_z += (as<vec>(Y_i_t(it)))*(as<rowvec>(pi_i_z(it)));
   }
   
-  arma::vec Lambdahat_0_t = cumsum(Delta/S_0_t);
+  vec Lambdahat_0_t = cumsum(Delta/S_0_t);
   
-  arma::vec dLambdahat_0_t = diff(join_cols(zero_vec_1,Lambdahat_0_t));
+  vec dLambdahat_0_t = diff(join_cols(zero_vec_1,Lambdahat_0_t));
   
-  arma::mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
+  mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
   
-  List Mhat_i_t(n); List dMhat_i_t(n); arma::vec obs_path = zero_vec_n;
+  List Mhat_i_t(n); List dMhat_i_t(n); vec obs_path = zero_vec_n;
   for(int it=0; it<n; it++){
-    tempvec_n = as<arma::vec>(N_i_t(it))-(cumsum(as<arma::vec>(Y_i_t(it))%(dLambdahat_0_t)));
+    tempvec_n = as<vec>(N_i_t(it))-(cumsum(as<vec>(Y_i_t(it))%(dLambdahat_0_t)));
     Mhat_i_t(it) = tempvec_n;
     dMhat_i_t(it) = diff(join_cols(zero_vec_1,tempvec_n));
-    obs_path += (tempvec_n(n-1))*(as<arma::vec>(pi_i_z(it)));
+    obs_path += (tempvec_n(n-1))*(as<vec>(pi_i_z(it)));
   }
   obs_path = obs_path/sqrt(n);
   
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
-  arma::vec pred_data = exp(resid);
+  vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
-  arma::vec given_data_g = exp(resid);
+  vec given_data_g = exp(resid);
   
   double bw_g = 1.06 * stddev(given_data_g) * pow(n,-0.2);
   
-  arma::vec ghat_0_t = zeros(n);
+  vec ghat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
       ghat_0_t(it) += R::dnorm(pred_data(it),given_data_g(itt),bw_g,FALSE);
@@ -2252,32 +2280,32 @@ List link_mis_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
   tempvec_n = ghat_0_t%Time;
   for(int itt=0; itt<p; itt++){
     
-    arma::vec Covari_col = Covari.col(itt);
+    vec Covari_col = Covari.col(itt);
     
     tempmat_nn = zero_mat_nn;
     for(int it=0; it<n; it++){
-      tempmat_nn += tempvec_n*((as<arma::rowvec>(pi_i_z(it)))*Covari_col(it));
+      tempmat_nn += tempvec_n*((as<rowvec>(pi_i_z(it)))*Covari_col(it));
     }
     ghat_t_z(itt) = tempmat_nn/n;
   }
   
   // -----------------------------f0----------------------------
-  arma::vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
-  arma::vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
+  vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
+  vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
   
-  arma::vec Condi_Ehat = zero_vec_n;
+  vec Condi_Ehat = zero_vec_n;
   for(int it=0; it<n; it++){
     Condi_Ehat(it) = sum(join_cols(zeros(it+1),ones(n-it-1))%resid%dFhat_0_e)/(1-Fhat_0_e(it));
   }
   Condi_Ehat.replace(datum::nan,0);
   
-  arma::vec rhat_i = Delta%resid+(1-Delta)%Condi_Ehat;
+  vec rhat_i = Delta%resid+(1-Delta)%Condi_Ehat;
   
-  arma::vec given_data_f = exp(rhat_i);
+  vec given_data_f = exp(rhat_i);
   
   double bw_f = 1.06 * stddev(given_data_f) * pow(n,-0.2);
   
-  arma::vec fhat_0_t = zeros(n);
+  vec fhat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
       fhat_0_t(it) += R::dnorm(pred_data(it),given_data_f(itt),bw_f,FALSE);
@@ -2289,11 +2317,11 @@ List link_mis_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
   double tempvec_1 = fhat_0_t(n-1)*Time(n-1);
   for(int itt=0; itt<p; itt++){
     
-    arma::vec Covari_col = Covari.col(itt);
+    vec Covari_col = Covari.col(itt);
     
     tempvec_n = zero_vec_n;
     for(int it=0; it<n; it++){
-      tempvec_n += tempvec_1*((as<arma::vec>(pi_i_z(it)))*(Delta(it)*Covari_col(it)));
+      tempvec_n += tempvec_1*((as<vec>(pi_i_z(it)))*(Delta(it)*Covari_col(it)));
     }
     fhat_inf_z(itt) = tempvec_n/n;
   }
@@ -2305,56 +2333,56 @@ List link_mis_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
   List app_path(path);
   for(int itt=0; itt<path; itt++){
     
-    arma::vec phi_i(n); arma::vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
+    vec phi_i(n); vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
     while(tolerance>tol){
       
       phi_i = rnorm(n);
       
       tempvec_n = zero_vec_n; tempmat_np = zero_mat_np;
       for(int it=0; it<n; it++){
-        tempvec_n += as<arma::vec>(dMhat_i_t(it))*phi_i(it);
-        tempmat_np += (as<arma::vec>(dMhat_i_t(it))*((Covari.row(it))))*phi_i(it);
+        tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
+        tempmat_np += (as<vec>(dMhat_i_t(it))*((Covari.row(it))))*phi_i(it);
       }
-      arma::vec U_phi_inf = (sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0)/n).t();
+      vec U_phi_inf = (sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0)/n).t();
       
       List b_s_result = dfsane_mis(b, Time, Delta, Covari, U_phi_inf);
       
-      b_s = as<arma::vec>(b_s_result[1]);
+      b_s = as<vec>(b_s_result[1]);
       
       tolerance = as<double>(b_s_result[0]);
     }
     
     tempmat_nn = zero_mat_nn;
     for(int it=0; it<n; it++){
-      tempmat_nn += ((((as<arma::rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<arma::vec>(dMhat_i_t(it))))*phi_i(it));
+      tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<vec>(dMhat_i_t(it))))*phi_i(it));
     }
-    arma::mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
+    mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
     
-    arma::vec resid_s = log(Time) + Covari*b_s;
+    vec resid_s = log(Time) + Covari*b_s;
     
-    arma::uvec index_resid_s = sort_index(resid_s);
+    uvec index_resid_s = sort_index(resid_s);
     
-    arma::vec Delta_s = Delta(index_resid_s);
+    vec Delta_s = Delta(index_resid_s);
     resid_s = resid_s(index_resid_s);
     
-    List N_i_t_s(n); List Y_i_t_s(n); arma::vec S_0_t_s = zero_vec_n;
+    List N_i_t_s(n); List Y_i_t_s(n); vec S_0_t_s = zero_vec_n;
     for(int it=0; it<n; it++){
       N_i_t_s(it) = (resid_s>=resid_s(it))*Delta_s(it);
       Y_i_t_s(it) = (resid_s<=resid_s(it))*1;
-      S_0_t_s += as<arma::vec>(Y_i_t_s(it));
+      S_0_t_s += as<vec>(Y_i_t_s(it));
     }
     
-    arma::vec Lambdahat_0_t_s = cumsum(Delta_s/S_0_t_s);
+    vec Lambdahat_0_t_s = cumsum(Delta_s/S_0_t_s);
     
-    arma::vec term1 = U_pi_phi_inf_z/sqrt(n);
+    vec term1 = U_pi_phi_inf_z/sqrt(n);
     
-    arma::vec term2 = zero_vec_n;
+    vec term2 = zero_vec_n;
     tempvec_p = (b-b_s)*sqrt(n);
     for(int it=0; it<p; it++){
-      term2 += (as<arma::vec>(fhat_inf_z(it))+(sum((as<arma::mat>(ghat_t_z(it)).each_col())%dLambdahat_0_t)).t())*(tempvec_p(it));
+      term2 += (as<vec>(fhat_inf_z(it))+(sum((as<mat>(ghat_t_z(it)).each_col())%dLambdahat_0_t)).t())*(tempvec_p(it));
     }
     
-    arma::vec term3 = (sum((S_pi_t_z.each_col())%diff(join_cols(zero_vec_1,Lambdahat_0_t-Lambdahat_0_t_s)))).t()/sqrt(n);
+    vec term3 = (sum((S_pi_t_z.each_col())%diff(join_cols(zero_vec_1,Lambdahat_0_t-Lambdahat_0_t_s)))).t()/sqrt(n);
     
     app_path(itt) = term1 - term2 - term3;
     
@@ -2364,23 +2392,26 @@ List link_mis_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
   for(int it=0; it<path; it++){
     tempmat_npath(_,it) = (as<NumericVector>(app_path(it)));
   }
-  arma::mat se_boot = stddev(as<arma::mat>(tempmat_npath),0,1);
+  vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
+  uvec ind_se_boot = find(se_boot == 0);
+  int num_se_boot = ind_se_boot.size();
+  se_boot(ind_se_boot) = ones(num_se_boot);
   
-  List app_std_path(path); arma::vec absmax_app_path(path); arma::vec absmax_app_std_path(path);
+  List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
-    absmax_app_path(it) = (abs(as<arma::vec>(app_path(it)))).max();
-    app_std_path(it) = (as<arma::vec>(app_path(it))/se_boot);
-    absmax_app_std_path(it) = (abs(as<arma::vec>(app_std_path(it)))).max();
+    absmax_app_path(it) = (abs(as<vec>(app_path(it)))).max();
+    app_std_path(it) = (as<vec>(app_path(it))/se_boot);
+    absmax_app_std_path(it) = (abs(as<vec>(app_std_path(it)))).max();
   }
   
-  arma::vec obs_std_path = obs_path/se_boot;
+  vec obs_std_path = obs_path/se_boot;
   double absmax_obs_path = (abs(obs_path)).max();
   double absmax_obs_std_path = (abs(obs_std_path)).max();
   
-  arma::uvec find_unstd = (find(absmax_app_path>absmax_obs_path));
+  uvec find_unstd = (find(absmax_app_path>absmax_obs_path));
   double p_value = (find_unstd.size()); p_value = p_value/path;
   
-  arma::uvec find_std = (find(absmax_app_std_path>absmax_obs_std_path));
+  uvec find_std = (find(absmax_app_std_path>absmax_obs_std_path));
   double p_std_value = (find_std.size()); p_std_value = p_std_value/path;
   
   return List::create(_["TestType"]="Link",_["path"]=path,_["beta"]=b,_["Time"]=Time,
@@ -2389,35 +2420,35 @@ List link_mis_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
                           _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
 }
 
-List link_mns_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma::mat Covari){
+List link_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari){
   
   int n = Covari.n_rows;
   int p = Covari.n_cols;
   
-  arma::vec zero_vec_1 = zeros(1);
-  arma::vec zero_vec_p = zeros(p);
-  arma::vec zero_vec_n = zeros(n);
-  arma::mat zero_mat_np = zeros(n,p);
-  arma::mat zero_mat_nn = zeros(n,n);
+  vec zero_vec_1 = zeros(1);
+  vec zero_vec_p = zeros(p);
+  vec zero_vec_n = zeros(n);
+  mat zero_mat_np = zeros(n,p);
+  mat zero_mat_nn = zeros(n,n);
   
-  arma::vec ones_vec_1 = ones(1);
+  vec ones_vec_1 = ones(1);
   
-  arma::vec tempvec_p(p);
-  arma::vec tempvec_n(n);
-  arma::mat tempmat_np(n,p);
-  arma::mat tempmat_nn(n,n);
+  vec tempvec_p(p);
+  vec tempvec_n(n);
+  mat tempmat_np(n,p);
+  mat tempmat_nn(n,n);
   
-  arma::vec resid = log(Time) + Covari*b;
+  vec resid = log(Time) + Covari*b;
   
-  arma::uvec index_resid = sort_index(resid);
+  uvec index_resid = sort_index(resid);
   
   Time = Time(index_resid);
   Delta = Delta(index_resid);
   Covari = Covari.rows(index_resid);
   resid = resid(index_resid);
   
-  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); arma::vec S_0_t = zero_vec_n; arma::mat S_1_t = zero_mat_np; arma::mat S_pi_t_z = zero_mat_nn;
-  arma::mat sorted_Covari = sort(Covari);
+  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
+  mat sorted_Covari = sort(Covari);
   tempvec_n = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
@@ -2426,37 +2457,37 @@ List link_mns_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
     pi_i_z(it) = tempvec_n;
     N_i_t(it) = (resid>=resid(it))*Delta(it);
     Y_i_t(it) = (resid<=resid(it))*1;
-    S_0_t += as<arma::vec>(Y_i_t(it));
-    S_1_t += as<arma::vec>(Y_i_t(it))*((Covari.row(it)));
-    S_pi_t_z += (as<arma::vec>(Y_i_t(it)))*(as<arma::rowvec>(pi_i_z(it)));
+    S_0_t += as<vec>(Y_i_t(it));
+    S_1_t += as<vec>(Y_i_t(it))*((Covari.row(it)));
+    S_pi_t_z += (as<vec>(Y_i_t(it)))*(as<rowvec>(pi_i_z(it)));
   }
   
-  arma::vec Lambdahat_0_t = cumsum(Delta/S_0_t);
+  vec Lambdahat_0_t = cumsum(Delta/S_0_t);
   
-  arma::vec dLambdahat_0_t = diff(join_cols(zero_vec_1,Lambdahat_0_t));
+  vec dLambdahat_0_t = diff(join_cols(zero_vec_1,Lambdahat_0_t));
   
-  arma::mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
+  mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
   
-  List Mhat_i_t(n); List dMhat_i_t(n); arma::vec obs_path = zero_vec_n;
+  List Mhat_i_t(n); List dMhat_i_t(n); vec obs_path = zero_vec_n;
   for(int it=0; it<n; it++){
-    tempvec_n = as<arma::vec>(N_i_t(it))-(cumsum(as<arma::vec>(Y_i_t(it))%(dLambdahat_0_t)));
+    tempvec_n = as<vec>(N_i_t(it))-(cumsum(as<vec>(Y_i_t(it))%(dLambdahat_0_t)));
     Mhat_i_t(it) = tempvec_n;
     dMhat_i_t(it) = diff(join_cols(zero_vec_1,tempvec_n));
-    obs_path += (tempvec_n(n-1))*(as<arma::vec>(pi_i_z(it)));
+    obs_path += (tempvec_n(n-1))*(as<vec>(pi_i_z(it)));
   }
   obs_path = obs_path/sqrt(n);
   
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
-  arma::vec pred_data = exp(resid);
+  vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
-  arma::vec given_data_g = exp(resid);
+  vec given_data_g = exp(resid);
   
   double bw_g = 1.06 * stddev(given_data_g) * pow(n,-0.2);
   
-  arma::vec ghat_0_t = zeros(n);
+  vec ghat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
       ghat_0_t(it) += R::dnorm(pred_data(it),given_data_g(itt),bw_g,FALSE);
@@ -2468,32 +2499,32 @@ List link_mns_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
   tempvec_n = ghat_0_t%Time;
   for(int itt=0; itt<p; itt++){
     
-    arma::vec Covari_col = Covari.col(itt);
+    vec Covari_col = Covari.col(itt);
     
     tempmat_nn = zero_mat_nn;
     for(int it=0; it<n; it++){
-      tempmat_nn += tempvec_n*((as<arma::rowvec>(pi_i_z(it)))*Covari_col(it));
+      tempmat_nn += tempvec_n*((as<rowvec>(pi_i_z(it)))*Covari_col(it));
     }
     ghat_t_z(itt) = tempmat_nn/n;
   }
   
   // -----------------------------f0----------------------------
-  arma::vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
-  arma::vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
+  vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
+  vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
   
-  arma::vec Condi_Ehat = zero_vec_n;
+  vec Condi_Ehat = zero_vec_n;
   for(int it=0; it<n; it++){
     Condi_Ehat(it) = sum(join_cols(zeros(it+1),ones(n-it-1))%resid%dFhat_0_e)/(1-Fhat_0_e(it));
   }
   Condi_Ehat.replace(datum::nan,0);
   
-  arma::vec rhat_i = Delta%resid+(1-Delta)%Condi_Ehat;
+  vec rhat_i = Delta%resid+(1-Delta)%Condi_Ehat;
   
-  arma::vec given_data_f = exp(rhat_i);
+  vec given_data_f = exp(rhat_i);
   
   double bw_f = 1.06 * stddev(given_data_f) * pow(n,-0.2);
   
-  arma::vec fhat_0_t = zeros(n);
+  vec fhat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
       fhat_0_t(it) += R::dnorm(pred_data(it),given_data_f(itt),bw_f,FALSE);
@@ -2505,11 +2536,11 @@ List link_mns_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
   double tempvec_1 = fhat_0_t(n-1)*Time(n-1);
   for(int itt=0; itt<p; itt++){
     
-    arma::vec Covari_col = Covari.col(itt);
+    vec Covari_col = Covari.col(itt);
     
     tempvec_n = zero_vec_n;
     for(int it=0; it<n; it++){
-      tempvec_n += tempvec_1*((as<arma::vec>(pi_i_z(it)))*(Delta(it)*Covari_col(it)));
+      tempvec_n += tempvec_1*((as<vec>(pi_i_z(it)))*(Delta(it)*Covari_col(it)));
     }
     fhat_inf_z(itt) = tempvec_n/n;
   }
@@ -2521,56 +2552,56 @@ List link_mns_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
   List app_path(path);
   for(int itt=0; itt<path; itt++){
     
-    arma::vec phi_i(n); arma::vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
+    vec phi_i(n); vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
     while(tolerance>tol){
       
       phi_i = rnorm(n);
       
       tempvec_n = zero_vec_n; tempmat_np = zero_mat_np;
       for(int it=0; it<n; it++){
-        tempvec_n += as<arma::vec>(dMhat_i_t(it))*phi_i(it);
-        tempmat_np += (as<arma::vec>(dMhat_i_t(it))*((Covari.row(it))))*phi_i(it);
+        tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
+        tempmat_np += (as<vec>(dMhat_i_t(it))*((Covari.row(it))))*phi_i(it);
       }
-      arma::vec U_phi_inf = (sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0)/n).t();
+      vec U_phi_inf = (sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0)/n).t();
       
       List b_s_result = dfsane_mns(b, Time, Delta, Covari, U_phi_inf);
       
-      b_s = as<arma::vec>(b_s_result[1]);
+      b_s = as<vec>(b_s_result[1]);
       
       tolerance = as<double>(b_s_result[0]);
     }
     
     tempmat_nn = zero_mat_nn;
     for(int it=0; it<n; it++){
-      tempmat_nn += ((((as<arma::rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<arma::vec>(dMhat_i_t(it))))*phi_i(it));
+      tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<vec>(dMhat_i_t(it))))*phi_i(it));
     }
-    arma::mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
+    mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
     
-    arma::vec resid_s = log(Time) + Covari*b_s;
+    vec resid_s = log(Time) + Covari*b_s;
     
-    arma::uvec index_resid_s = sort_index(resid_s);
+    uvec index_resid_s = sort_index(resid_s);
     
-    arma::vec Delta_s = Delta(index_resid_s);
+    vec Delta_s = Delta(index_resid_s);
     resid_s = resid_s(index_resid_s);
     
-    List N_i_t_s(n); List Y_i_t_s(n); arma::vec S_0_t_s = zero_vec_n;
+    List N_i_t_s(n); List Y_i_t_s(n); vec S_0_t_s = zero_vec_n;
     for(int it=0; it<n; it++){
       N_i_t_s(it) = (resid_s>=resid_s(it))*Delta_s(it);
       Y_i_t_s(it) = (resid_s<=resid_s(it))*1;
-      S_0_t_s += as<arma::vec>(Y_i_t_s(it));
+      S_0_t_s += as<vec>(Y_i_t_s(it));
     }
     
-    arma::vec Lambdahat_0_t_s = cumsum(Delta_s/S_0_t_s);
+    vec Lambdahat_0_t_s = cumsum(Delta_s/S_0_t_s);
     
-    arma::vec term1 = U_pi_phi_inf_z/sqrt(n);
+    vec term1 = U_pi_phi_inf_z/sqrt(n);
     
-    arma::vec term2 = zero_vec_n;
+    vec term2 = zero_vec_n;
     tempvec_p = (b-b_s)*sqrt(n);
     for(int it=0; it<p; it++){
-      term2 += (as<arma::vec>(fhat_inf_z(it))+(sum((as<arma::mat>(ghat_t_z(it)).each_col())%dLambdahat_0_t)).t())*(tempvec_p(it));
+      term2 += (as<vec>(fhat_inf_z(it))+(sum((as<mat>(ghat_t_z(it)).each_col())%dLambdahat_0_t)).t())*(tempvec_p(it));
     }
     
-    arma::vec term3 = (sum((S_pi_t_z.each_col())%diff(join_cols(zero_vec_1,Lambdahat_0_t-Lambdahat_0_t_s)))).t()/sqrt(n);
+    vec term3 = (sum((S_pi_t_z.each_col())%diff(join_cols(zero_vec_1,Lambdahat_0_t-Lambdahat_0_t_s)))).t()/sqrt(n);
     
     app_path(itt) = term1 - term2 - term3;
     
@@ -2580,23 +2611,26 @@ List link_mns_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
   for(int it=0; it<path; it++){
     tempmat_npath(_,it) = (as<NumericVector>(app_path(it)));
   }
-  arma::mat se_boot = stddev(as<arma::mat>(tempmat_npath),0,1);
+  vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
+  uvec ind_se_boot = find(se_boot == 0);
+  int num_se_boot = ind_se_boot.size();
+  se_boot(ind_se_boot) = ones(num_se_boot);
   
-  List app_std_path(path); arma::vec absmax_app_path(path); arma::vec absmax_app_std_path(path);
+  List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
-    absmax_app_path(it) = (abs(as<arma::vec>(app_path(it)))).max();
-    app_std_path(it) = (as<arma::vec>(app_path(it))/se_boot);
-    absmax_app_std_path(it) = (abs(as<arma::vec>(app_std_path(it)))).max();
+    absmax_app_path(it) = (abs(as<vec>(app_path(it)))).max();
+    app_std_path(it) = (as<vec>(app_path(it))/se_boot);
+    absmax_app_std_path(it) = (abs(as<vec>(app_std_path(it)))).max();
   }
   
-  arma::vec obs_std_path = obs_path/se_boot;
+  vec obs_std_path = obs_path/se_boot;
   double absmax_obs_path = (abs(obs_path)).max();
   double absmax_obs_std_path = (abs(obs_std_path)).max();
   
-  arma::uvec find_unstd = (find(absmax_app_path>absmax_obs_path));
+  uvec find_unstd = (find(absmax_app_path>absmax_obs_path));
   double p_value = (find_unstd.size()); p_value = p_value/path;
   
-  arma::uvec find_std = (find(absmax_app_std_path>absmax_obs_std_path));
+  uvec find_std = (find(absmax_app_std_path>absmax_obs_std_path));
   double p_std_value = (find_std.size()); p_std_value = p_std_value/path;
   
   return List::create(_["TestType"]="Link",_["path"]=path,_["beta"]=b,_["Time"]=Time,
@@ -2605,36 +2639,36 @@ List link_mns_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
                           _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
 }
 
-List form_mis_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma::mat Covari, int form){
+List form_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form){
   
   int n = Covari.n_rows;
   int p = Covari.n_cols;
   
-  arma::vec zero_vec_1 = zeros(1);
-  arma::vec zero_vec_p = zeros(p);
-  arma::vec zero_vec_n = zeros(n);
-  arma::mat zero_mat_np = zeros(n,p);
-  arma::mat zero_mat_nn = zeros(n,n);
+  vec zero_vec_1 = zeros(1);
+  vec zero_vec_p = zeros(p);
+  vec zero_vec_n = zeros(n);
+  mat zero_mat_np = zeros(n,p);
+  mat zero_mat_nn = zeros(n,n);
   
-  arma::vec ones_vec_1 = ones(1);
+  vec ones_vec_1 = ones(1);
   
-  arma::vec tempvec_p(p);
-  arma::vec tempvec_n(n);
-  arma::mat tempmat_np(n,p);
-  arma::mat tempmat_nn(n,n);
+  vec tempvec_p(p);
+  vec tempvec_n(n);
+  mat tempmat_np(n,p);
+  mat tempmat_nn(n,n);
   
-  arma::vec resid = log(Time) + Covari*b;
+  vec resid = log(Time) + Covari*b;
   
-  arma::uvec index_resid = sort_index(resid);
+  uvec index_resid = sort_index(resid);
   
   Time = Time(index_resid);
   Delta = Delta(index_resid);
   Covari = Covari.rows(index_resid);
   resid = resid(index_resid);
   
-  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); arma::vec S_0_t = zero_vec_n; arma::mat S_1_t = zero_mat_np; arma::mat S_pi_t_z = zero_mat_nn;
-  arma::vec form_Covari = Covari.col(form-1);
-  arma::vec sorted_form_Covari = sort(form_Covari);
+  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
+  vec form_Covari = Covari.col(form-1);
+  vec sorted_form_Covari = sort(form_Covari);
   tempvec_n = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
@@ -2643,37 +2677,37 @@ List form_mis_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
     pi_i_z(it) = tempvec_n;
     N_i_t(it) = (resid>=resid(it))*Delta(it);
     Y_i_t(it) = (resid<=resid(it))*1;
-    S_0_t += as<arma::vec>(Y_i_t(it));
-    S_1_t += as<arma::vec>(Y_i_t(it))*((Covari.row(it)));
-    S_pi_t_z += (as<arma::vec>(Y_i_t(it)))*(as<arma::rowvec>(pi_i_z(it)));
+    S_0_t += as<vec>(Y_i_t(it));
+    S_1_t += as<vec>(Y_i_t(it))*((Covari.row(it)));
+    S_pi_t_z += (as<vec>(Y_i_t(it)))*(as<rowvec>(pi_i_z(it)));
   }
   
-  arma::vec Lambdahat_0_t = cumsum(Delta/S_0_t);
+  vec Lambdahat_0_t = cumsum(Delta/S_0_t);
   
-  arma::vec dLambdahat_0_t = diff(join_cols(zero_vec_1,Lambdahat_0_t));
+  vec dLambdahat_0_t = diff(join_cols(zero_vec_1,Lambdahat_0_t));
   
-  arma::mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
+  mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
   
-  List Mhat_i_t(n); List dMhat_i_t(n); arma::vec obs_path = zero_vec_n;
+  List Mhat_i_t(n); List dMhat_i_t(n); vec obs_path = zero_vec_n;
   for(int it=0; it<n; it++){
-    tempvec_n = as<arma::vec>(N_i_t(it))-(cumsum(as<arma::vec>(Y_i_t(it))%(dLambdahat_0_t)));
+    tempvec_n = as<vec>(N_i_t(it))-(cumsum(as<vec>(Y_i_t(it))%(dLambdahat_0_t)));
     Mhat_i_t(it) = tempvec_n;
     dMhat_i_t(it) = diff(join_cols(zero_vec_1,tempvec_n));
-    obs_path += (tempvec_n(n-1))*(as<arma::vec>(pi_i_z(it)));
+    obs_path += (tempvec_n(n-1))*(as<vec>(pi_i_z(it)));
   }
   obs_path = obs_path/sqrt(n);
   
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
-  arma::vec pred_data = exp(resid);
+  vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
-  arma::vec given_data_g = exp(resid);
+  vec given_data_g = exp(resid);
   
   double bw_g = 1.06 * stddev(given_data_g) * pow(n,-0.2);
   
-  arma::vec ghat_0_t = zeros(n);
+  vec ghat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
       ghat_0_t(it) += R::dnorm(pred_data(it),given_data_g(itt),bw_g,FALSE);
@@ -2685,32 +2719,32 @@ List form_mis_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
   tempvec_n = ghat_0_t%Time;
   for(int itt=0; itt<p; itt++){
     
-    arma::vec Covari_col = Covari.col(itt);
+    vec Covari_col = Covari.col(itt);
     
     tempmat_nn = zero_mat_nn;
     for(int it=0; it<n; it++){
-      tempmat_nn += tempvec_n*((as<arma::rowvec>(pi_i_z(it)))*Covari_col(it));
+      tempmat_nn += tempvec_n*((as<rowvec>(pi_i_z(it)))*Covari_col(it));
     }
     ghat_t_z(itt) = tempmat_nn/n;
   }
   
   // -----------------------------f0----------------------------
-  arma::vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
-  arma::vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
+  vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
+  vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
   
-  arma::vec Condi_Ehat = zero_vec_n;
+  vec Condi_Ehat = zero_vec_n;
   for(int it=0; it<n; it++){
     Condi_Ehat(it) = sum(join_cols(zeros(it+1),ones(n-it-1))%resid%dFhat_0_e)/(1-Fhat_0_e(it));
   }
   Condi_Ehat.replace(datum::nan,0);
   
-  arma::vec rhat_i = Delta%resid+(1-Delta)%Condi_Ehat;
+  vec rhat_i = Delta%resid+(1-Delta)%Condi_Ehat;
   
-  arma::vec given_data_f = exp(rhat_i);
+  vec given_data_f = exp(rhat_i);
   
   double bw_f = 1.06 * stddev(given_data_f) * pow(n,-0.2);
   
-  arma::vec fhat_0_t = zeros(n);
+  vec fhat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
       fhat_0_t(it) += R::dnorm(pred_data(it),given_data_f(itt),bw_f,FALSE);
@@ -2722,11 +2756,11 @@ List form_mis_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
   double tempvec_1 = fhat_0_t(n-1)*Time(n-1);
   for(int itt=0; itt<p; itt++){
     
-    arma::vec Covari_col = Covari.col(itt);
+    vec Covari_col = Covari.col(itt);
     
     tempvec_n = zero_vec_n;
     for(int it=0; it<n; it++){
-      tempvec_n += tempvec_1*((as<arma::vec>(pi_i_z(it)))*(Delta(it)*Covari_col(it)));
+      tempvec_n += tempvec_1*((as<vec>(pi_i_z(it)))*(Delta(it)*Covari_col(it)));
     }
     fhat_inf_z(itt) = tempvec_n/n;
   }
@@ -2738,56 +2772,56 @@ List form_mis_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
   List app_path(path);
   for(int itt=0; itt<path; itt++){
     
-    arma::vec phi_i(n); arma::vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
+    vec phi_i(n); vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
     while(tolerance>tol){
       
       phi_i = rnorm(n);
       
       tempvec_n = zero_vec_n; tempmat_np = zero_mat_np;
       for(int it=0; it<n; it++){
-        tempvec_n += as<arma::vec>(dMhat_i_t(it))*phi_i(it);
-        tempmat_np += (as<arma::vec>(dMhat_i_t(it))*((Covari.row(it))))*phi_i(it);
+        tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
+        tempmat_np += (as<vec>(dMhat_i_t(it))*((Covari.row(it))))*phi_i(it);
       }
-      arma::vec U_phi_inf = (sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0)/n).t();
+      vec U_phi_inf = (sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0)/n).t();
       
       List b_s_result = dfsane_mis(b, Time, Delta, Covari, U_phi_inf);
       
-      b_s = as<arma::vec>(b_s_result[1]);
+      b_s = as<vec>(b_s_result[1]);
       
       tolerance = as<double>(b_s_result[0]);
     }
     
     tempmat_nn = zero_mat_nn;
     for(int it=0; it<n; it++){
-      tempmat_nn += ((((as<arma::rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<arma::vec>(dMhat_i_t(it))))*phi_i(it));
+      tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<vec>(dMhat_i_t(it))))*phi_i(it));
     }
-    arma::mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
+    mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
     
-    arma::vec resid_s = log(Time) + Covari*b_s;
+    vec resid_s = log(Time) + Covari*b_s;
     
-    arma::uvec index_resid_s = sort_index(resid_s);
+    uvec index_resid_s = sort_index(resid_s);
     
-    arma::vec Delta_s = Delta(index_resid_s);
+    vec Delta_s = Delta(index_resid_s);
     resid_s = resid_s(index_resid_s);
     
-    List N_i_t_s(n); List Y_i_t_s(n); arma::vec S_0_t_s = zero_vec_n;
+    List N_i_t_s(n); List Y_i_t_s(n); vec S_0_t_s = zero_vec_n;
     for(int it=0; it<n; it++){
       N_i_t_s(it) = (resid_s>=resid_s(it))*Delta_s(it);
       Y_i_t_s(it) = (resid_s<=resid_s(it))*1;
-      S_0_t_s += as<arma::vec>(Y_i_t_s(it));
+      S_0_t_s += as<vec>(Y_i_t_s(it));
     }
     
-    arma::vec Lambdahat_0_t_s = cumsum(Delta_s/S_0_t_s);
+    vec Lambdahat_0_t_s = cumsum(Delta_s/S_0_t_s);
     
-    arma::vec term1 = U_pi_phi_inf_z/sqrt(n);
+    vec term1 = U_pi_phi_inf_z/sqrt(n);
     
-    arma::vec term2 = zero_vec_n;
+    vec term2 = zero_vec_n;
     tempvec_p = (b-b_s)*sqrt(n);
     for(int it=0; it<p; it++){
-      term2 += (as<arma::vec>(fhat_inf_z(it))+(sum((as<arma::mat>(ghat_t_z(it)).each_col())%dLambdahat_0_t)).t())*(tempvec_p(it));
+      term2 += (as<vec>(fhat_inf_z(it))+(sum((as<mat>(ghat_t_z(it)).each_col())%dLambdahat_0_t)).t())*(tempvec_p(it));
     }
     
-    arma::vec term3 = (sum((S_pi_t_z.each_col())%diff(join_cols(zero_vec_1,Lambdahat_0_t-Lambdahat_0_t_s)))).t()/sqrt(n);
+    vec term3 = (sum((S_pi_t_z.each_col())%diff(join_cols(zero_vec_1,Lambdahat_0_t-Lambdahat_0_t_s)))).t()/sqrt(n);
     
     app_path(itt) = term1 - term2 - term3;
     
@@ -2797,23 +2831,26 @@ List form_mis_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
   for(int it=0; it<path; it++){
     tempmat_npath(_,it) = (as<NumericVector>(app_path(it)));
   }
-  arma::mat se_boot = stddev(as<arma::mat>(tempmat_npath),0,1);
+  vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
+  uvec ind_se_boot = find(se_boot == 0);
+  int num_se_boot = ind_se_boot.size();
+  se_boot(ind_se_boot) = ones(num_se_boot);
   
-  List app_std_path(path); arma::vec absmax_app_path(path); arma::vec absmax_app_std_path(path);
+  List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
-    absmax_app_path(it) = (abs(as<arma::vec>(app_path(it)))).max();
-    app_std_path(it) = (as<arma::vec>(app_path(it))/se_boot);
-    absmax_app_std_path(it) = (abs(as<arma::vec>(app_std_path(it)))).max();
+    absmax_app_path(it) = (abs(as<vec>(app_path(it)))).max();
+    app_std_path(it) = (as<vec>(app_path(it))/se_boot);
+    absmax_app_std_path(it) = (abs(as<vec>(app_std_path(it)))).max();
   }
   
-  arma::vec obs_std_path = obs_path/se_boot;
+  vec obs_std_path = obs_path/se_boot;
   double absmax_obs_path = (abs(obs_path)).max();
   double absmax_obs_std_path = (abs(obs_std_path)).max();
   
-  arma::uvec find_unstd = (find(absmax_app_path>absmax_obs_path));
+  uvec find_unstd = (find(absmax_app_path>absmax_obs_path));
   double p_value = (find_unstd.size()); p_value = p_value/path;
   
-  arma::uvec find_std = (find(absmax_app_std_path>absmax_obs_std_path));
+  uvec find_std = (find(absmax_app_std_path>absmax_obs_std_path));
   double p_std_value = (find_std.size()); p_std_value = p_std_value/path;
   
   return List::create(_["TestType"]="Form",_["path"]=path,_["beta"]=b,_["Time"]=Time,
@@ -2822,36 +2859,36 @@ List form_mis_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
                           _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
 }
 
-List form_mns_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma::mat Covari, int form){
+List form_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form){
   
   int n = Covari.n_rows;
   int p = Covari.n_cols;
   
-  arma::vec zero_vec_1 = zeros(1);
-  arma::vec zero_vec_p = zeros(p);
-  arma::vec zero_vec_n = zeros(n);
-  arma::mat zero_mat_np = zeros(n,p);
-  arma::mat zero_mat_nn = zeros(n,n);
+  vec zero_vec_1 = zeros(1);
+  vec zero_vec_p = zeros(p);
+  vec zero_vec_n = zeros(n);
+  mat zero_mat_np = zeros(n,p);
+  mat zero_mat_nn = zeros(n,n);
   
-  arma::vec ones_vec_1 = ones(1);
+  vec ones_vec_1 = ones(1);
   
-  arma::vec tempvec_p(p);
-  arma::vec tempvec_n(n);
-  arma::mat tempmat_np(n,p);
-  arma::mat tempmat_nn(n,n);
+  vec tempvec_p(p);
+  vec tempvec_n(n);
+  mat tempmat_np(n,p);
+  mat tempmat_nn(n,n);
   
-  arma::vec resid = log(Time) + Covari*b;
+  vec resid = log(Time) + Covari*b;
   
-  arma::uvec index_resid = sort_index(resid);
+  uvec index_resid = sort_index(resid);
   
   Time = Time(index_resid);
   Delta = Delta(index_resid);
   Covari = Covari.rows(index_resid);
   resid = resid(index_resid);
   
-  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); arma::vec S_0_t = zero_vec_n; arma::mat S_1_t = zero_mat_np; arma::mat S_pi_t_z = zero_mat_nn;
-  arma::vec form_Covari = Covari.col(form-1);
-  arma::vec sorted_form_Covari = sort(form_Covari);
+  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
+  vec form_Covari = Covari.col(form-1);
+  vec sorted_form_Covari = sort(form_Covari);
   tempvec_n = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
@@ -2860,37 +2897,37 @@ List form_mns_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
     pi_i_z(it) = tempvec_n;
     N_i_t(it) = (resid>=resid(it))*Delta(it);
     Y_i_t(it) = (resid<=resid(it))*1;
-    S_0_t += as<arma::vec>(Y_i_t(it));
-    S_1_t += as<arma::vec>(Y_i_t(it))*((Covari.row(it)));
-    S_pi_t_z += (as<arma::vec>(Y_i_t(it)))*(as<arma::rowvec>(pi_i_z(it)));
+    S_0_t += as<vec>(Y_i_t(it));
+    S_1_t += as<vec>(Y_i_t(it))*((Covari.row(it)));
+    S_pi_t_z += (as<vec>(Y_i_t(it)))*(as<rowvec>(pi_i_z(it)));
   }
   
-  arma::vec Lambdahat_0_t = cumsum(Delta/S_0_t);
+  vec Lambdahat_0_t = cumsum(Delta/S_0_t);
   
-  arma::vec dLambdahat_0_t = diff(join_cols(zero_vec_1,Lambdahat_0_t));
+  vec dLambdahat_0_t = diff(join_cols(zero_vec_1,Lambdahat_0_t));
   
-  arma::mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
+  mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
   
-  List Mhat_i_t(n); List dMhat_i_t(n); arma::vec obs_path = zero_vec_n;
+  List Mhat_i_t(n); List dMhat_i_t(n); vec obs_path = zero_vec_n;
   for(int it=0; it<n; it++){
-    tempvec_n = as<arma::vec>(N_i_t(it))-(cumsum(as<arma::vec>(Y_i_t(it))%(dLambdahat_0_t)));
+    tempvec_n = as<vec>(N_i_t(it))-(cumsum(as<vec>(Y_i_t(it))%(dLambdahat_0_t)));
     Mhat_i_t(it) = tempvec_n;
     dMhat_i_t(it) = diff(join_cols(zero_vec_1,tempvec_n));
-    obs_path += (tempvec_n(n-1))*(as<arma::vec>(pi_i_z(it)));
+    obs_path += (tempvec_n(n-1))*(as<vec>(pi_i_z(it)));
   }
   obs_path = obs_path/sqrt(n);
   
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
-  arma::vec pred_data = exp(resid);
+  vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
-  arma::vec given_data_g = exp(resid);
+  vec given_data_g = exp(resid);
   
   double bw_g = 1.06 * stddev(given_data_g) * pow(n,-0.2);
   
-  arma::vec ghat_0_t = zeros(n);
+  vec ghat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
       ghat_0_t(it) += R::dnorm(pred_data(it),given_data_g(itt),bw_g,FALSE);
@@ -2902,32 +2939,32 @@ List form_mns_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
   tempvec_n = ghat_0_t%Time;
   for(int itt=0; itt<p; itt++){
     
-    arma::vec Covari_col = Covari.col(itt);
+    vec Covari_col = Covari.col(itt);
     
     tempmat_nn = zero_mat_nn;
     for(int it=0; it<n; it++){
-      tempmat_nn += tempvec_n*((as<arma::rowvec>(pi_i_z(it)))*Covari_col(it));
+      tempmat_nn += tempvec_n*((as<rowvec>(pi_i_z(it)))*Covari_col(it));
     }
     ghat_t_z(itt) = tempmat_nn/n;
   }
   
   // -----------------------------f0----------------------------
-  arma::vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
-  arma::vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
+  vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
+  vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
   
-  arma::vec Condi_Ehat = zero_vec_n;
+  vec Condi_Ehat = zero_vec_n;
   for(int it=0; it<n; it++){
     Condi_Ehat(it) = sum(join_cols(zeros(it+1),ones(n-it-1))%resid%dFhat_0_e)/(1-Fhat_0_e(it));
   }
   Condi_Ehat.replace(datum::nan,0);
   
-  arma::vec rhat_i = Delta%resid+(1-Delta)%Condi_Ehat;
+  vec rhat_i = Delta%resid+(1-Delta)%Condi_Ehat;
   
-  arma::vec given_data_f = exp(rhat_i);
+  vec given_data_f = exp(rhat_i);
   
   double bw_f = 1.06 * stddev(given_data_f) * pow(n,-0.2);
   
-  arma::vec fhat_0_t = zeros(n);
+  vec fhat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
       fhat_0_t(it) += R::dnorm(pred_data(it),given_data_f(itt),bw_f,FALSE);
@@ -2939,11 +2976,11 @@ List form_mns_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
   double tempvec_1 = fhat_0_t(n-1)*Time(n-1);
   for(int itt=0; itt<p; itt++){
     
-    arma::vec Covari_col = Covari.col(itt);
+    vec Covari_col = Covari.col(itt);
     
     tempvec_n = zero_vec_n;
     for(int it=0; it<n; it++){
-      tempvec_n += tempvec_1*((as<arma::vec>(pi_i_z(it)))*(Delta(it)*Covari_col(it)));
+      tempvec_n += tempvec_1*((as<vec>(pi_i_z(it)))*(Delta(it)*Covari_col(it)));
     }
     fhat_inf_z(itt) = tempvec_n/n;
   }
@@ -2955,56 +2992,56 @@ List form_mns_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
   List app_path(path);
   for(int itt=0; itt<path; itt++){
     
-    arma::vec phi_i(n); arma::vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
+    vec phi_i(n); vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
     while(tolerance>tol){
       
       phi_i = rnorm(n);
       
       tempvec_n = zero_vec_n; tempmat_np = zero_mat_np;
       for(int it=0; it<n; it++){
-        tempvec_n += as<arma::vec>(dMhat_i_t(it))*phi_i(it);
-        tempmat_np += (as<arma::vec>(dMhat_i_t(it))*((Covari.row(it))))*phi_i(it);
+        tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
+        tempmat_np += (as<vec>(dMhat_i_t(it))*((Covari.row(it))))*phi_i(it);
       }
-      arma::vec U_phi_inf = (sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0)/n).t();
+      vec U_phi_inf = (sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0)/n).t();
       
       List b_s_result = dfsane_mns(b, Time, Delta, Covari, U_phi_inf);
       
-      b_s = as<arma::vec>(b_s_result[1]);
+      b_s = as<vec>(b_s_result[1]);
       
       tolerance = as<double>(b_s_result[0]);
     }
     
     tempmat_nn = zero_mat_nn;
     for(int it=0; it<n; it++){
-      tempmat_nn += ((((as<arma::rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<arma::vec>(dMhat_i_t(it))))*phi_i(it));
+      tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<vec>(dMhat_i_t(it))))*phi_i(it));
     }
-    arma::mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
+    mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
     
-    arma::vec resid_s = log(Time) + Covari*b_s;
+    vec resid_s = log(Time) + Covari*b_s;
     
-    arma::uvec index_resid_s = sort_index(resid_s);
+    uvec index_resid_s = sort_index(resid_s);
     
-    arma::vec Delta_s = Delta(index_resid_s);
+    vec Delta_s = Delta(index_resid_s);
     resid_s = resid_s(index_resid_s);
     
-    List N_i_t_s(n); List Y_i_t_s(n); arma::vec S_0_t_s = zero_vec_n;
+    List N_i_t_s(n); List Y_i_t_s(n); vec S_0_t_s = zero_vec_n;
     for(int it=0; it<n; it++){
       N_i_t_s(it) = (resid_s>=resid_s(it))*Delta_s(it);
       Y_i_t_s(it) = (resid_s<=resid_s(it))*1;
-      S_0_t_s += as<arma::vec>(Y_i_t_s(it));
+      S_0_t_s += as<vec>(Y_i_t_s(it));
     }
     
-    arma::vec Lambdahat_0_t_s = cumsum(Delta_s/S_0_t_s);
+    vec Lambdahat_0_t_s = cumsum(Delta_s/S_0_t_s);
     
-    arma::vec term1 = U_pi_phi_inf_z/sqrt(n);
+    vec term1 = U_pi_phi_inf_z/sqrt(n);
     
-    arma::vec term2 = zero_vec_n;
+    vec term2 = zero_vec_n;
     tempvec_p = (b-b_s)*sqrt(n);
     for(int it=0; it<p; it++){
-      term2 += (as<arma::vec>(fhat_inf_z(it))+(sum((as<arma::mat>(ghat_t_z(it)).each_col())%dLambdahat_0_t)).t())*(tempvec_p(it));
+      term2 += (as<vec>(fhat_inf_z(it))+(sum((as<mat>(ghat_t_z(it)).each_col())%dLambdahat_0_t)).t())*(tempvec_p(it));
     }
     
-    arma::vec term3 = (sum((S_pi_t_z.each_col())%diff(join_cols(zero_vec_1,Lambdahat_0_t-Lambdahat_0_t_s)))).t()/sqrt(n);
+    vec term3 = (sum((S_pi_t_z.each_col())%diff(join_cols(zero_vec_1,Lambdahat_0_t-Lambdahat_0_t_s)))).t()/sqrt(n);
     
     app_path(itt) = term1 - term2 - term3;
     
@@ -3014,23 +3051,26 @@ List form_mns_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
   for(int it=0; it<path; it++){
     tempmat_npath(_,it) = (as<NumericVector>(app_path(it)));
   }
-  arma::mat se_boot = stddev(as<arma::mat>(tempmat_npath),0,1);
+  vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
+  uvec ind_se_boot = find(se_boot == 0);
+  int num_se_boot = ind_se_boot.size();
+  se_boot(ind_se_boot) = ones(num_se_boot);
   
-  List app_std_path(path); arma::vec absmax_app_path(path); arma::vec absmax_app_std_path(path);
+  List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
-    absmax_app_path(it) = (abs(as<arma::vec>(app_path(it)))).max();
-    app_std_path(it) = (as<arma::vec>(app_path(it))/se_boot);
-    absmax_app_std_path(it) = (abs(as<arma::vec>(app_std_path(it)))).max();
+    absmax_app_path(it) = (abs(as<vec>(app_path(it)))).max();
+    app_std_path(it) = (as<vec>(app_path(it))/se_boot);
+    absmax_app_std_path(it) = (abs(as<vec>(app_std_path(it)))).max();
   }
   
-  arma::vec obs_std_path = obs_path/se_boot;
+  vec obs_std_path = obs_path/se_boot;
   double absmax_obs_path = (abs(obs_path)).max();
   double absmax_obs_std_path = (abs(obs_std_path)).max();
   
-  arma::uvec find_unstd = (find(absmax_app_path>absmax_obs_path));
+  uvec find_unstd = (find(absmax_app_path>absmax_obs_path));
   double p_value = (find_unstd.size()); p_value = p_value/path;
   
-  arma::uvec find_std = (find(absmax_app_std_path>absmax_obs_std_path));
+  uvec find_std = (find(absmax_app_std_path>absmax_obs_std_path));
   double p_std_value = (find_std.size()); p_std_value = p_std_value/path;
   
   return List::create(_["TestType"]="Form",_["path"]=path,_["beta"]=b,_["Time"]=Time,
@@ -3041,80 +3081,80 @@ List form_mns_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arm
 
 
 // omni_mis_optim
-List omni_mis_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma::mat Covari, String optimType);
+List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType);
 RcppExport SEXP _afttest_omni_mis_optim(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP optimTypeSEXP) {
   BEGIN_RCPP
   Rcpp::RObject rcpp_result_gen;
   Rcpp::RNGScope rcpp_rngScope_gen;
   Rcpp::traits::input_parameter< int >::type path(pathSEXP);
-  Rcpp::traits::input_parameter< arma::vec >::type b(bSEXP);
-  Rcpp::traits::input_parameter< arma::vec >::type Time(TimeSEXP);
-  Rcpp::traits::input_parameter< arma::vec >::type Delta(DeltaSEXP);
-  Rcpp::traits::input_parameter< arma::mat >::type Covari(CovariSEXP);
+  Rcpp::traits::input_parameter< vec >::type b(bSEXP);
+  Rcpp::traits::input_parameter< vec >::type Time(TimeSEXP);
+  Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
+  Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
   Rcpp::traits::input_parameter< String >::type optimType(optimTypeSEXP);
   rcpp_result_gen = Rcpp::wrap(omni_mis_optim(path, b, Time, Delta, Covari, optimType));
   return rcpp_result_gen;
   END_RCPP
 }
 // omni_mns_optim
-List omni_mns_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma::mat Covari, String optimType);
+List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType);
 RcppExport SEXP _afttest_omni_mns_optim(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP optimTypeSEXP) {
   BEGIN_RCPP
   Rcpp::RObject rcpp_result_gen;
   Rcpp::RNGScope rcpp_rngScope_gen;
   Rcpp::traits::input_parameter< int >::type path(pathSEXP);
-  Rcpp::traits::input_parameter< arma::vec >::type b(bSEXP);
-  Rcpp::traits::input_parameter< arma::vec >::type Time(TimeSEXP);
-  Rcpp::traits::input_parameter< arma::vec >::type Delta(DeltaSEXP);
-  Rcpp::traits::input_parameter< arma::mat >::type Covari(CovariSEXP);
+  Rcpp::traits::input_parameter< vec >::type b(bSEXP);
+  Rcpp::traits::input_parameter< vec >::type Time(TimeSEXP);
+  Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
+  Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
   Rcpp::traits::input_parameter< String >::type optimType(optimTypeSEXP);
   rcpp_result_gen = Rcpp::wrap(omni_mns_optim(path, b, Time, Delta, Covari, optimType));
   return rcpp_result_gen;
   END_RCPP
 }
 // link_mis_optim
-List link_mis_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma::mat Covari, String optimType);
+List link_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType);
 RcppExport SEXP _afttest_link_mis_optim(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP optimTypeSEXP) {
   BEGIN_RCPP
   Rcpp::RObject rcpp_result_gen;
   Rcpp::RNGScope rcpp_rngScope_gen;
   Rcpp::traits::input_parameter< int >::type path(pathSEXP);
-  Rcpp::traits::input_parameter< arma::vec >::type b(bSEXP);
-  Rcpp::traits::input_parameter< arma::vec >::type Time(TimeSEXP);
-  Rcpp::traits::input_parameter< arma::vec >::type Delta(DeltaSEXP);
-  Rcpp::traits::input_parameter< arma::mat >::type Covari(CovariSEXP);
+  Rcpp::traits::input_parameter< vec >::type b(bSEXP);
+  Rcpp::traits::input_parameter< vec >::type Time(TimeSEXP);
+  Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
+  Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
   Rcpp::traits::input_parameter< String >::type optimType(optimTypeSEXP);
   rcpp_result_gen = Rcpp::wrap(link_mis_optim(path, b, Time, Delta, Covari, optimType));
   return rcpp_result_gen;
   END_RCPP
 }
 // link_mns_optim
-List link_mns_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma::mat Covari, String optimType);
+List link_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType);
 RcppExport SEXP _afttest_link_mns_optim(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP optimTypeSEXP) {
   BEGIN_RCPP
   Rcpp::RObject rcpp_result_gen;
   Rcpp::RNGScope rcpp_rngScope_gen;
   Rcpp::traits::input_parameter< int >::type path(pathSEXP);
-  Rcpp::traits::input_parameter< arma::vec >::type b(bSEXP);
-  Rcpp::traits::input_parameter< arma::vec >::type Time(TimeSEXP);
-  Rcpp::traits::input_parameter< arma::vec >::type Delta(DeltaSEXP);
-  Rcpp::traits::input_parameter< arma::mat >::type Covari(CovariSEXP);
+  Rcpp::traits::input_parameter< vec >::type b(bSEXP);
+  Rcpp::traits::input_parameter< vec >::type Time(TimeSEXP);
+  Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
+  Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
   Rcpp::traits::input_parameter< String >::type optimType(optimTypeSEXP);
   rcpp_result_gen = Rcpp::wrap(link_mns_optim(path, b, Time, Delta, Covari, optimType));
   return rcpp_result_gen;
   END_RCPP
 }
 // form_mis_optim
-List form_mis_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma::mat Covari, String optimType, int form);
+List form_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int form);
 RcppExport SEXP _afttest_form_mis_optim(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP optimTypeSEXP, SEXP formSEXP) {
   BEGIN_RCPP
   Rcpp::RObject rcpp_result_gen;
   Rcpp::RNGScope rcpp_rngScope_gen;
   Rcpp::traits::input_parameter< int >::type path(pathSEXP);
-  Rcpp::traits::input_parameter< arma::vec >::type b(bSEXP);
-  Rcpp::traits::input_parameter< arma::vec >::type Time(TimeSEXP);
-  Rcpp::traits::input_parameter< arma::vec >::type Delta(DeltaSEXP);
-  Rcpp::traits::input_parameter< arma::mat >::type Covari(CovariSEXP);
+  Rcpp::traits::input_parameter< vec >::type b(bSEXP);
+  Rcpp::traits::input_parameter< vec >::type Time(TimeSEXP);
+  Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
+  Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
   Rcpp::traits::input_parameter< String >::type optimType(optimTypeSEXP);
   Rcpp::traits::input_parameter< int >::type form(formSEXP);
   rcpp_result_gen = Rcpp::wrap(form_mis_optim(path, b, Time, Delta, Covari, optimType, form));
@@ -3122,16 +3162,16 @@ RcppExport SEXP _afttest_form_mis_optim(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP
   END_RCPP
 }
 // form_mns_optim
-List form_mns_optim(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma::mat Covari, String optimType, int form);
+List form_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int form);
 RcppExport SEXP _afttest_form_mns_optim(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP optimTypeSEXP, SEXP formSEXP) {
   BEGIN_RCPP
   Rcpp::RObject rcpp_result_gen;
   Rcpp::RNGScope rcpp_rngScope_gen;
   Rcpp::traits::input_parameter< int >::type path(pathSEXP);
-  Rcpp::traits::input_parameter< arma::vec >::type b(bSEXP);
-  Rcpp::traits::input_parameter< arma::vec >::type Time(TimeSEXP);
-  Rcpp::traits::input_parameter< arma::vec >::type Delta(DeltaSEXP);
-  Rcpp::traits::input_parameter< arma::mat >::type Covari(CovariSEXP);
+  Rcpp::traits::input_parameter< vec >::type b(bSEXP);
+  Rcpp::traits::input_parameter< vec >::type Time(TimeSEXP);
+  Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
+  Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
   Rcpp::traits::input_parameter< String >::type optimType(optimTypeSEXP);
   Rcpp::traits::input_parameter< int >::type form(formSEXP);
   rcpp_result_gen = Rcpp::wrap(form_mns_optim(path, b, Time, Delta, Covari, optimType, form));
@@ -3139,92 +3179,92 @@ RcppExport SEXP _afttest_form_mns_optim(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP
   END_RCPP
 }
 // omni_mis_DFSANE
-List omni_mis_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma::mat Covari);
+List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari);
 RcppExport SEXP _afttest_omni_mis_DFSANE(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP) {
   BEGIN_RCPP
   Rcpp::RObject rcpp_result_gen;
   Rcpp::RNGScope rcpp_rngScope_gen;
   Rcpp::traits::input_parameter< int >::type path(pathSEXP);
-  Rcpp::traits::input_parameter< arma::vec >::type b(bSEXP);
-  Rcpp::traits::input_parameter< arma::vec >::type Time(TimeSEXP);
-  Rcpp::traits::input_parameter< arma::vec >::type Delta(DeltaSEXP);
-  Rcpp::traits::input_parameter< arma::mat >::type Covari(CovariSEXP);
+  Rcpp::traits::input_parameter< vec >::type b(bSEXP);
+  Rcpp::traits::input_parameter< vec >::type Time(TimeSEXP);
+  Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
+  Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
   rcpp_result_gen = Rcpp::wrap(omni_mis_DFSANE(path, b, Time, Delta, Covari));
   return rcpp_result_gen;
   END_RCPP
 }
 // omni_mns_DFSANE
-List omni_mns_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma::mat Covari);
+List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari);
 RcppExport SEXP _afttest_omni_mns_DFSANE(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP) {
   BEGIN_RCPP
   Rcpp::RObject rcpp_result_gen;
   Rcpp::RNGScope rcpp_rngScope_gen;
   Rcpp::traits::input_parameter< int >::type path(pathSEXP);
-  Rcpp::traits::input_parameter< arma::vec >::type b(bSEXP);
-  Rcpp::traits::input_parameter< arma::vec >::type Time(TimeSEXP);
-  Rcpp::traits::input_parameter< arma::vec >::type Delta(DeltaSEXP);
-  Rcpp::traits::input_parameter< arma::mat >::type Covari(CovariSEXP);
+  Rcpp::traits::input_parameter< vec >::type b(bSEXP);
+  Rcpp::traits::input_parameter< vec >::type Time(TimeSEXP);
+  Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
+  Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
   rcpp_result_gen = Rcpp::wrap(omni_mns_DFSANE(path, b, Time, Delta, Covari));
   return rcpp_result_gen;
   END_RCPP
 }
 // link_mis_DFSANE
-List link_mis_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma::mat Covari);
+List link_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari);
 RcppExport SEXP _afttest_link_mis_DFSANE(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP) {
   BEGIN_RCPP
   Rcpp::RObject rcpp_result_gen;
   Rcpp::RNGScope rcpp_rngScope_gen;
   Rcpp::traits::input_parameter< int >::type path(pathSEXP);
-  Rcpp::traits::input_parameter< arma::vec >::type b(bSEXP);
-  Rcpp::traits::input_parameter< arma::vec >::type Time(TimeSEXP);
-  Rcpp::traits::input_parameter< arma::vec >::type Delta(DeltaSEXP);
-  Rcpp::traits::input_parameter< arma::mat >::type Covari(CovariSEXP);
+  Rcpp::traits::input_parameter< vec >::type b(bSEXP);
+  Rcpp::traits::input_parameter< vec >::type Time(TimeSEXP);
+  Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
+  Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
   rcpp_result_gen = Rcpp::wrap(link_mis_DFSANE(path, b, Time, Delta, Covari));
   return rcpp_result_gen;
   END_RCPP
 }
 // link_mns_DFSANE
-List link_mns_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma::mat Covari);
+List link_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari);
 RcppExport SEXP _afttest_link_mns_DFSANE(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP) {
   BEGIN_RCPP
   Rcpp::RObject rcpp_result_gen;
   Rcpp::RNGScope rcpp_rngScope_gen;
   Rcpp::traits::input_parameter< int >::type path(pathSEXP);
-  Rcpp::traits::input_parameter< arma::vec >::type b(bSEXP);
-  Rcpp::traits::input_parameter< arma::vec >::type Time(TimeSEXP);
-  Rcpp::traits::input_parameter< arma::vec >::type Delta(DeltaSEXP);
-  Rcpp::traits::input_parameter< arma::mat >::type Covari(CovariSEXP);
+  Rcpp::traits::input_parameter< vec >::type b(bSEXP);
+  Rcpp::traits::input_parameter< vec >::type Time(TimeSEXP);
+  Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
+  Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
   rcpp_result_gen = Rcpp::wrap(link_mns_DFSANE(path, b, Time, Delta, Covari));
   return rcpp_result_gen;
   END_RCPP
 }
 // form_mis_DFSANE
-List form_mis_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma::mat Covari, int form);
+List form_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form);
 RcppExport SEXP _afttest_form_mis_DFSANE(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP formSEXP) {
   BEGIN_RCPP
   Rcpp::RObject rcpp_result_gen;
   Rcpp::RNGScope rcpp_rngScope_gen;
   Rcpp::traits::input_parameter< int >::type path(pathSEXP);
-  Rcpp::traits::input_parameter< arma::vec >::type b(bSEXP);
-  Rcpp::traits::input_parameter< arma::vec >::type Time(TimeSEXP);
-  Rcpp::traits::input_parameter< arma::vec >::type Delta(DeltaSEXP);
-  Rcpp::traits::input_parameter< arma::mat >::type Covari(CovariSEXP);
+  Rcpp::traits::input_parameter< vec >::type b(bSEXP);
+  Rcpp::traits::input_parameter< vec >::type Time(TimeSEXP);
+  Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
+  Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
   Rcpp::traits::input_parameter< int >::type form(formSEXP);
   rcpp_result_gen = Rcpp::wrap(form_mis_DFSANE(path, b, Time, Delta, Covari, form));
   return rcpp_result_gen;
   END_RCPP
 }
 // form_mns_DFSANE
-List form_mns_DFSANE(int path, arma::vec b, arma::vec Time, arma::vec Delta, arma::mat Covari, int form);
+List form_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form);
 RcppExport SEXP _afttest_form_mns_DFSANE(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP formSEXP) {
   BEGIN_RCPP
   Rcpp::RObject rcpp_result_gen;
   Rcpp::RNGScope rcpp_rngScope_gen;
   Rcpp::traits::input_parameter< int >::type path(pathSEXP);
-  Rcpp::traits::input_parameter< arma::vec >::type b(bSEXP);
-  Rcpp::traits::input_parameter< arma::vec >::type Time(TimeSEXP);
-  Rcpp::traits::input_parameter< arma::vec >::type Delta(DeltaSEXP);
-  Rcpp::traits::input_parameter< arma::mat >::type Covari(CovariSEXP);
+  Rcpp::traits::input_parameter< vec >::type b(bSEXP);
+  Rcpp::traits::input_parameter< vec >::type Time(TimeSEXP);
+  Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
+  Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
   Rcpp::traits::input_parameter< int >::type form(formSEXP);
   rcpp_result_gen = Rcpp::wrap(form_mns_DFSANE(path, b, Time, Delta, Covari, form));
   return rcpp_result_gen;
