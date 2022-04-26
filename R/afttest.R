@@ -8,7 +8,7 @@
 #' consists of two columns. The first one is the observed failure time and
 #'  the second one is the indicator variable, specifying right censoring.
 #' @param path The argument path determines the number of simulations of
-#' the approximated process. The default is given by 1000.
+#' the approximated process. The default is given by 200.
 #' @param testtype The argument testtype includes the aforementioned an
 #' omnibus test ("omni"), a functional form ("form") and a link function
 #' ("linkftn"). The rank weight in the package is the Gehan"s weight and
