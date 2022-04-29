@@ -4,7 +4,7 @@
 \alias{afttestplot}
 \title{afttestplot}
 \usage{
-afttestplot(result, path = 100, std = "unstd")
+afttestplot(result, path = 100, std = "std")
 }
 \arguments{
 \item{result}{For function afttestplot, the only required argument is
@@ -18,7 +18,7 @@ the number of paths used in by afttest function, otherwise it is given as
 the number of paths used in by afttest function. The default is set to be 100.}
 
 \item{std}{The option for the argument std is "unstd" and "std". In this 
-argument, "unstd" is the default.}
+argument, "std" is the default.}
 }
 \value{
 Basically, a graph from the afttestplot is based on the packages

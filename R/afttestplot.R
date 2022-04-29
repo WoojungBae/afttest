@@ -10,7 +10,7 @@
 #' the number of paths used in by afttest function, otherwise it is given as
 #' the number of paths used in by afttest function. The default is set to be 100.
 #' @param std The option for the argument std is "unstd" and "std". In this 
-#' argument, "unstd" is the default.
+#' argument, "std" is the default.
 #' @return Basically, a graph from the afttestplot is based on the packages
 #' ggplot2 (Wickham, 2009) and gridExtra (Auguie, 2017). It offers a graph that
 #' y-axis is the test statistics and x-axis represents the rank of the subjects
@@ -61,7 +61,7 @@
 #' @importFrom stats quantile
 #' 
 #' @export
-afttestplot=function(result,path=100,std="unstd"){
+afttestplot=function(result,path=100,std="std"){
   
   testtype=result$TestType
   
