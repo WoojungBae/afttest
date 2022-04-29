@@ -35,6 +35,11 @@ plotting_omni=function(result,path,std){
   n=length(result_resid)
   xaxix=(1:n)
   
+  pathsave = length(result$app_std_path)
+  if (pathsave<path){
+    path = pathsave
+  }
+  
   # if (xaxix=="rank"){xaxix=(1:n)[order(result_Time)]}
   # else if (xaxix=="real"){xaxix=result_Time}
   # else (xaxix=result_Time)
@@ -149,10 +154,13 @@ plotting_link=function(result,path,std){
   n=length(result$Time)
   xaxix=(1:n)
   
+  pathsave = length(result$app_std_path)
+  if (pathsave<path){
+    path = pathsave
+  }
   # result_Covari=result$Covari
   # if (xaxix=="rank"){xaxix=(1:n)[order(result_Covari)]}
   # else {xaxix=result_Covari}
-  
   if (std=="std"){
     
     dataset_std_What=data.frame()
@@ -240,10 +248,13 @@ plotting_form=function(result,path,std){
   n=length(result$Time)
   xaxix=(1:n)
   
+  pathsave = length(result$app_std_path)
+  if (pathsave<path){
+    path = pathsave
+  }
   # result_Covari=result$Covari
   # if (xaxix=="rank"){xaxix=(1:n)[order(result_Covari)]}
   # else {xaxix=result_Covari}
-  
   if (std=="std"){
     
     dataset_std_What=data.frame()
