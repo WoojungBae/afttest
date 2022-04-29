@@ -29,6 +29,11 @@
 #' It needs to be specified the name of covariates in the formula argument
 #' and the default option is "1, which represents the first covariate
 #' in the formula argument.
+#' @param pathsave The argument pathsave is optional and it is the number
+#' of paths saved among all the paths. It must be less than or equal to the
+#' argument path. 100 is set to be the default. Note that it requires a lot 
+#' of memory if we save all sampled paths (N by N matrix for each path and 
+#' so path*N*N elements)
 #' 
 #' @return The function afttest gives the list as a result. The result 
 #' consists of the number of paths ($path), the estimated beta ($beta), 
@@ -89,7 +94,8 @@
 #' 
 #' @export
 afttest = function(formula, path = 200, testtype = c("omni","link","form"), eqType = c("mis","mns"), 
-                   optimType = c("DFSANE","Nelder-Mead","BFGS","CG","L-BFGS-B","SANN","Brent"), form = 1) {
+                   optimType = c("DFSANE","Nelder-Mead","BFGS","CG","L-BFGS-B","SANN","Brent"),
+                   form = 1, pathsave = 100) {
   
   if(length(testtype) != 1){testtype = "omni"}
   if(length(eqType) != 1){eqType = "mis"}
@@ -115,37 +121,37 @@ afttest = function(formula, path = 200, testtype = c("omni","link","form"), eqTy
   if (optimType != "DFSANE"){
     if (eqType=="mns"){
       if (testtype == "omni") {
-        return(.Call(`_afttest_omni_mns_optim`, path, b, Time, Delta, Covari, optimType))
+        return(.Call(`_afttest_omni_mns_optim`, path, b, Time, Delta, Covari, optimType, pathsave))
       } else if (testtype == "link") {
-        return(.Call(`_afttest_link_mns_optim`, path, b, Time, Delta, Covari, optimType))
+        return(.Call(`_afttest_link_mns_optim`, path, b, Time, Delta, Covari, optimType, pathsave))
       } else if (testtype == "form") {
-        return(.Call(`_afttest_form_mns_optim`, path, b, Time, Delta, Covari, optimType, form))
+        return(.Call(`_afttest_form_mns_optim`, path, b, Time, Delta, Covari, optimType, form, pathsave))
       }
     } else if (eqType=="mis"){
       if (testtype == "omni") {
-        return(.Call(`_afttest_omni_mis_optim`, path, b, Time, Delta, Covari, optimType))
+        return(.Call(`_afttest_omni_mis_optim`, path, b, Time, Delta, Covari, optimType, pathsave))
       } else if (testtype == "link") {
-        return(.Call(`_afttest_link_mis_optim`, path, b, Time, Delta, Covari, optimType))
+        return(.Call(`_afttest_link_mis_optim`, path, b, Time, Delta, Covari, optimType, pathsave))
       } else if (testtype == "form") {
-        return(.Call(`_afttest_form_mis_optim`, path, b, Time, Delta, Covari, optimType, form))
+        return(.Call(`_afttest_form_mis_optim`, path, b, Time, Delta, Covari, optimType, form, pathsave))
       }
     }
   } else if (optimType == "DFSANE"){
     if (eqType=="mns"){
       if (testtype == "omni") {
-        return(.Call(`_afttest_omni_mns_DFSANE`, path, b, Time, Delta, Covari))
+        return(.Call(`_afttest_omni_mns_DFSANE`, path, b, Time, Delta, Covari, pathsave))
       } else if (testtype == "link") {
-        return(.Call(`_afttest_link_mns_DFSANE`, path, b, Time, Delta, Covari))
+        return(.Call(`_afttest_link_mns_DFSANE`, path, b, Time, Delta, Covari, pathsave))
       } else if (testtype == "form") {
-        return(.Call(`_afttest_form_mns_DFSANE`, path, b, Time, Delta, Covari, form))
+        return(.Call(`_afttest_form_mns_DFSANE`, path, b, Time, Delta, Covari, form, pathsave))
       }
     } else if (eqType=="mis"){
       if (testtype == "omni") {
-        return(.Call(`_afttest_omni_mis_DFSANE`, path, b, Time, Delta, Covari))
+        return(.Call(`_afttest_omni_mis_DFSANE`, path, b, Time, Delta, Covari, pathsave))
       } else if (testtype == "link") {
-        return(.Call(`_afttest_link_mis_DFSANE`, path, b, Time, Delta, Covari))
+        return(.Call(`_afttest_link_mis_DFSANE`, path, b, Time, Delta, Covari, pathsave))
       } else if (testtype == "form") {
-        return(.Call(`_afttest_form_mis_DFSANE`, path, b, Time, Delta, Covari, form))
+        return(.Call(`_afttest_form_mis_DFSANE`, path, b, Time, Delta, Covari, form, pathsave))
       }
     }
   }

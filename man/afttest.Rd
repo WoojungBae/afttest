@@ -10,7 +10,8 @@ afttest(
   testtype = c("omni", "link", "form"),
   eqType = c("mis", "mns"),
   optimType = c("DFSANE", "Nelder-Mead", "BFGS", "CG", "L-BFGS-B", "SANN", "Brent"),
-  form = 1
+  form = 1,
+  pathsave = 100
 )
 }
 \arguments{
@@ -46,6 +47,12 @@ is given as "form" and it determines a covariate which will be tested.
 It needs to be specified the name of covariates in the formula argument
 and the default option is "1, which represents the first covariate
 in the formula argument.}
+
+\item{pathsave}{The argument pathsave is optional and it is the number
+of paths saved among all the paths. It must be less than or equal to the
+argument path. 100 is set to be the default. Note that it requires a lot 
+of memory if we save all sampled paths (N by N matrix for each path and 
+so path*N*N elements)}
 }
 \value{
 The function afttest gives the list as a result. The result 

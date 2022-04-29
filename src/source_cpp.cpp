@@ -392,7 +392,7 @@ List dfsane_mns(vec beta, vec Time, vec Delta, mat Covari, vec targetvector){
   return List::create(tol_f,b_new);
 }
 
-List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType){
+List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int pathsave){
   
   Rcpp::Environment stats("package:stats"); 
   Rcpp::Function optim = stats["optim"];
@@ -615,13 +615,20 @@ List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   uvec find_std = (find(absmax_app_std_path>absmax_obs_std_path));
   double p_std_value = (find_std.size()); p_std_value = p_std_value/path;
   
+  
+  if(path > pathsave){
+    pathsave = pathsave - 1;
+    app_path = app_path[Range(0,pathsave)];
+    app_std_path = app_std_path[Range(0,pathsave)];
+  }
+  
   return List::create(_["TestType"]="Omni",_["path"]=path,_["beta"]=b,_["Time"]=Time,
                       _["Delta"]=Delta,_["Covari"]=Covari,_["Resid"]=resid,_["SE_boot"]=se_boot,
                         _["app_path"]=app_path,_["app_std_path"]=app_std_path,_["p_std_value"]=p_std_value,
                           _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
 }
 
-List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType){
+List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int pathsave){
   
   Rcpp::Environment stats("package:stats"); 
   Rcpp::Function optim = stats["optim"];
@@ -844,13 +851,20 @@ List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   uvec find_std = (find(absmax_app_std_path>absmax_obs_std_path));
   double p_std_value = (find_std.size()); p_std_value = p_std_value/path;
   
+  
+  if(path > pathsave){
+    pathsave = pathsave - 1;
+    app_path = app_path[Range(0,pathsave)];
+    app_std_path = app_std_path[Range(0,pathsave)];
+  }
+  
   return List::create(_["TestType"]="Omni",_["path"]=path,_["beta"]=b,_["Time"]=Time,
                       _["Delta"]=Delta,_["Covari"]=Covari,_["Resid"]=resid,_["SE_boot"]=se_boot,
                         _["app_path"]=app_path,_["app_std_path"]=app_std_path,_["p_std_value"]=p_std_value,
                           _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
 }
 
-List link_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType){
+List link_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int pathsave){
   
   Rcpp::Environment stats("package:stats"); 
   Rcpp::Function optim = stats["optim"];
@@ -1071,13 +1085,20 @@ List link_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   uvec find_std = (find(absmax_app_std_path>absmax_obs_std_path));
   double p_std_value = (find_std.size()); p_std_value = p_std_value/path;
   
+  
+  if(path > pathsave){
+    pathsave = pathsave - 1;
+    app_path = app_path[Range(0,pathsave)];
+    app_std_path = app_std_path[Range(0,pathsave)];
+  }
+  
   return List::create(_["TestType"]="Link",_["path"]=path,_["beta"]=b,_["Time"]=Time,
                       _["Delta"]=Delta,_["Covari"]=Covari,_["Resid"]=resid,_["SE_boot"]=se_boot,
                         _["app_path"]=app_path,_["app_std_path"]=app_std_path,_["p_std_value"]=p_std_value,
                           _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
 }
 
-List link_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType){
+List link_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int pathsave){
   
   Rcpp::Environment stats("package:stats"); 
   Rcpp::Function optim = stats["optim"];
@@ -1298,13 +1319,20 @@ List link_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   uvec find_std = (find(absmax_app_std_path>absmax_obs_std_path));
   double p_std_value = (find_std.size()); p_std_value = p_std_value/path;
   
+  
+  if(path > pathsave){
+    pathsave = pathsave - 1;
+    app_path = app_path[Range(0,pathsave)];
+    app_std_path = app_std_path[Range(0,pathsave)];
+  }
+  
   return List::create(_["TestType"]="Link",_["path"]=path,_["beta"]=b,_["Time"]=Time,
                       _["Delta"]=Delta,_["Covari"]=Covari,_["Resid"]=resid,_["SE_boot"]=se_boot,
                         _["app_path"]=app_path,_["app_std_path"]=app_std_path,_["p_std_value"]=p_std_value,
                           _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
 }
 
-List form_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int form){
+List form_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int form, int pathsave){
   
   Rcpp::Environment stats("package:stats"); 
   Rcpp::Function optim = stats["optim"];
@@ -1526,13 +1554,20 @@ List form_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   uvec find_std = (find(absmax_app_std_path>absmax_obs_std_path));
   double p_std_value = (find_std.size()); p_std_value = p_std_value/path;
   
+  
+  if(path > pathsave){
+    pathsave = pathsave - 1;
+    app_path = app_path[Range(0,pathsave)];
+    app_std_path = app_std_path[Range(0,pathsave)];
+  }
+  
   return List::create(_["TestType"]="Form",_["path"]=path,_["beta"]=b,_["Time"]=Time,
                       _["Delta"]=Delta,_["Covari"]=Covari,_["Resid"]=resid,_["SE_boot"]=se_boot,
                         _["app_path"]=app_path,_["app_std_path"]=app_std_path,_["p_std_value"]=p_std_value,
                           _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
 }
 
-List form_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int form){
+List form_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int form, int pathsave){
   
   Rcpp::Environment stats("package:stats"); 
   Rcpp::Function optim = stats["optim"];
@@ -1754,13 +1789,20 @@ List form_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   uvec find_std = (find(absmax_app_std_path>absmax_obs_std_path));
   double p_std_value = (find_std.size()); p_std_value = p_std_value/path;
   
+  
+  if(path > pathsave){
+    pathsave = pathsave - 1;
+    app_path = app_path[Range(0,pathsave)];
+    app_std_path = app_std_path[Range(0,pathsave)];
+  }
+  
   return List::create(_["TestType"]="Form",_["path"]=path,_["beta"]=b,_["Time"]=Time,
                       _["Delta"]=Delta,_["Covari"]=Covari,_["Resid"]=resid,_["SE_boot"]=se_boot,
                         _["app_path"]=app_path,_["app_std_path"]=app_std_path,_["p_std_value"]=p_std_value,
                           _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
 }
 
-List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari){
+List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int pathsave){
   
   int n = Covari.n_rows;
   int p = Covari.n_cols;
@@ -1974,13 +2016,20 @@ List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari){
   uvec find_std = (find(absmax_app_std_path>absmax_obs_std_path));
   double p_std_value = (find_std.size()); p_std_value = p_std_value/path;
   
+  
+  if(path > pathsave){
+    pathsave = pathsave - 1;
+    app_path = app_path[Range(0,pathsave)];
+    app_std_path = app_std_path[Range(0,pathsave)];
+  }
+  
   return List::create(_["TestType"]="Omni",_["path"]=path,_["beta"]=b,_["Time"]=Time,
                       _["Delta"]=Delta,_["Covari"]=Covari,_["Resid"]=resid,_["SE_boot"]=se_boot,
                         _["app_path"]=app_path,_["app_std_path"]=app_std_path,_["p_std_value"]=p_std_value,
                           _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
 }
 
-List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari){
+List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int pathsave){
   
   int n = Covari.n_rows;
   int p = Covari.n_cols;
@@ -2195,13 +2244,20 @@ List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari){
   uvec find_std = (find(absmax_app_std_path>absmax_obs_std_path));
   double p_std_value = (find_std.size()); p_std_value = p_std_value/path;
   
+  
+  if(path > pathsave){
+    pathsave = pathsave - 1;
+    app_path = app_path[Range(0,pathsave)];
+    app_std_path = app_std_path[Range(0,pathsave)];
+  }
+  
   return List::create(_["TestType"]="Omni",_["path"]=path,_["beta"]=b,_["Time"]=Time,
                       _["Delta"]=Delta,_["Covari"]=Covari,_["Resid"]=resid,_["SE_boot"]=se_boot,
                         _["app_path"]=app_path,_["app_std_path"]=app_std_path,_["p_std_value"]=p_std_value,
                           _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
 }
 
-List link_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari){
+List link_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int pathsave){
   
   int n = Covari.n_rows;
   int p = Covari.n_cols;
@@ -2414,13 +2470,20 @@ List link_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari){
   uvec find_std = (find(absmax_app_std_path>absmax_obs_std_path));
   double p_std_value = (find_std.size()); p_std_value = p_std_value/path;
   
+  
+  if(path > pathsave){
+    pathsave = pathsave - 1;
+    app_path = app_path[Range(0,pathsave)];
+    app_std_path = app_std_path[Range(0,pathsave)];
+  }
+  
   return List::create(_["TestType"]="Link",_["path"]=path,_["beta"]=b,_["Time"]=Time,
                       _["Delta"]=Delta,_["Covari"]=Covari,_["Resid"]=resid,_["SE_boot"]=se_boot,
                         _["app_path"]=app_path,_["app_std_path"]=app_std_path,_["p_std_value"]=p_std_value,
                           _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
 }
 
-List link_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari){
+List link_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int pathsave){
   
   int n = Covari.n_rows;
   int p = Covari.n_cols;
@@ -2633,13 +2696,20 @@ List link_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari){
   uvec find_std = (find(absmax_app_std_path>absmax_obs_std_path));
   double p_std_value = (find_std.size()); p_std_value = p_std_value/path;
   
+  
+  if(path > pathsave){
+    pathsave = pathsave - 1;
+    app_path = app_path[Range(0,pathsave)];
+    app_std_path = app_std_path[Range(0,pathsave)];
+  }
+  
   return List::create(_["TestType"]="Link",_["path"]=path,_["beta"]=b,_["Time"]=Time,
                       _["Delta"]=Delta,_["Covari"]=Covari,_["Resid"]=resid,_["SE_boot"]=se_boot,
                         _["app_path"]=app_path,_["app_std_path"]=app_std_path,_["p_std_value"]=p_std_value,
                           _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
 }
 
-List form_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form){
+List form_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form, int pathsave){
   
   int n = Covari.n_rows;
   int p = Covari.n_cols;
@@ -2852,6 +2922,13 @@ List form_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form)
   
   uvec find_std = (find(absmax_app_std_path>absmax_obs_std_path));
   double p_std_value = (find_std.size()); p_std_value = p_std_value/path;
+  
+  
+  if(path > pathsave){
+    pathsave = pathsave - 1;
+    app_path = app_path[Range(0,pathsave)];
+    app_std_path = app_std_path[Range(0,pathsave)];
+  }
   
   return List::create(_["TestType"]="Form",_["path"]=path,_["beta"]=b,_["Time"]=Time,
                       _["Delta"]=Delta,_["Covari"]=Covari,_["Resid"]=resid,_["SE_boot"]=se_boot,
@@ -2859,7 +2936,7 @@ List form_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form)
                           _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
 }
 
-List form_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form){
+List form_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form, int pathsave){
   
   int n = Covari.n_rows;
   int p = Covari.n_cols;
@@ -3072,6 +3149,12 @@ List form_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form)
   
   uvec find_std = (find(absmax_app_std_path>absmax_obs_std_path));
   double p_std_value = (find_std.size()); p_std_value = p_std_value/path;
+  
+  if(path > pathsave){
+    pathsave = pathsave - 1;
+    app_path = app_path[Range(0,pathsave)];
+    app_std_path = app_std_path[Range(0,pathsave)];
+  }
   
   return List::create(_["TestType"]="Form",_["path"]=path,_["beta"]=b,_["Time"]=Time,
                       _["Delta"]=Delta,_["Covari"]=Covari,_["Resid"]=resid,_["SE_boot"]=se_boot,
@@ -3081,8 +3164,8 @@ List form_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form)
 
 
 // omni_mis_optim
-List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType);
-RcppExport SEXP _afttest_omni_mis_optim(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP optimTypeSEXP) {
+List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int pathsave);
+RcppExport SEXP _afttest_omni_mis_optim(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP optimTypeSEXP, SEXP pathsaveSEXP) {
   BEGIN_RCPP
   Rcpp::RObject rcpp_result_gen;
   Rcpp::RNGScope rcpp_rngScope_gen;
@@ -3092,13 +3175,14 @@ RcppExport SEXP _afttest_omni_mis_optim(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP
   Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
   Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
   Rcpp::traits::input_parameter< String >::type optimType(optimTypeSEXP);
-  rcpp_result_gen = Rcpp::wrap(omni_mis_optim(path, b, Time, Delta, Covari, optimType));
+  Rcpp::traits::input_parameter< int >::type pathsave(pathsaveSEXP);
+  rcpp_result_gen = Rcpp::wrap(omni_mis_optim(path, b, Time, Delta, Covari, optimType, pathsave));
   return rcpp_result_gen;
   END_RCPP
 }
 // omni_mns_optim
-List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType);
-RcppExport SEXP _afttest_omni_mns_optim(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP optimTypeSEXP) {
+List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int pathsave);
+RcppExport SEXP _afttest_omni_mns_optim(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP optimTypeSEXP, SEXP pathsaveSEXP) {
   BEGIN_RCPP
   Rcpp::RObject rcpp_result_gen;
   Rcpp::RNGScope rcpp_rngScope_gen;
@@ -3108,13 +3192,14 @@ RcppExport SEXP _afttest_omni_mns_optim(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP
   Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
   Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
   Rcpp::traits::input_parameter< String >::type optimType(optimTypeSEXP);
-  rcpp_result_gen = Rcpp::wrap(omni_mns_optim(path, b, Time, Delta, Covari, optimType));
+  Rcpp::traits::input_parameter< int >::type pathsave(pathsaveSEXP);
+  rcpp_result_gen = Rcpp::wrap(omni_mns_optim(path, b, Time, Delta, Covari, optimType, pathsave));
   return rcpp_result_gen;
   END_RCPP
 }
 // link_mis_optim
-List link_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType);
-RcppExport SEXP _afttest_link_mis_optim(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP optimTypeSEXP) {
+List link_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int pathsave);
+RcppExport SEXP _afttest_link_mis_optim(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP optimTypeSEXP, SEXP pathsaveSEXP) {
   BEGIN_RCPP
   Rcpp::RObject rcpp_result_gen;
   Rcpp::RNGScope rcpp_rngScope_gen;
@@ -3124,13 +3209,14 @@ RcppExport SEXP _afttest_link_mis_optim(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP
   Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
   Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
   Rcpp::traits::input_parameter< String >::type optimType(optimTypeSEXP);
-  rcpp_result_gen = Rcpp::wrap(link_mis_optim(path, b, Time, Delta, Covari, optimType));
+  Rcpp::traits::input_parameter< int >::type pathsave(pathsaveSEXP);
+  rcpp_result_gen = Rcpp::wrap(link_mis_optim(path, b, Time, Delta, Covari, optimType, pathsave));
   return rcpp_result_gen;
   END_RCPP
 }
 // link_mns_optim
-List link_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType);
-RcppExport SEXP _afttest_link_mns_optim(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP optimTypeSEXP) {
+List link_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int pathsave);
+RcppExport SEXP _afttest_link_mns_optim(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP optimTypeSEXP, SEXP pathsaveSEXP) {
   BEGIN_RCPP
   Rcpp::RObject rcpp_result_gen;
   Rcpp::RNGScope rcpp_rngScope_gen;
@@ -3140,13 +3226,14 @@ RcppExport SEXP _afttest_link_mns_optim(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP
   Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
   Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
   Rcpp::traits::input_parameter< String >::type optimType(optimTypeSEXP);
-  rcpp_result_gen = Rcpp::wrap(link_mns_optim(path, b, Time, Delta, Covari, optimType));
+  Rcpp::traits::input_parameter< int >::type pathsave(pathsaveSEXP);
+  rcpp_result_gen = Rcpp::wrap(link_mns_optim(path, b, Time, Delta, Covari, optimType, pathsave));
   return rcpp_result_gen;
   END_RCPP
 }
 // form_mis_optim
-List form_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int form);
-RcppExport SEXP _afttest_form_mis_optim(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP optimTypeSEXP, SEXP formSEXP) {
+List form_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int form, int pathsave);
+RcppExport SEXP _afttest_form_mis_optim(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP optimTypeSEXP, SEXP formSEXP, SEXP pathsaveSEXP) {
   BEGIN_RCPP
   Rcpp::RObject rcpp_result_gen;
   Rcpp::RNGScope rcpp_rngScope_gen;
@@ -3157,13 +3244,14 @@ RcppExport SEXP _afttest_form_mis_optim(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP
   Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
   Rcpp::traits::input_parameter< String >::type optimType(optimTypeSEXP);
   Rcpp::traits::input_parameter< int >::type form(formSEXP);
-  rcpp_result_gen = Rcpp::wrap(form_mis_optim(path, b, Time, Delta, Covari, optimType, form));
+  Rcpp::traits::input_parameter< int >::type pathsave(pathsaveSEXP);
+  rcpp_result_gen = Rcpp::wrap(form_mis_optim(path, b, Time, Delta, Covari, optimType, form, pathsave));
   return rcpp_result_gen;
   END_RCPP
 }
 // form_mns_optim
-List form_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int form);
-RcppExport SEXP _afttest_form_mns_optim(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP optimTypeSEXP, SEXP formSEXP) {
+List form_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int form, int pathsave);
+RcppExport SEXP _afttest_form_mns_optim(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP optimTypeSEXP, SEXP formSEXP, SEXP pathsaveSEXP) {
   BEGIN_RCPP
   Rcpp::RObject rcpp_result_gen;
   Rcpp::RNGScope rcpp_rngScope_gen;
@@ -3174,13 +3262,14 @@ RcppExport SEXP _afttest_form_mns_optim(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP
   Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
   Rcpp::traits::input_parameter< String >::type optimType(optimTypeSEXP);
   Rcpp::traits::input_parameter< int >::type form(formSEXP);
-  rcpp_result_gen = Rcpp::wrap(form_mns_optim(path, b, Time, Delta, Covari, optimType, form));
+  Rcpp::traits::input_parameter< int >::type pathsave(pathsaveSEXP);
+  rcpp_result_gen = Rcpp::wrap(form_mns_optim(path, b, Time, Delta, Covari, optimType, form, pathsave));
   return rcpp_result_gen;
   END_RCPP
 }
 // omni_mis_DFSANE
-List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari);
-RcppExport SEXP _afttest_omni_mis_DFSANE(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP) {
+List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int pathsave);
+RcppExport SEXP _afttest_omni_mis_DFSANE(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP pathsaveSEXP) {
   BEGIN_RCPP
   Rcpp::RObject rcpp_result_gen;
   Rcpp::RNGScope rcpp_rngScope_gen;
@@ -3189,13 +3278,14 @@ RcppExport SEXP _afttest_omni_mis_DFSANE(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEX
   Rcpp::traits::input_parameter< vec >::type Time(TimeSEXP);
   Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
   Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
-  rcpp_result_gen = Rcpp::wrap(omni_mis_DFSANE(path, b, Time, Delta, Covari));
+  Rcpp::traits::input_parameter< int >::type pathsave(pathsaveSEXP);
+  rcpp_result_gen = Rcpp::wrap(omni_mis_DFSANE(path, b, Time, Delta, Covari, pathsave));
   return rcpp_result_gen;
   END_RCPP
 }
 // omni_mns_DFSANE
-List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari);
-RcppExport SEXP _afttest_omni_mns_DFSANE(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP) {
+List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int pathsave);
+RcppExport SEXP _afttest_omni_mns_DFSANE(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP pathsaveSEXP) {
   BEGIN_RCPP
   Rcpp::RObject rcpp_result_gen;
   Rcpp::RNGScope rcpp_rngScope_gen;
@@ -3204,13 +3294,14 @@ RcppExport SEXP _afttest_omni_mns_DFSANE(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEX
   Rcpp::traits::input_parameter< vec >::type Time(TimeSEXP);
   Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
   Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
-  rcpp_result_gen = Rcpp::wrap(omni_mns_DFSANE(path, b, Time, Delta, Covari));
+  Rcpp::traits::input_parameter< int >::type pathsave(pathsaveSEXP);
+  rcpp_result_gen = Rcpp::wrap(omni_mns_DFSANE(path, b, Time, Delta, Covari, pathsave));
   return rcpp_result_gen;
   END_RCPP
 }
 // link_mis_DFSANE
-List link_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari);
-RcppExport SEXP _afttest_link_mis_DFSANE(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP) {
+List link_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int pathsave);
+RcppExport SEXP _afttest_link_mis_DFSANE(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP pathsaveSEXP) {
   BEGIN_RCPP
   Rcpp::RObject rcpp_result_gen;
   Rcpp::RNGScope rcpp_rngScope_gen;
@@ -3219,13 +3310,14 @@ RcppExport SEXP _afttest_link_mis_DFSANE(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEX
   Rcpp::traits::input_parameter< vec >::type Time(TimeSEXP);
   Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
   Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
-  rcpp_result_gen = Rcpp::wrap(link_mis_DFSANE(path, b, Time, Delta, Covari));
+  Rcpp::traits::input_parameter< int >::type pathsave(pathsaveSEXP);
+  rcpp_result_gen = Rcpp::wrap(link_mis_DFSANE(path, b, Time, Delta, Covari, pathsave));
   return rcpp_result_gen;
   END_RCPP
 }
 // link_mns_DFSANE
-List link_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari);
-RcppExport SEXP _afttest_link_mns_DFSANE(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP) {
+List link_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int pathsave);
+RcppExport SEXP _afttest_link_mns_DFSANE(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP pathsaveSEXP) {
   BEGIN_RCPP
   Rcpp::RObject rcpp_result_gen;
   Rcpp::RNGScope rcpp_rngScope_gen;
@@ -3234,13 +3326,14 @@ RcppExport SEXP _afttest_link_mns_DFSANE(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEX
   Rcpp::traits::input_parameter< vec >::type Time(TimeSEXP);
   Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
   Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
-  rcpp_result_gen = Rcpp::wrap(link_mns_DFSANE(path, b, Time, Delta, Covari));
+  Rcpp::traits::input_parameter< int >::type pathsave(pathsaveSEXP);
+  rcpp_result_gen = Rcpp::wrap(link_mns_DFSANE(path, b, Time, Delta, Covari, pathsave));
   return rcpp_result_gen;
   END_RCPP
 }
 // form_mis_DFSANE
-List form_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form);
-RcppExport SEXP _afttest_form_mis_DFSANE(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP formSEXP) {
+List form_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form, int pathsave);
+RcppExport SEXP _afttest_form_mis_DFSANE(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP formSEXP, SEXP pathsaveSEXP) {
   BEGIN_RCPP
   Rcpp::RObject rcpp_result_gen;
   Rcpp::RNGScope rcpp_rngScope_gen;
@@ -3250,13 +3343,14 @@ RcppExport SEXP _afttest_form_mis_DFSANE(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEX
   Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
   Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
   Rcpp::traits::input_parameter< int >::type form(formSEXP);
-  rcpp_result_gen = Rcpp::wrap(form_mis_DFSANE(path, b, Time, Delta, Covari, form));
+  Rcpp::traits::input_parameter< int >::type pathsave(pathsaveSEXP);
+  rcpp_result_gen = Rcpp::wrap(form_mis_DFSANE(path, b, Time, Delta, Covari, form, pathsave));
   return rcpp_result_gen;
   END_RCPP
 }
 // form_mns_DFSANE
-List form_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form);
-RcppExport SEXP _afttest_form_mns_DFSANE(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP formSEXP) {
+List form_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form, int pathsave);
+RcppExport SEXP _afttest_form_mns_DFSANE(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP formSEXP, SEXP pathsaveSEXP) {
   BEGIN_RCPP
   Rcpp::RObject rcpp_result_gen;
   Rcpp::RNGScope rcpp_rngScope_gen;
@@ -3266,24 +3360,25 @@ RcppExport SEXP _afttest_form_mns_DFSANE(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEX
   Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
   Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
   Rcpp::traits::input_parameter< int >::type form(formSEXP);
-  rcpp_result_gen = Rcpp::wrap(form_mns_DFSANE(path, b, Time, Delta, Covari, form));
+  Rcpp::traits::input_parameter< int >::type pathsave(pathsaveSEXP);
+  rcpp_result_gen = Rcpp::wrap(form_mns_DFSANE(path, b, Time, Delta, Covari, form, pathsave));
   return rcpp_result_gen;
   END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-  {"_afttest_omni_mis_optim", (DL_FUNC) &_afttest_omni_mis_optim, 6},
-  {"_afttest_omni_mns_optim", (DL_FUNC) &_afttest_omni_mns_optim, 6},
-  {"_afttest_link_mis_optim", (DL_FUNC) &_afttest_link_mis_optim, 6},
-  {"_afttest_link_mns_optim", (DL_FUNC) &_afttest_link_mns_optim, 6},
-  {"_afttest_form_mis_optim", (DL_FUNC) &_afttest_form_mis_optim, 7},
-  {"_afttest_form_mns_optim", (DL_FUNC) &_afttest_form_mns_optim, 7},
-  {"_afttest_omni_mis_DFSANE", (DL_FUNC) &_afttest_omni_mis_DFSANE, 5},
-  {"_afttest_omni_mns_DFSANE", (DL_FUNC) &_afttest_omni_mns_DFSANE, 5},
-  {"_afttest_link_mis_DFSANE", (DL_FUNC) &_afttest_link_mis_DFSANE, 5},
-  {"_afttest_link_mns_DFSANE", (DL_FUNC) &_afttest_link_mns_DFSANE, 5},
-  {"_afttest_form_mis_DFSANE", (DL_FUNC) &_afttest_form_mis_DFSANE, 6},
-  {"_afttest_form_mns_DFSANE", (DL_FUNC) &_afttest_form_mns_DFSANE, 6},
+  {"_afttest_omni_mis_optim", (DL_FUNC) &_afttest_omni_mis_optim, 7},
+  {"_afttest_omni_mns_optim", (DL_FUNC) &_afttest_omni_mns_optim, 7},
+  {"_afttest_link_mis_optim", (DL_FUNC) &_afttest_link_mis_optim, 7},
+  {"_afttest_link_mns_optim", (DL_FUNC) &_afttest_link_mns_optim, 7},
+  {"_afttest_form_mis_optim", (DL_FUNC) &_afttest_form_mis_optim, 8},
+  {"_afttest_form_mns_optim", (DL_FUNC) &_afttest_form_mns_optim, 8},
+  {"_afttest_omni_mis_DFSANE", (DL_FUNC) &_afttest_omni_mis_DFSANE, 6},
+  {"_afttest_omni_mns_DFSANE", (DL_FUNC) &_afttest_omni_mns_DFSANE, 6},
+  {"_afttest_link_mis_DFSANE", (DL_FUNC) &_afttest_link_mis_DFSANE, 6},
+  {"_afttest_link_mns_DFSANE", (DL_FUNC) &_afttest_link_mns_DFSANE, 6},
+  {"_afttest_form_mis_DFSANE", (DL_FUNC) &_afttest_form_mis_DFSANE, 7},
+  {"_afttest_form_mns_DFSANE", (DL_FUNC) &_afttest_form_mns_DFSANE, 7},
   {NULL, NULL, 0}
 };
 
