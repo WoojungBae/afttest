@@ -595,7 +595,7 @@ List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   vec mat_se_boot = stddev(as<mat>(tempmat_n2path),0,1);
   uvec ind_se_boot = find(mat_se_boot == 0);
   int num_se_boot = ind_se_boot.size();
-  mat_se_boot(ind_se_boot) = ones(num_se_boot);
+  mat_se_boot(ind_se_boot) = (nonzeros(mat_se_boot).min())*ones(num_se_boot);
   mat se_boot = reshape(mat_se_boot,n,n);
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
@@ -831,7 +831,7 @@ List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   vec mat_se_boot = stddev(as<mat>(tempmat_n2path),0,1);
   uvec ind_se_boot = find(mat_se_boot == 0);
   int num_se_boot = ind_se_boot.size();
-  mat_se_boot(ind_se_boot) = ones(num_se_boot);
+  mat_se_boot(ind_se_boot) = (nonzeros(mat_se_boot).min())*ones(num_se_boot);
   mat se_boot = reshape(mat_se_boot,n,n);
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
@@ -1066,7 +1066,7 @@ List link_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
   uvec ind_se_boot = find(se_boot == 0);
   int num_se_boot = ind_se_boot.size();
-  se_boot(ind_se_boot) = ones(num_se_boot);
+  se_boot(ind_se_boot) = (nonzeros(se_boot).min())*ones(num_se_boot);
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
@@ -1300,7 +1300,7 @@ List link_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
   uvec ind_se_boot = find(se_boot == 0);
   int num_se_boot = ind_se_boot.size();
-  se_boot(ind_se_boot) = ones(num_se_boot);
+  se_boot(ind_se_boot) = (nonzeros(se_boot).min())*ones(num_se_boot);
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
@@ -1535,7 +1535,7 @@ List form_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
   uvec ind_se_boot = find(se_boot == 0);
   int num_se_boot = ind_se_boot.size();
-  se_boot(ind_se_boot) = ones(num_se_boot);
+  se_boot(ind_se_boot) = (nonzeros(se_boot).min())*ones(num_se_boot);
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
@@ -1770,7 +1770,7 @@ List form_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
   uvec ind_se_boot = find(se_boot == 0);
   int num_se_boot = ind_se_boot.size();
-  se_boot(ind_se_boot) = ones(num_se_boot);
+  se_boot(ind_se_boot) = (nonzeros(se_boot).min())*ones(num_se_boot);
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
@@ -1996,7 +1996,7 @@ List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   vec mat_se_boot = stddev(as<mat>(tempmat_n2path),0,1);
   uvec ind_se_boot = find(mat_se_boot == 0);
   int num_se_boot = ind_se_boot.size();
-  mat_se_boot(ind_se_boot) = ones(num_se_boot);
+  mat_se_boot(ind_se_boot) = (nonzeros(mat_se_boot).min())*ones(num_se_boot);
   mat se_boot = reshape(mat_se_boot,n,n);
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
@@ -2224,7 +2224,7 @@ List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   vec mat_se_boot = stddev(as<mat>(tempmat_n2path),0,1);
   uvec ind_se_boot = find(mat_se_boot == 0);
   int num_se_boot = ind_se_boot.size();
-  mat_se_boot(ind_se_boot) = ones(num_se_boot);
+  mat_se_boot(ind_se_boot) = (nonzeros(mat_se_boot).min())*ones(num_se_boot);
   mat se_boot = reshape(mat_se_boot,n,n);
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
@@ -2451,7 +2451,7 @@ List link_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
   uvec ind_se_boot = find(se_boot == 0);
   int num_se_boot = ind_se_boot.size();
-  se_boot(ind_se_boot) = ones(num_se_boot);
+  se_boot(ind_se_boot) = (nonzeros(se_boot).min())*ones(num_se_boot);
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
@@ -2677,7 +2677,7 @@ List link_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
   uvec ind_se_boot = find(se_boot == 0);
   int num_se_boot = ind_se_boot.size();
-  se_boot(ind_se_boot) = ones(num_se_boot);
+  se_boot(ind_se_boot) = (nonzeros(se_boot).min())*ones(num_se_boot);
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
@@ -2904,7 +2904,7 @@ List form_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
   vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
   uvec ind_se_boot = find(se_boot == 0);
   int num_se_boot = ind_se_boot.size();
-  se_boot(ind_se_boot) = ones(num_se_boot);
+  se_boot(ind_se_boot) = (nonzeros(se_boot).min())*ones(num_se_boot);
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
@@ -3131,7 +3131,7 @@ List form_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
   vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
   uvec ind_se_boot = find(se_boot == 0);
   int num_se_boot = ind_se_boot.size();
-  se_boot(ind_se_boot) = ones(num_se_boot);
+  se_boot(ind_se_boot) = (nonzeros(se_boot).min())*ones(num_se_boot);
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
