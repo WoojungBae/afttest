@@ -7,12 +7,12 @@ using namespace Rcpp;
 //' @importFrom Rcpp evalCpp
 //' @exportPattern "^[[:alpha:]]+"
 
-double target_score2_mis(vec beta, vec Time, vec Delta, mat Covari, vec targetvector){
+double target_score2_mis(vec b, vec Time, vec Delta, mat Covari, vec targetvector){
   
   int n = Covari.n_rows;
   int p = Covari.n_cols;
   
-  vec resid = log(Time) + Covari*beta;
+  vec resid = log(Time) + Covari*b;
   
   uvec index_resid = sort_index(resid);
   
@@ -38,12 +38,12 @@ double target_score2_mis(vec beta, vec Time, vec Delta, mat Covari, vec targetve
   return SumOfSqure;
 }
 
-double target_score2_mns(vec beta, vec Time, vec Delta, mat Covari, vec targetvector){
+double target_score2_mns(vec b, vec Time, vec Delta, mat Covari, vec targetvector){
   
   int n = Covari.n_rows;
   int p = Covari.n_cols;
   
-  vec resid = log(Time) + Covari*beta;
+  vec resid = log(Time) + Covari*b;
   
   uvec index_resid = sort_index(resid);
   
@@ -63,12 +63,12 @@ double target_score2_mns(vec beta, vec Time, vec Delta, mat Covari, vec targetve
   return SumOfSqure;
 }
 
-vec target_score_mis(vec beta, vec Time, vec Delta, mat Covari, vec targetvector){
+vec target_score_mis(vec b, vec Time, vec Delta, mat Covari, vec targetvector){
   
   int n = Covari.n_rows;
   int p = Covari.n_cols;
   
-  vec resid = log(Time) + Covari*beta;
+  vec resid = log(Time) + Covari*b;
   
   uvec index_resid = sort_index(resid);
   
@@ -92,12 +92,12 @@ vec target_score_mis(vec beta, vec Time, vec Delta, mat Covari, vec targetvector
   return F_vec;
 }
 
-vec target_score_mns(vec beta, vec Time, vec Delta, mat Covari, vec targetvector){
+vec target_score_mns(vec b, vec Time, vec Delta, mat Covari, vec targetvector){
   
   int n = Covari.n_rows;
   int p = Covari.n_cols;
   
-  vec resid = log(Time) + Covari*beta;
+  vec resid = log(Time) + Covari*b;
   
   uvec index_resid = sort_index(resid);
   
@@ -115,14 +115,14 @@ vec target_score_mns(vec beta, vec Time, vec Delta, mat Covari, vec targetvector
   return F_vec;
 }
 
-List dfsane_mis(vec beta, vec Time, vec Delta, mat Covari, vec targetvector){
+List dfsane_mis(vec b, vec Time, vec Delta, mat Covari, vec targetvector){
 
-  vec b_old = beta;
+  vec b_old = b;
   vec F_old = target_score_mis(b_old,Time,Delta,Covari,targetvector);
 
   double a_k = (1/sqrt(sum(F_old%F_old))); if (a_k>1){a_k=1;}
   
-  vec b_new; vec F_new; double tol_f;
+  vec b_new; vec F_new; double tol_f, tol_y;
   double optim_tol=1e-7; double tolerance=optim_tol+1; int ittt=0; int maxit=200;
   while(tolerance>optim_tol){
     
@@ -133,7 +133,7 @@ List dfsane_mis(vec beta, vec Time, vec Delta, mat Covari, vec targetvector){
     vec s_k = b_new - b_old;
     vec y_k = F_new - F_old;
     
-    double tol_y = sum(y_k%y_k);
+    tol_y = sum(y_k%y_k);
     tol_f = sum(F_new%F_new);
     
     if (tol_y>0) {a_k = (sum(s_k%y_k))/tol_y;} else {a_k = a_k;}
@@ -143,8 +143,8 @@ List dfsane_mis(vec beta, vec Time, vec Delta, mat Covari, vec targetvector){
     b_old = b_new;
     F_old = F_new;
     
-    if(b_new.has_nan()){tolerance = 0;}
-    if(b_new.has_inf()){tolerance = 0;}
+    if (b_new.has_nan()){tolerance = 0;}
+    if (b_new.has_inf()){tolerance = 0;}
     if (ittt>maxit){tolerance = 0;}
     ittt += 1;
   }
@@ -154,128 +154,9 @@ List dfsane_mis(vec beta, vec Time, vec Delta, mat Covari, vec targetvector){
   return List::create(tol_f,b_new);
 }
 
-// List dfsane_mis(vec beta, vec Time, vec Delta, mat Covari, vec targetvector){
-// 
-//   vec b_old = beta;
-//   vec F_old = target_score_mis(b_old,Time,Delta,Covari,targetvector);
-//   double sig_k = (1/sqrt(sum(F_old%F_old))); if (sig_k>1){sig_k=1;}
-// 
-//   vec b_new = b_old - sig_k*F_old;
-// 
-//   vec F_new = target_score_mis(b_new,Time,Delta,Covari,targetvector);
-// 
-//   vec s_k = b_new - b_old;
-//   vec y_k = F_new - F_old;
-// 
-//   double tol_0 = sum(F_old%F_old);
-//   double tol_s = sum(s_k%s_k);
-//   double tol_y = sum(y_k%y_k);
-//   double tol_f = sum(F_new%F_new);
-// 
-//   double tolerance=tol_f+1; double optim_tol=1e-7; double tau_min=0.1; double tau_max=0.5;
-//   double sig_min=1e-10; double sig_max=1e+10; double alp_p=1; double alp_m=1; double gam=1e-4;
-//   double M=1; vec f_bar=zeros(M); double it=1; double maxit=500;
-// 
-//   while(tolerance>optim_tol){
-// 
-//     // STEP 1
-//     double eta_k = tol_0/pow(1+it,2);
-// 
-//     if (tol_y>0) {
-//       sig_k = (sum(s_k%y_k))/tol_y;
-//     } else {
-//       sig_k = sig_k;
-//     }
-// 
-//     if ((sig_min>abs(sig_k)) && (sig_max<abs(sig_k))){
-//       if (tol_f<1e-10){
-//         sig_k = 1e+5;
-//       } else if (tol_f>1){
-//         sig_k = 1;
-//       } else {
-//         sig_k = 1/sqrt(tol_f);
-//       }
-//     }
-// 
-//     vec d_k = - sig_k * F_new;
-// 
-//     // STEP 2
-//     int step_tol = 0; int itt = it - M * floor(it/M); f_bar(itt) = tol_f; double a_k =0;
-//     while(step_tol == 0){
-// 
-//       // alpha_plus
-//       vec b_new_p = b_new + alp_p * d_k;
-//       vec F_new_p = target_score_mis(b_new_p,Time,Delta,Covari,targetvector);
-// 
-//       double RHS_p = sum(F_new_p%F_new_p);
-//       double LHS_p = f_bar.max() + eta_k - gam * pow(alp_p,2) * tol_f;
-// 
-//       // alpha_minus
-//       vec b_new_m = b_new - alp_m * d_k;
-//       vec F_new_m = target_score_mis(b_new_m,Time,Delta,Covari,targetvector);
-// 
-//       double RHS_m = sum(F_new_m%F_new_m);
-//       double LHS_m = f_bar.max() + eta_k - gam * pow(alp_m,2) * tol_f;
-// 
-//       if (RHS_p<=LHS_p){
-//         d_k = d_k;
-//         a_k = alp_p;
-//         b_new = b_old + a_k * d_k;
-//         step_tol = 1;
-//       } else if (RHS_m<=LHS_m){
-//         d_k = - d_k;
-//         a_k = alp_m;
-//         b_new = b_old + a_k * d_k;
-//         step_tol = 1;
-//       } else {
-// 
-//         double alp_p_t = (pow(alp_p,2) * tol_f)/(RHS_p + (2 * alp_p - 1) * tol_f);
-// 
-//         if (alp_p_t>(tau_max*alp_p)){
-//           alp_p = tau_max * alp_p;
-//         } else if (alp_p_t<(tau_min*alp_p)){
-//           alp_p = tau_min * alp_p;
-//         } else {
-//           alp_p = alp_p_t;
-//         }
-// 
-//         double alp_m_t = (pow(alp_m,2) * tol_f)/(RHS_m + (2 * alp_m - 1) * tol_f);
-// 
-//         if (alp_m_t>tau_max*alp_m){
-//           alp_m = tau_max * alp_m;
-//         } else if (alp_m_t<tau_min*alp_m){
-//           alp_m = tau_min * alp_m;
-//         } else {
-//           alp_m = alp_m_t;
-//         }
-//       }
-//     }
-// 
-//     // STEP 3
-//     F_new = target_score_mis(b_new,Time,Delta,Covari,targetvector);
-// 
-//     s_k = b_new - b_old;
-//     y_k = F_new - F_old;
-// 
-//     b_old=b_new;
-//     F_old=F_new;
-// 
-//     tol_s = sum(s_k%s_k);
-//     tol_y = sum(y_k%y_k);
-//     tol_f = sum(F_new%F_new);
-// 
-//     tolerance = tol_f;
-//     if (tol_f>tol_s){tolerance = tol_s;}
-//     if (it>maxit){tolerance = 0;}
-//     it += 1;
-//   }
-// 
-//   return List::create(tol_f,b_new);
-// }
-
-List dfsane_mns(vec beta, vec Time, vec Delta, mat Covari, vec targetvector){
+List dfsane_mns(vec b, vec Time, vec Delta, mat Covari, vec targetvector){
   
-  vec b_old = beta;
+  vec b_old = b;
   vec F_old = target_score_mns(b_old,Time,Delta,Covari,targetvector);
   double sig_k = (1/sqrt(sum(F_old%F_old))); if (sig_k>1){sig_k=1;}
   
@@ -292,13 +173,14 @@ List dfsane_mns(vec beta, vec Time, vec Delta, mat Covari, vec targetvector){
   double tol_f = sum(F_new%F_new);
   
   double tolerance=tol_f+1; double optim_tol=1e-7; double tau_min=0.1; double tau_max=0.5; 
-  double sig_min=1e-10; double sig_max=1e+10; double alp_p=1; double alp_m=1; double gam=1e-4; 
+  double sig_min=0.1; double sig_max=0.5; double alp_p=1; double alp_m=1; double gam=1e-4; 
   double M=1; vec f_bar=zeros(M); double it=1; double maxit=500;
-  
+  double eta_k, abssig_k, RHS_p, LHS_p, RHS_m, LHS_m, alp_p_t, alp_m_t;
+  vec b_new_p, F_new_p, b_new_m, F_new_m;
   while(tolerance>optim_tol){
     
     // STEP 1
-    double eta_k = tol_0/pow(1+it,2);
+    eta_k = tol_0/pow(1+it,2);
     
     if (tol_y>0) {
       sig_k = (sum(s_k%y_k))/tol_y;
@@ -306,7 +188,8 @@ List dfsane_mns(vec beta, vec Time, vec Delta, mat Covari, vec targetvector){
       sig_k = sig_k;
     }
     
-    if ((sig_min>abs(sig_k)) && (sig_max<abs(sig_k))){
+    abssig_k = abs(sig_k);
+    if ((sig_min>abssig_k) || (sig_max<abssig_k)){
       if (tol_f<1e-10){
         sig_k = 1e+5;
       } else if (tol_f>1){
@@ -323,18 +206,18 @@ List dfsane_mns(vec beta, vec Time, vec Delta, mat Covari, vec targetvector){
     while(step_tol == 0){
       
       // alpha_plus
-      vec b_new_p = b_new + alp_p * d_k;
-      vec F_new_p = target_score_mns(b_new_p,Time,Delta,Covari,targetvector);
+      b_new_p = b_new + alp_p * d_k;
+      F_new_p = target_score_mns(b_new_p,Time,Delta,Covari,targetvector);
       
-      double RHS_p = sum(F_new_p%F_new_p);
-      double LHS_p = f_bar.max() + eta_k - gam * pow(alp_p,2) * tol_f;
+      RHS_p = sum(F_new_p%F_new_p);
+      LHS_p = f_bar.max() + eta_k - gam * pow(alp_p,2) * tol_f;
       
       // alpha_minus
-      vec b_new_m = b_new - alp_m * d_k;
-      vec F_new_m = target_score_mns(b_new_m,Time,Delta,Covari,targetvector);
+      b_new_m = b_new - alp_m * d_k;
+      F_new_m = target_score_mns(b_new_m,Time,Delta,Covari,targetvector);
       
-      double RHS_m = sum(F_new_m%F_new_m);
-      double LHS_m = f_bar.max() + eta_k - gam * pow(alp_m,2) * tol_f;
+      RHS_m = sum(F_new_m%F_new_m);
+      LHS_m = f_bar.max() + eta_k - gam * pow(alp_m,2) * tol_f;
       
       if (RHS_p<=LHS_p){
         d_k = d_k;
@@ -348,7 +231,7 @@ List dfsane_mns(vec beta, vec Time, vec Delta, mat Covari, vec targetvector){
         step_tol = 1;
       } else {
         
-        double alp_p_t = (pow(alp_p,2) * tol_f)/(RHS_p + (2 * alp_p - 1) * tol_f);
+        alp_p_t = (pow(alp_p,2) * tol_f)/(RHS_p + (2 * alp_p - 1) * tol_f);
         
         if (alp_p_t>(tau_max*alp_p)){
           alp_p = tau_max * alp_p;
@@ -358,7 +241,7 @@ List dfsane_mns(vec beta, vec Time, vec Delta, mat Covari, vec targetvector){
           alp_p = alp_p_t;
         }
         
-        double alp_m_t = (pow(alp_m,2) * tol_f)/(RHS_m + (2 * alp_m - 1) * tol_f);
+        alp_m_t = (pow(alp_m,2) * tol_f)/(RHS_m + (2 * alp_m - 1) * tol_f);
         
         if (alp_m_t>tau_max*alp_m){
           alp_m = tau_max * alp_m;
@@ -376,8 +259,8 @@ List dfsane_mns(vec beta, vec Time, vec Delta, mat Covari, vec targetvector){
     s_k = b_new - b_old;
     y_k = F_new - F_old;
     
-    b_old=b_new;
-    F_old=F_new;    
+    b_old = b_new;
+    F_old = F_new;    
     
     tol_s = sum(s_k%s_k);
     tol_y = sum(y_k%y_k);
@@ -467,7 +350,7 @@ List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   vec ghat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      ghat_0_t(it) += R::dnorm(pred_data(it),given_data_g(itt),bw_g,FALSE);
+      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_g);
     }
   }
   ghat_0_t = ghat_0_t/n;
@@ -504,7 +387,7 @@ List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   vec fhat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      fhat_0_t(it) += R::dnorm(pred_data(it),given_data_f(itt),bw_f,FALSE);
+      fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_f);
     }
   }
   fhat_0_t = fhat_0_t/n;
@@ -703,7 +586,7 @@ List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   vec ghat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      ghat_0_t(it) += R::dnorm(pred_data(it),given_data_g(itt),bw_g,FALSE);
+      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_g);
     }
   }
   ghat_0_t = ghat_0_t/n;
@@ -740,7 +623,7 @@ List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   vec fhat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      fhat_0_t(it) += R::dnorm(pred_data(it),given_data_f(itt),bw_f,FALSE);
+      fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_f);
     }
   }
   fhat_0_t = fhat_0_t/n;
@@ -937,7 +820,7 @@ List link_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   vec ghat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      ghat_0_t(it) += R::dnorm(pred_data(it),given_data_g(itt),bw_g,FALSE);
+      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_g);
     }
   }
   ghat_0_t = ghat_0_t/n;
@@ -974,7 +857,7 @@ List link_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   vec fhat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      fhat_0_t(it) += R::dnorm(pred_data(it),given_data_f(itt),bw_f,FALSE);
+      fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_f);
     }
   }
   fhat_0_t = fhat_0_t/n;
@@ -1171,7 +1054,7 @@ List link_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   vec ghat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      ghat_0_t(it) += R::dnorm(pred_data(it),given_data_g(itt),bw_g,FALSE);
+      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_g);
     }
   }
   ghat_0_t = ghat_0_t/n;
@@ -1208,7 +1091,7 @@ List link_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   vec fhat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      fhat_0_t(it) += R::dnorm(pred_data(it),given_data_f(itt),bw_f,FALSE);
+      fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_f);
     }
   }
   fhat_0_t = fhat_0_t/n;
@@ -1406,7 +1289,7 @@ List form_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   vec ghat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      ghat_0_t(it) += R::dnorm(pred_data(it),given_data_g(itt),bw_g,FALSE);
+      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_g);
     }
   }
   ghat_0_t = ghat_0_t/n;
@@ -1443,7 +1326,7 @@ List form_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   vec fhat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      fhat_0_t(it) += R::dnorm(pred_data(it),given_data_f(itt),bw_f,FALSE);
+      fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_f);
     }
   }
   fhat_0_t = fhat_0_t/n;
@@ -1641,7 +1524,7 @@ List form_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   vec ghat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      ghat_0_t(it) += R::dnorm(pred_data(it),given_data_g(itt),bw_g,FALSE);
+      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_g);
     }
   }
   ghat_0_t = ghat_0_t/n;
@@ -1678,7 +1561,7 @@ List form_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   vec fhat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      fhat_0_t(it) += R::dnorm(pred_data(it),given_data_f(itt),bw_f,FALSE);
+      fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_f);
     }
   }
   fhat_0_t = fhat_0_t/n;
@@ -1874,7 +1757,7 @@ List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   vec ghat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      ghat_0_t(it) += R::dnorm(pred_data(it),given_data_g(itt),bw_g,FALSE);
+      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_g);
     }
   }
   ghat_0_t = ghat_0_t/n;
@@ -1911,7 +1794,7 @@ List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   vec fhat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      fhat_0_t(it) += R::dnorm(pred_data(it),given_data_f(itt),bw_f,FALSE);
+      fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_f);
     }
   }
   fhat_0_t = fhat_0_t/n;
@@ -2101,7 +1984,7 @@ List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   vec ghat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      ghat_0_t(it) += R::dnorm(pred_data(it),given_data_g(itt),bw_g,FALSE);
+      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_g);
     }
   }
   ghat_0_t = ghat_0_t/n;
@@ -2138,7 +2021,7 @@ List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   vec fhat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      fhat_0_t(it) += R::dnorm(pred_data(it),given_data_f(itt),bw_f,FALSE);
+      fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_f);
     }
   }
   fhat_0_t = fhat_0_t/n;
@@ -2327,7 +2210,7 @@ List link_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   vec ghat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      ghat_0_t(it) += R::dnorm(pred_data(it),given_data_g(itt),bw_g,FALSE);
+      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_g);
     }
   }
   ghat_0_t = ghat_0_t/n;
@@ -2364,7 +2247,7 @@ List link_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   vec fhat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      fhat_0_t(it) += R::dnorm(pred_data(it),given_data_f(itt),bw_f,FALSE);
+      fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_f);
     }
   }
   fhat_0_t = fhat_0_t/n;
@@ -2553,7 +2436,7 @@ List link_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   vec ghat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      ghat_0_t(it) += R::dnorm(pred_data(it),given_data_g(itt),bw_g,FALSE);
+      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_g);
     }
   }
   ghat_0_t = ghat_0_t/n;
@@ -2590,7 +2473,7 @@ List link_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   vec fhat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      fhat_0_t(it) += R::dnorm(pred_data(it),given_data_f(itt),bw_f,FALSE);
+      fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_f);
     }
   }
   fhat_0_t = fhat_0_t/n;
@@ -2780,7 +2663,7 @@ List form_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
   vec ghat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      ghat_0_t(it) += R::dnorm(pred_data(it),given_data_g(itt),bw_g,FALSE);
+      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_g);
     }
   }
   ghat_0_t = ghat_0_t/n;
@@ -2817,7 +2700,7 @@ List form_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
   vec fhat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      fhat_0_t(it) += R::dnorm(pred_data(it),given_data_f(itt),bw_f,FALSE);
+      fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_f);
     }
   }
   fhat_0_t = fhat_0_t/n;
@@ -3007,7 +2890,7 @@ List form_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
   vec ghat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      ghat_0_t(it) += R::dnorm(pred_data(it),given_data_g(itt),bw_g,FALSE);
+      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_g);
     }
   }
   ghat_0_t = ghat_0_t/n;
@@ -3044,7 +2927,7 @@ List form_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
   vec fhat_0_t = zeros(n);
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      fhat_0_t(it) += R::dnorm(pred_data(it),given_data_f(itt),bw_f,FALSE);
+      fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_f);
     }
   }
   fhat_0_t = fhat_0_t/n;
@@ -3161,7 +3044,6 @@ List form_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
                         _["app_path"]=app_path,_["app_std_path"]=app_std_path,_["p_std_value"]=p_std_value,
                           _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
 }
-
 
 // omni_mis_optim
 List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int pathsave);
