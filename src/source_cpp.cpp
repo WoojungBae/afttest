@@ -115,7 +115,7 @@ vec target_score_mns(vec b, vec Time, vec Delta, mat Covari, vec targetvector){
   return F_vec;
 }
 
-List dfsane_mis(vec b, vec Time, vec Delta, mat Covari, vec targetvector){
+List dfsane_mis(int n, vec b, vec Time, vec Delta, mat Covari, vec targetvector){
   
   vec b_old = b;
   vec F_old = target_score_mns(b_old,Time,Delta,Covari,targetvector);
@@ -133,7 +133,12 @@ List dfsane_mis(vec b, vec Time, vec Delta, mat Covari, vec targetvector){
   double tol_y = sum(y_k%y_k);
   double tol_f = sum(F_new%F_new);
   
-  double tolerance=tol_f+1; double optim_tol=1e-7; double tau_min=0.1; double tau_max=0.5; 
+  // Stop sqrt(tol_f)/sqrt(n) <= e_a + e_r * sqrt(tol_0)/sqrt(n)
+  // Stop tol_f <= (e_a * sqrt(n) + e_r * tol_0)^{2}
+  double e_a = 1e-5; double e_r = 1e-4; 
+  double optim_tol = pow(e_a * sqrt(n) + e_r * sqrt(tol_0),2);
+  
+  double tolerance=tol_f+1; double tau_min=0.1; double tau_max=0.5; 
   double sig_min=0.1; double sig_max=0.5; double alp_p=1; double alp_m=1; double gam=1e-4; 
   double M=1; vec f_bar=zeros(M); double it=1; double maxit=500;
   double eta_k, abssig_k, RHS_p, LHS_p, RHS_m, LHS_m, alp_p_t, alp_m_t;
@@ -236,7 +241,7 @@ List dfsane_mis(vec b, vec Time, vec Delta, mat Covari, vec targetvector){
   return List::create(tol_f,b_new);
 }
 
-List dfsane_mns(vec b, vec Time, vec Delta, mat Covari, vec targetvector){
+List dfsane_mns(int n, vec b, vec Time, vec Delta, mat Covari, vec targetvector){
   
   vec b_old = b;
   vec F_old = target_score_mns(b_old,Time,Delta,Covari,targetvector);
@@ -254,7 +259,12 @@ List dfsane_mns(vec b, vec Time, vec Delta, mat Covari, vec targetvector){
   double tol_y = sum(y_k%y_k);
   double tol_f = sum(F_new%F_new);
   
-  double tolerance=tol_f+1; double optim_tol=1e-7; double tau_min=0.1; double tau_max=0.5; 
+  // Stop sqrt(tol_f)/sqrt(n) <= e_a + e_r * sqrt(tol_0)/sqrt(n)
+  // Stop tol_f <= (e_a * sqrt(n) + e_r * tol_0)^{2}
+  double e_a = 1e-5; double e_r = 1e-4; 
+  double optim_tol = pow(e_a * sqrt(n) + e_r * sqrt(tol_0),2);
+  
+  double tolerance=tol_f+1; double tau_min=0.1; double tau_max=0.5; 
   double sig_min=0.1; double sig_max=0.5; double alp_p=1; double alp_m=1; double gam=1e-4; 
   double M=1; vec f_bar=zeros(M); double it=1; double maxit=500;
   double eta_k, abssig_k, RHS_p, LHS_p, RHS_m, LHS_m, alp_p_t, alp_m_t;
@@ -1918,7 +1928,7 @@ List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
       }
       vec U_phi_inf = (sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0)/n).t();
       
-      List b_s_result = dfsane_mis(b, Time, Delta, Covari, U_phi_inf);
+      List b_s_result = dfsane_mis(n, b, Time, Delta, Covari, U_phi_inf);
       
       b_s = as<vec>(b_s_result[1]);
       
@@ -2147,7 +2157,7 @@ List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
       }
       vec U_phi_inf = (sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0)/n).t();
       
-      List b_s_result = dfsane_mns(b, Time, Delta, Covari, U_phi_inf);
+      List b_s_result = dfsane_mns(n, b, Time, Delta, Covari, U_phi_inf);
       
       b_s = as<vec>(b_s_result[1]);
       
@@ -2374,7 +2384,7 @@ List link_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
       }
       vec U_phi_inf = (sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0)/n).t();
       
-      List b_s_result = dfsane_mis(b, Time, Delta, Covari, U_phi_inf);
+      List b_s_result = dfsane_mis(n, b, Time, Delta, Covari, U_phi_inf);
       
       b_s = as<vec>(b_s_result[1]);
       
@@ -2601,7 +2611,7 @@ List link_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
       }
       vec U_phi_inf = (sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0)/n).t();
       
-      List b_s_result = dfsane_mns(b, Time, Delta, Covari, U_phi_inf);
+      List b_s_result = dfsane_mns(n, b, Time, Delta, Covari, U_phi_inf);
       
       b_s = as<vec>(b_s_result[1]);
       
@@ -2829,7 +2839,7 @@ List form_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
       }
       vec U_phi_inf = (sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0)/n).t();
       
-      List b_s_result = dfsane_mis(b, Time, Delta, Covari, U_phi_inf);
+      List b_s_result = dfsane_mis(n, b, Time, Delta, Covari, U_phi_inf);
       
       b_s = as<vec>(b_s_result[1]);
       
@@ -3057,7 +3067,7 @@ List form_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
       }
       vec U_phi_inf = (sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0)/n).t();
       
-      List b_s_result = dfsane_mns(b, Time, Delta, Covari, U_phi_inf);
+      List b_s_result = dfsane_mns(n, b, Time, Delta, Covari, U_phi_inf);
       
       b_s = as<vec>(b_s_result[1]);
       
