@@ -116,40 +116,122 @@ vec target_score_mns(vec b, vec Time, vec Delta, mat Covari, vec targetvector){
 }
 
 List dfsane_mis(vec b, vec Time, vec Delta, mat Covari, vec targetvector){
-
-  vec b_old = b;
-  vec F_old = target_score_mis(b_old,Time,Delta,Covari,targetvector);
-
-  double a_k = (1/sqrt(sum(F_old%F_old))); if (a_k>1){a_k=1;}
   
-  vec b_new; vec F_new; double tol_f, tol_y;
-  double optim_tol=1e-7; double tolerance=optim_tol+1; int ittt=0; int maxit=200;
+  vec b_old = b;
+  vec F_old = target_score_mns(b_old,Time,Delta,Covari,targetvector);
+  double sig_k = (1/sqrt(sum(F_old%F_old))); if (sig_k>1){sig_k=1;}
+  
+  vec b_new = b_old - sig_k*F_old;
+  
+  vec F_new = target_score_mis(b_new,Time,Delta,Covari,targetvector);
+  
+  vec s_k = b_new - b_old;
+  vec y_k = F_new - F_old;
+  
+  double tol_0 = sum(F_old%F_old);
+  double tol_s = sum(s_k%s_k);
+  double tol_y = sum(y_k%y_k);
+  double tol_f = sum(F_new%F_new);
+  
+  double tolerance=tol_f+1; double optim_tol=1e-7; double tau_min=0.1; double tau_max=0.5; 
+  double sig_min=0.1; double sig_max=0.5; double alp_p=1; double alp_m=1; double gam=1e-4; 
+  double M=1; vec f_bar=zeros(M); double it=1; double maxit=500;
+  double eta_k, abssig_k, RHS_p, LHS_p, RHS_m, LHS_m, alp_p_t, alp_m_t;
+  vec b_new_p, F_new_p, b_new_m, F_new_m;
   while(tolerance>optim_tol){
     
-    b_new = b_old - a_k*F_old;
+    // STEP 1
+    eta_k = tol_0/pow(1+it,2);
     
+    if (tol_y>0) {
+      sig_k = (sum(s_k%y_k))/tol_y;
+    } else {
+      sig_k = sig_k;
+    }
+    
+    abssig_k = abs(sig_k);
+    if ((sig_min>abssig_k) || (sig_max<abssig_k)){
+      if (tol_f<1e-10){
+        sig_k = 1e+5;
+      } else if (tol_f>1){
+        sig_k = 1;
+      } else {
+        sig_k = 1/sqrt(tol_f);
+      }
+    }
+    
+    vec d_k = - sig_k * F_new;
+    
+    // STEP 2
+    int step_tol = 0; int itt = it - M * floor(it/M); f_bar(itt) = tol_f; double a_k =0;
+    while(step_tol == 0){
+      
+      // alpha_plus
+      b_new_p = b_new + alp_p * d_k;
+      F_new_p = target_score_mis(b_new_p,Time,Delta,Covari,targetvector);
+      
+      RHS_p = sum(F_new_p%F_new_p);
+      LHS_p = f_bar.max() + eta_k - gam * pow(alp_p,2) * tol_f;
+      
+      // alpha_minus
+      b_new_m = b_new - alp_m * d_k;
+      F_new_m = target_score_mis(b_new_m,Time,Delta,Covari,targetvector);
+      
+      RHS_m = sum(F_new_m%F_new_m);
+      LHS_m = f_bar.max() + eta_k - gam * pow(alp_m,2) * tol_f;
+      
+      if (RHS_p<=LHS_p){
+        d_k = d_k;
+        a_k = alp_p;
+        b_new = b_old + a_k * d_k;
+        step_tol = 1;
+      } else if (RHS_m<=LHS_m){
+        d_k = - d_k;
+        a_k = alp_m;
+        b_new = b_old + a_k * d_k;
+        step_tol = 1;
+      } else {
+        
+        alp_p_t = (pow(alp_p,2) * tol_f)/(RHS_p + (2 * alp_p - 1) * tol_f);
+        
+        if (alp_p_t>(tau_max*alp_p)){
+          alp_p = tau_max * alp_p;
+        } else if (alp_p_t<(tau_min*alp_p)){
+          alp_p = tau_min * alp_p;
+        } else {
+          alp_p = alp_p_t;
+        }
+        
+        alp_m_t = (pow(alp_m,2) * tol_f)/(RHS_m + (2 * alp_m - 1) * tol_f);
+        
+        if (alp_m_t>tau_max*alp_m){
+          alp_m = tau_max * alp_m;
+        } else if (alp_m_t<tau_min*alp_m){
+          alp_m = tau_min * alp_m;
+        } else {
+          alp_m = alp_m_t;
+        }
+      }
+    }
+    
+    // STEP 3
     F_new = target_score_mis(b_new,Time,Delta,Covari,targetvector);
     
-    vec s_k = b_new - b_old;
-    vec y_k = F_new - F_old;
+    s_k = b_new - b_old;
+    y_k = F_new - F_old;
     
+    b_old = b_new;
+    F_old = F_new;    
+    
+    tol_s = sum(s_k%s_k);
     tol_y = sum(y_k%y_k);
     tol_f = sum(F_new%F_new);
     
-    if (tol_y>0) {a_k = (sum(s_k%y_k))/tol_y;} else {a_k = a_k;}
-    
     tolerance = tol_f;
-    
-    b_old = b_new;
-    F_old = F_new;
-    
-    if (b_new.has_nan()){tolerance = 0;}
-    if (b_new.has_inf()){tolerance = 0;}
-    if (ittt>maxit){tolerance = 0;}
-    ittt += 1;
+    if (tol_f>tol_s){tolerance = tol_s;}
+    if (it>maxit){tolerance = 0;}
+    it += 1;
   }
-
-  // -----------------------------------------------------------
 
   return List::create(tol_f,b_new);
 }
@@ -478,7 +560,8 @@ List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   vec mat_se_boot = stddev(as<mat>(tempmat_n2path),0,1);
   uvec ind_se_boot = find(mat_se_boot == 0);
   int num_se_boot = ind_se_boot.size();
-  mat_se_boot(ind_se_boot) = (nonzeros(mat_se_boot).min())*ones(num_se_boot);
+  mat_se_boot(ind_se_boot) = ones(num_se_boot);
+  // mat_se_boot(ind_se_boot) = (nonzeros(mat_se_boot).min())*ones(num_se_boot);
   mat se_boot = reshape(mat_se_boot,n,n);
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
@@ -714,7 +797,8 @@ List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   vec mat_se_boot = stddev(as<mat>(tempmat_n2path),0,1);
   uvec ind_se_boot = find(mat_se_boot == 0);
   int num_se_boot = ind_se_boot.size();
-  mat_se_boot(ind_se_boot) = (nonzeros(mat_se_boot).min())*ones(num_se_boot);
+  mat_se_boot(ind_se_boot) = ones(num_se_boot);
+  // mat_se_boot(ind_se_boot) = (nonzeros(mat_se_boot).min())*ones(num_se_boot);
   mat se_boot = reshape(mat_se_boot,n,n);
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
@@ -949,7 +1033,8 @@ List link_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
   uvec ind_se_boot = find(se_boot == 0);
   int num_se_boot = ind_se_boot.size();
-  se_boot(ind_se_boot) = (nonzeros(se_boot).min())*ones(num_se_boot);
+  se_boot(ind_se_boot) = ones(num_se_boot);
+  // se_boot(ind_se_boot) = (nonzeros(se_boot).min())*ones(num_se_boot);
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
@@ -1183,7 +1268,8 @@ List link_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
   uvec ind_se_boot = find(se_boot == 0);
   int num_se_boot = ind_se_boot.size();
-  se_boot(ind_se_boot) = (nonzeros(se_boot).min())*ones(num_se_boot);
+  se_boot(ind_se_boot) = ones(num_se_boot);
+  // se_boot(ind_se_boot) = (nonzeros(se_boot).min())*ones(num_se_boot);
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
@@ -1418,7 +1504,8 @@ List form_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
   uvec ind_se_boot = find(se_boot == 0);
   int num_se_boot = ind_se_boot.size();
-  se_boot(ind_se_boot) = (nonzeros(se_boot).min())*ones(num_se_boot);
+  se_boot(ind_se_boot) = ones(num_se_boot);
+  // se_boot(ind_se_boot) = (nonzeros(se_boot).min())*ones(num_se_boot);
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
@@ -1653,7 +1740,8 @@ List form_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
   uvec ind_se_boot = find(se_boot == 0);
   int num_se_boot = ind_se_boot.size();
-  se_boot(ind_se_boot) = (nonzeros(se_boot).min())*ones(num_se_boot);
+  se_boot(ind_se_boot) = ones(num_se_boot);
+  // se_boot(ind_se_boot) = (nonzeros(se_boot).min())*ones(num_se_boot);
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
@@ -1879,7 +1967,8 @@ List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   vec mat_se_boot = stddev(as<mat>(tempmat_n2path),0,1);
   uvec ind_se_boot = find(mat_se_boot == 0);
   int num_se_boot = ind_se_boot.size();
-  mat_se_boot(ind_se_boot) = (nonzeros(mat_se_boot).min())*ones(num_se_boot);
+  mat_se_boot(ind_se_boot) = ones(num_se_boot);
+  // mat_se_boot(ind_se_boot) = (nonzeros(mat_se_boot).min())*ones(num_se_boot);
   mat se_boot = reshape(mat_se_boot,n,n);
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
@@ -2107,7 +2196,8 @@ List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   vec mat_se_boot = stddev(as<mat>(tempmat_n2path),0,1);
   uvec ind_se_boot = find(mat_se_boot == 0);
   int num_se_boot = ind_se_boot.size();
-  mat_se_boot(ind_se_boot) = (nonzeros(mat_se_boot).min())*ones(num_se_boot);
+  mat_se_boot(ind_se_boot) = ones(num_se_boot);
+  // mat_se_boot(ind_se_boot) = (nonzeros(mat_se_boot).min())*ones(num_se_boot);
   mat se_boot = reshape(mat_se_boot,n,n);
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
@@ -2334,7 +2424,8 @@ List link_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
   uvec ind_se_boot = find(se_boot == 0);
   int num_se_boot = ind_se_boot.size();
-  se_boot(ind_se_boot) = (nonzeros(se_boot).min())*ones(num_se_boot);
+  se_boot(ind_se_boot) = ones(num_se_boot);
+  // se_boot(ind_se_boot) = (nonzeros(se_boot).min())*ones(num_se_boot);
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
@@ -2560,7 +2651,8 @@ List link_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
   uvec ind_se_boot = find(se_boot == 0);
   int num_se_boot = ind_se_boot.size();
-  se_boot(ind_se_boot) = (nonzeros(se_boot).min())*ones(num_se_boot);
+  se_boot(ind_se_boot) = ones(num_se_boot);
+  // se_boot(ind_se_boot) = (nonzeros(se_boot).min())*ones(num_se_boot);
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
@@ -2787,7 +2879,8 @@ List form_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
   vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
   uvec ind_se_boot = find(se_boot == 0);
   int num_se_boot = ind_se_boot.size();
-  se_boot(ind_se_boot) = (nonzeros(se_boot).min())*ones(num_se_boot);
+  se_boot(ind_se_boot) = ones(num_se_boot);
+  // se_boot(ind_se_boot) = (nonzeros(se_boot).min())*ones(num_se_boot);
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
@@ -3014,7 +3107,8 @@ List form_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
   vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
   uvec ind_se_boot = find(se_boot == 0);
   int num_se_boot = ind_se_boot.size();
-  se_boot(ind_se_boot) = (nonzeros(se_boot).min())*ones(num_se_boot);
+  se_boot(ind_se_boot) = ones(num_se_boot);
+  // se_boot(ind_se_boot) = (nonzeros(se_boot).min())*ones(num_se_boot);
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
