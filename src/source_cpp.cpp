@@ -570,8 +570,8 @@ List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   vec mat_se_boot = stddev(as<mat>(tempmat_n2path),0,1);
   uvec ind_se_boot = find(mat_se_boot == 0);
   int num_se_boot = ind_se_boot.size();
-  mat_se_boot(ind_se_boot) = ones(num_se_boot);
-  // mat_se_boot(ind_se_boot) = (nonzeros(mat_se_boot).min())*ones(num_se_boot);
+  // mat_se_boot(ind_se_boot) = ones(num_se_boot);
+  mat_se_boot(ind_se_boot) = (nonzeros(mat_se_boot).min())*ones(num_se_boot);
   mat se_boot = reshape(mat_se_boot,n,n);
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
@@ -807,8 +807,8 @@ List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   vec mat_se_boot = stddev(as<mat>(tempmat_n2path),0,1);
   uvec ind_se_boot = find(mat_se_boot == 0);
   int num_se_boot = ind_se_boot.size();
-  mat_se_boot(ind_se_boot) = ones(num_se_boot);
-  // mat_se_boot(ind_se_boot) = (nonzeros(mat_se_boot).min())*ones(num_se_boot);
+  // mat_se_boot(ind_se_boot) = ones(num_se_boot);
+  mat_se_boot(ind_se_boot) = (nonzeros(mat_se_boot).min())*ones(num_se_boot);
   mat se_boot = reshape(mat_se_boot,n,n);
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
@@ -1977,8 +1977,8 @@ List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   vec mat_se_boot = stddev(as<mat>(tempmat_n2path),0,1);
   uvec ind_se_boot = find(mat_se_boot == 0);
   int num_se_boot = ind_se_boot.size();
-  mat_se_boot(ind_se_boot) = ones(num_se_boot);
-  // mat_se_boot(ind_se_boot) = (nonzeros(mat_se_boot).min())*ones(num_se_boot);
+  // mat_se_boot(ind_se_boot) = ones(num_se_boot);
+  mat_se_boot(ind_se_boot) = (nonzeros(mat_se_boot).min())*ones(num_se_boot);
   mat se_boot = reshape(mat_se_boot,n,n);
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
@@ -2206,8 +2206,8 @@ List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   vec mat_se_boot = stddev(as<mat>(tempmat_n2path),0,1);
   uvec ind_se_boot = find(mat_se_boot == 0);
   int num_se_boot = ind_se_boot.size();
-  mat_se_boot(ind_se_boot) = ones(num_se_boot);
-  // mat_se_boot(ind_se_boot) = (nonzeros(mat_se_boot).min())*ones(num_se_boot);
+  // mat_se_boot(ind_se_boot) = ones(num_se_boot);
+  mat_se_boot(ind_se_boot) = (nonzeros(mat_se_boot).min())*ones(num_se_boot);
   mat se_boot = reshape(mat_se_boot,n,n);
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
