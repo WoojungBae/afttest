@@ -26,14 +26,13 @@ double target_score2_mis(vec b, vec Time, vec Delta, mat Covari, vec targetvecto
     tempvec_n = sqrt(sum(tempmat_np%tempmat_np,1));
     tempvec_n.replace(0,1);
     
-    NumericVector tempnumvec_n = wrap(sqrt(n)*(resid-resid(it))/tempvec_n);
-    tempnumvec_n = pnorm(tempnumvec_n);
+    tempvec_n = normcdf(sqrt(n)*(resid-resid(it))/tempvec_n);
+    F_vec += sum(tempmat_np.each_col()%tempvec_n,0).t()*Delta(it);
     
-    F_vec += sum(tempmat_np.each_col()%(as<vec>(tempnumvec_n)),0).t()*Delta(it);
   }
   F_vec = F_vec/n - targetvector;
   
-  double SumOfSqure = conv_to<double>::from(sum(pow(F_vec,2)));
+  double SumOfSqure = norm(F_vec);
   
   return SumOfSqure;
 }
@@ -58,7 +57,7 @@ double target_score2_mns(vec b, vec Time, vec Delta, mat Covari, vec targetvecto
   }
   F_vec = F_vec/n - targetvector;
   
-  double SumOfSqure = conv_to<double>::from(sum(pow(F_vec,2)));
+  double SumOfSqure = norm(F_vec);
   
   return SumOfSqure;
 }
@@ -81,11 +80,8 @@ vec target_score_mis(vec b, vec Time, vec Delta, mat Covari, vec targetvector){
     tempmat_np = Covari.row(it) - Covari.each_row();
     tempvec_n = sqrt(sum(tempmat_np%tempmat_np,1));
     tempvec_n.replace(0,1);
-    
-    NumericVector tempnumvec_n = wrap(sqrt(n)*(resid-resid(it))/tempvec_n);
-    tempnumvec_n = pnorm(tempnumvec_n);
-    
-    F_vec += sum(tempmat_np.each_col()%(as<vec>(tempnumvec_n)),0).t()*Delta(it);
+    tempvec_n = normcdf(sqrt(n)*(resid-resid(it))/tempvec_n);
+    F_vec += sum(tempmat_np.each_col()%tempvec_n,0).t()*Delta(it);
   }
   F_vec = F_vec/n - targetvector;
   
@@ -506,7 +502,7 @@ List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     vec phi_i(n); vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
     while(tolerance>tol){
       
-      phi_i = rnorm(n);
+      phi_i = randn(n);
       
       tempvec_n = zero_vec_n; tempmat_np = zero_mat_np;
       for(int it=0; it<n; it++){
@@ -743,7 +739,7 @@ List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     vec phi_i(n); vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
     while(tolerance>tol){
       
-      phi_i = rnorm(n);
+      phi_i = randn(n);
       
       tempvec_n = zero_vec_n; tempmat_np = zero_mat_np;
       for(int it=0; it<n; it++){
@@ -978,7 +974,7 @@ List link_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     vec phi_i(n); vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
     while(tolerance>tol){
       
-      phi_i = rnorm(n);
+      phi_i = randn(n);
       
       tempvec_n = zero_vec_n; tempmat_np = zero_mat_np;
       for(int it=0; it<n; it++){
@@ -1213,7 +1209,7 @@ List link_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     vec phi_i(n); vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
     while(tolerance>tol){
       
-      phi_i = rnorm(n);
+      phi_i = randn(n);
       
       tempvec_n = zero_vec_n; tempmat_np = zero_mat_np;
       for(int it=0; it<n; it++){
@@ -1449,7 +1445,7 @@ List form_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     vec phi_i(n); vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
     while(tolerance>tol){
       
-      phi_i = rnorm(n);
+      phi_i = randn(n);
       
       tempvec_n = zero_vec_n; tempmat_np = zero_mat_np;
       for(int it=0; it<n; it++){
@@ -1685,7 +1681,7 @@ List form_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     vec phi_i(n); vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
     while(tolerance>tol){
       
-      phi_i = rnorm(n);
+      phi_i = randn(n);
       
       tempvec_n = zero_vec_n; tempmat_np = zero_mat_np;
       for(int it=0; it<n; it++){
@@ -1919,7 +1915,7 @@ List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
     vec phi_i(n); vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
     while(tolerance>tol){
       
-      phi_i = rnorm(n);
+      phi_i = randn(n);
       
       tempvec_n = zero_vec_n; tempmat_np = zero_mat_np;
       for(int it=0; it<n; it++){
@@ -2148,7 +2144,7 @@ List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
     vec phi_i(n); vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
     while(tolerance>tol){
       
-      phi_i = rnorm(n);
+      phi_i = randn(n);
       
       tempvec_n = zero_vec_n; tempmat_np = zero_mat_np;
       for(int it=0; it<n; it++){
@@ -2375,7 +2371,7 @@ List link_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
     vec phi_i(n); vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
     while(tolerance>tol){
       
-      phi_i = rnorm(n);
+      phi_i = randn(n);
       
       tempvec_n = zero_vec_n; tempmat_np = zero_mat_np;
       for(int it=0; it<n; it++){
@@ -2602,7 +2598,7 @@ List link_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
     vec phi_i(n); vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
     while(tolerance>tol){
       
-      phi_i = rnorm(n);
+      phi_i = randn(n);
       
       tempvec_n = zero_vec_n; tempmat_np = zero_mat_np;
       for(int it=0; it<n; it++){
@@ -2830,7 +2826,7 @@ List form_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
     vec phi_i(n); vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
     while(tolerance>tol){
       
-      phi_i = rnorm(n);
+      phi_i = randn(n);
       
       tempvec_n = zero_vec_n; tempmat_np = zero_mat_np;
       for(int it=0; it<n; it++){
@@ -3058,7 +3054,7 @@ List form_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
     vec phi_i(n); vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
     while(tolerance>tol){
       
-      phi_i = rnorm(n);
+      phi_i = randn(n);
       
       tempvec_n = zero_vec_n; tempmat_np = zero_mat_np;
       for(int it=0; it<n; it++){
