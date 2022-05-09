@@ -564,22 +564,32 @@ List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     tempmat_n2path(_,it) = (as<NumericVector>(app_path(it)));
   }
   vec mat_se_boot = stddev(as<mat>(tempmat_n2path),0,1);
-  uvec ind_se_boot = find(mat_se_boot == 0);
-  int num_se_boot = ind_se_boot.size();
-  // mat_se_boot(ind_se_boot) = ones(num_se_boot);
-  mat_se_boot(ind_se_boot) = (nonzeros(mat_se_boot).min())*ones(num_se_boot);
+  mat_se_boot.clamp(1/path,path);
+  // mat_se_boot.replace(0,1);
   mat se_boot = reshape(mat_se_boot,n,n);
+  
+  double delta = 0.5 - sum(Delta)/(2*n);
+  int tau_min = ceil(n*delta);
+  int tau_max = floor(n*(1-delta));
+  // .submat(tau_min,tau_min,tau_max,tau_max)
+  
+  // double quant = 0.5;
+  // int x = round(n*quant);
+  // // .row(x)
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
-    absmax_app_path(it) = (abs(as<mat>(app_path(it)))).max();
-    app_std_path(it) = (as<mat>(app_path(it))/se_boot);
-    absmax_app_std_path(it) = (abs(as<mat>(app_std_path(it)))).max();
+    tempmat_nn = as<mat>(app_path(it));
+    absmax_app_path(it) = abs(tempmat_nn).max();
+    
+    tempmat_nn /= se_boot;
+    app_std_path(it) = tempmat_nn;
+    absmax_app_std_path(it) = abs(tempmat_nn.submat(tau_min,tau_min,tau_max,tau_max)).max();
   }
   
   mat obs_std_path = obs_path/se_boot;
   double absmax_obs_path = (abs(obs_path)).max();
-  double absmax_obs_std_path = (abs(obs_std_path)).max();
+  double absmax_obs_std_path = (abs(obs_std_path.submat(tau_min,tau_min,tau_max,tau_max))).max();
   
   uvec find_unstd = (find(absmax_app_path>absmax_obs_path));
   double p_value = (find_unstd.size()); p_value = p_value/path;
@@ -801,22 +811,32 @@ List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     tempmat_n2path(_,it) = (as<NumericVector>(app_path(it)));
   }
   vec mat_se_boot = stddev(as<mat>(tempmat_n2path),0,1);
-  uvec ind_se_boot = find(mat_se_boot == 0);
-  int num_se_boot = ind_se_boot.size();
-  // mat_se_boot(ind_se_boot) = ones(num_se_boot);
-  mat_se_boot(ind_se_boot) = (nonzeros(mat_se_boot).min())*ones(num_se_boot);
+  mat_se_boot.clamp(1/path,path);
+  // mat_se_boot.replace(0,1);
   mat se_boot = reshape(mat_se_boot,n,n);
+  
+  double delta = 0.5 - sum(Delta)/(2*n);
+  int tau_min = ceil(n*delta);
+  int tau_max = floor(n*(1-delta));
+  // .submat(tau_min,tau_min,tau_max,tau_max)
+  
+  // double quant = 0.5;
+  // int x = round(n*quant);
+  // // .row(x)
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
-    absmax_app_path(it) = (abs(as<mat>(app_path(it)))).max();
-    app_std_path(it) = (as<mat>(app_path(it))/se_boot);
-    absmax_app_std_path(it) = (abs(as<mat>(app_std_path(it)))).max();
+    tempmat_nn = as<mat>(app_path(it));
+    absmax_app_path(it) = abs(tempmat_nn).max();
+    
+    tempmat_nn /= se_boot;
+    app_std_path(it) = tempmat_nn;
+    absmax_app_std_path(it) = abs(tempmat_nn.submat(tau_min,tau_min,tau_max,tau_max)).max();
   }
   
   mat obs_std_path = obs_path/se_boot;
   double absmax_obs_path = (abs(obs_path)).max();
-  double absmax_obs_std_path = (abs(obs_std_path)).max();
+  double absmax_obs_std_path = (abs(obs_std_path.submat(tau_min,tau_min,tau_max,tau_max))).max();
   
   uvec find_unstd = (find(absmax_app_path>absmax_obs_path));
   double p_value = (find_unstd.size()); p_value = p_value/path;
@@ -1037,10 +1057,8 @@ List link_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     tempmat_npath(_,it) = (as<NumericVector>(app_path(it)));
   }
   vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
-  uvec ind_se_boot = find(se_boot == 0);
-  int num_se_boot = ind_se_boot.size();
-  se_boot(ind_se_boot) = ones(num_se_boot);
-  // se_boot(ind_se_boot) = (nonzeros(se_boot).min())*ones(num_se_boot);
+  se_boot.clamp(1/path,path);
+  // se_boot.replace(0,1);
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
@@ -1272,10 +1290,8 @@ List link_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     tempmat_npath(_,it) = (as<NumericVector>(app_path(it)));
   }
   vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
-  uvec ind_se_boot = find(se_boot == 0);
-  int num_se_boot = ind_se_boot.size();
-  se_boot(ind_se_boot) = ones(num_se_boot);
-  // se_boot(ind_se_boot) = (nonzeros(se_boot).min())*ones(num_se_boot);
+  se_boot.clamp(1/path,path);
+  // se_boot.replace(0,1);
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
@@ -1508,10 +1524,8 @@ List form_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     tempmat_npath(_,it) = (as<NumericVector>(app_path(it)));
   }
   vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
-  uvec ind_se_boot = find(se_boot == 0);
-  int num_se_boot = ind_se_boot.size();
-  se_boot(ind_se_boot) = ones(num_se_boot);
-  // se_boot(ind_se_boot) = (nonzeros(se_boot).min())*ones(num_se_boot);
+  se_boot.clamp(1/path,path);
+  // se_boot.replace(0,1);
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
@@ -1744,10 +1758,8 @@ List form_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     tempmat_npath(_,it) = (as<NumericVector>(app_path(it)));
   }
   vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
-  uvec ind_se_boot = find(se_boot == 0);
-  int num_se_boot = ind_se_boot.size();
-  se_boot(ind_se_boot) = ones(num_se_boot);
-  // se_boot(ind_se_boot) = (nonzeros(se_boot).min())*ones(num_se_boot);
+  se_boot.clamp(1/path,path);
+  // se_boot.replace(0,1);
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
@@ -1971,22 +1983,32 @@ List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
     tempmat_n2path(_,it) = (as<NumericVector>(app_path(it)));
   }
   vec mat_se_boot = stddev(as<mat>(tempmat_n2path),0,1);
-  uvec ind_se_boot = find(mat_se_boot == 0);
-  int num_se_boot = ind_se_boot.size();
-  // mat_se_boot(ind_se_boot) = ones(num_se_boot);
-  mat_se_boot(ind_se_boot) = (nonzeros(mat_se_boot).min())*ones(num_se_boot);
+  mat_se_boot.clamp(1/path,path);
+  // mat_se_boot.replace(0,1);
   mat se_boot = reshape(mat_se_boot,n,n);
+  
+  double delta = 0.5 - sum(Delta)/(2*n);
+  int tau_min = ceil(n*delta);
+  int tau_max = floor(n*(1-delta));
+  // .submat(tau_min,tau_min,tau_max,tau_max)
+  
+  // double quant = 0.5;
+  // int x = round(n*quant);
+  // // .row(x)
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
-    absmax_app_path(it) = (abs(as<mat>(app_path(it)))).max();
-    app_std_path(it) = (as<mat>(app_path(it))/se_boot);
-    absmax_app_std_path(it) = (abs(as<mat>(app_std_path(it)))).max();
+    tempmat_nn = as<mat>(app_path(it));
+    absmax_app_path(it) = abs(tempmat_nn).max();
+    
+    tempmat_nn /= se_boot;
+    app_std_path(it) = tempmat_nn;
+    absmax_app_std_path(it) = abs(tempmat_nn.submat(tau_min,tau_min,tau_max,tau_max)).max();
   }
   
   mat obs_std_path = obs_path/se_boot;
   double absmax_obs_path = (abs(obs_path)).max();
-  double absmax_obs_std_path = (abs(obs_std_path)).max();
+  double absmax_obs_std_path = (abs(obs_std_path.submat(tau_min,tau_min,tau_max,tau_max))).max();
   
   uvec find_unstd = (find(absmax_app_path>absmax_obs_path));
   double p_value = (find_unstd.size()); p_value = p_value/path;
@@ -2200,22 +2222,32 @@ List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
     tempmat_n2path(_,it) = (as<NumericVector>(app_path(it)));
   }
   vec mat_se_boot = stddev(as<mat>(tempmat_n2path),0,1);
-  uvec ind_se_boot = find(mat_se_boot == 0);
-  int num_se_boot = ind_se_boot.size();
-  // mat_se_boot(ind_se_boot) = ones(num_se_boot);
-  mat_se_boot(ind_se_boot) = (nonzeros(mat_se_boot).min())*ones(num_se_boot);
+  mat_se_boot.clamp(1/path,path);
+  // mat_se_boot.replace(0,1);
   mat se_boot = reshape(mat_se_boot,n,n);
+  
+  double delta = 0.5 - sum(Delta)/(2*n);
+  int tau_min = ceil(n*delta);
+  int tau_max = floor(n*(1-delta));
+  // .submat(tau_min,tau_min,tau_max,tau_max)
+  
+  // double quant = 0.5;
+  // int x = round(n*quant);
+  // // .row(x)
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
-    absmax_app_path(it) = (abs(as<mat>(app_path(it)))).max();
-    app_std_path(it) = (as<mat>(app_path(it))/se_boot);
-    absmax_app_std_path(it) = (abs(as<mat>(app_std_path(it)))).max();
+    tempmat_nn = as<mat>(app_path(it));
+    absmax_app_path(it) = abs(tempmat_nn).max();
+    
+    tempmat_nn /= se_boot;
+    app_std_path(it) = tempmat_nn;
+    absmax_app_std_path(it) = abs(tempmat_nn.submat(tau_min,tau_min,tau_max,tau_max)).max();
   }
   
   mat obs_std_path = obs_path/se_boot;
   double absmax_obs_path = (abs(obs_path)).max();
-  double absmax_obs_std_path = (abs(obs_std_path)).max();
+  double absmax_obs_std_path = (abs(obs_std_path.submat(tau_min,tau_min,tau_max,tau_max))).max();
   
   uvec find_unstd = (find(absmax_app_path>absmax_obs_path));
   double p_value = (find_unstd.size()); p_value = p_value/path;
@@ -2428,10 +2460,8 @@ List link_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
     tempmat_npath(_,it) = (as<NumericVector>(app_path(it)));
   }
   vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
-  uvec ind_se_boot = find(se_boot == 0);
-  int num_se_boot = ind_se_boot.size();
-  se_boot(ind_se_boot) = ones(num_se_boot);
-  // se_boot(ind_se_boot) = (nonzeros(se_boot).min())*ones(num_se_boot);
+  se_boot.clamp(1/path,path);
+  // se_boot.replace(0,1);
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
@@ -2655,10 +2685,8 @@ List link_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
     tempmat_npath(_,it) = (as<NumericVector>(app_path(it)));
   }
   vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
-  uvec ind_se_boot = find(se_boot == 0);
-  int num_se_boot = ind_se_boot.size();
-  se_boot(ind_se_boot) = ones(num_se_boot);
-  // se_boot(ind_se_boot) = (nonzeros(se_boot).min())*ones(num_se_boot);
+  se_boot.clamp(1/path,path);
+  // se_boot.replace(0,1);
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
@@ -2883,10 +2911,8 @@ List form_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
     tempmat_npath(_,it) = (as<NumericVector>(app_path(it)));
   }
   vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
-  uvec ind_se_boot = find(se_boot == 0);
-  int num_se_boot = ind_se_boot.size();
-  se_boot(ind_se_boot) = ones(num_se_boot);
-  // se_boot(ind_se_boot) = (nonzeros(se_boot).min())*ones(num_se_boot);
+  se_boot.clamp(1/path,path);
+  // se_boot.replace(0,1);
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
@@ -3111,10 +3137,8 @@ List form_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
     tempmat_npath(_,it) = (as<NumericVector>(app_path(it)));
   }
   vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
-  uvec ind_se_boot = find(se_boot == 0);
-  int num_se_boot = ind_se_boot.size();
-  se_boot(ind_se_boot) = ones(num_se_boot);
-  // se_boot(ind_se_boot) = (nonzeros(se_boot).min())*ones(num_se_boot);
+  se_boot.clamp(1/path,path);
+  // se_boot.replace(0,1);
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
