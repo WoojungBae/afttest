@@ -447,7 +447,7 @@ List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   vec ghat_0_t = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn);
+      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn) * dFhat_n_e(it);
     }
   }
   ghat_0_t /= bw_gn;
@@ -927,7 +927,7 @@ List link_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   vec ghat_0_t = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn);
+      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn) * dFhat_n_e(it);
     }
   }
   ghat_0_t /= bw_gn;
@@ -1151,7 +1151,7 @@ List link_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   vec ghat_0_t = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn);
+      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn) * dFhat_n_e(it);
     }
   }
   ghat_0_t /= bw_gn;
@@ -1376,7 +1376,7 @@ List form_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   vec ghat_0_t = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn);
+      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn) * dFhat_n_e(it);
     }
   }
   ghat_0_t /= bw_gn;
@@ -1601,7 +1601,7 @@ List form_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   vec ghat_0_t = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn);
+      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn) * dFhat_n_e(it);
     }
   }
   ghat_0_t /= bw_gn;
@@ -1826,7 +1826,7 @@ List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   vec ghat_0_t = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn);
+      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn) * dFhat_n_e(it);
     }
   }
   ghat_0_t /= bw_gn;
@@ -2058,7 +2058,7 @@ List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   vec ghat_0_t = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn);
+      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn) * dFhat_n_e(it);
     }
   }
   ghat_0_t /= bw_gn;
@@ -2287,7 +2287,7 @@ List link_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   vec ghat_0_t = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn);
+      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn) * dFhat_n_e(it);
     }
   }
   ghat_0_t /= bw_gn;
@@ -2502,7 +2502,7 @@ List link_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   vec ghat_0_t = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn);
+      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn) * dFhat_n_e(it);
     }
   }
   ghat_0_t /= bw_gn;
@@ -2718,7 +2718,7 @@ List form_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
   vec ghat_0_t = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn);
+      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn) * dFhat_n_e(it);
     }
   }
   ghat_0_t /= bw_gn;
@@ -2934,7 +2934,7 @@ List form_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
   vec ghat_0_t = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn);
+      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn) * dFhat_n_e(it);
     }
   }
   ghat_0_t /= bw_gn;
