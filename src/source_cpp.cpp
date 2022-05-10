@@ -435,19 +435,22 @@ List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
+  vec Fhat_n_e = 1-cumprod(1-Delta/S_0_t);
+  vec dFhat_n_e = diff(join_cols(zero_vec_1,Fhat_n_e));
+  
   vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
   // vec given_data_g = exp(resid);
   vec given_data_g = pred_data;
-  double bw_g = 1.06 * stddev(given_data_g) * pow(n,-0.2);
+  double bw_gn = 1.06 * stddev(given_data_g) * pow(n,-0.2);
   vec ghat_0_t = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_g);
+      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn);
     }
   }
-  ghat_0_t /= (n*bw_g);
+  ghat_0_t /= bw_gn;
   
   List ghat_t_z(p);
   tempvec_n = ghat_0_t%Time;
@@ -462,25 +465,22 @@ List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   }
   
   // -----------------------------f0----------------------------
-  vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
-  vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
-  
   vec Condi_Ehat = zero_vec_n;
   for(int it=0; it<n; it++){
-    Condi_Ehat(it) = sum(join_cols(zeros(it+1),ones(n-it-1))%resid%dFhat_0_e)/(1-Fhat_0_e(it));
+    Condi_Ehat(it) = sum(join_cols(zeros(it+1),ones(n-it-1))%resid%dFhat_n_e)/(1-Fhat_n_e(it));
   }
   Condi_Ehat.replace(datum::nan,0);
   
   vec rhat_i = Delta%resid+(1-Delta)%Condi_Ehat;
   vec given_data_f = exp(rhat_i);
-  double bw_f = 1.06 * stddev(given_data_f) * pow(n,-0.2);
+  double bw_fn = 1.06 * stddev(given_data_f) * pow(n,-0.2);
   vec fhat_0_t = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_f);
+      fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_fn) * dFhat_n_e(it);
     }
   }
-  fhat_0_t /= (n*bw_f);
+  fhat_0_t /= bw_fn;
   
   List fhat_t_z(p);
   tempvec_n = fhat_0_t%Time;
@@ -677,19 +677,22 @@ List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
+  vec Fhat_n_e = 1-cumprod(1-Delta/S_0_t);
+  vec dFhat_n_e = diff(join_cols(zero_vec_1,Fhat_n_e));
+  
   vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
   // vec given_data_g = exp(resid);
   vec given_data_g = pred_data;
-  double bw_g = 1.06 * stddev(given_data_g) * pow(n,-0.2);
+  double bw_gn = 1.06 * stddev(given_data_g) * pow(n,-0.2);
   vec ghat_0_t = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_g);
+      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn) * dFhat_n_e(it);
     }
   }
-  ghat_0_t /= (n*bw_g);
+  ghat_0_t /= bw_gn;
   
   List ghat_t_z(p);
   tempvec_n = ghat_0_t%Time;
@@ -704,25 +707,22 @@ List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   }
   
   // -----------------------------f0----------------------------
-  vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
-  vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
-  
   vec Condi_Ehat = zero_vec_n;
   for(int it=0; it<n; it++){
-    Condi_Ehat(it) = sum(join_cols(zeros(it+1),ones(n-it-1))%resid%dFhat_0_e)/(1-Fhat_0_e(it));
+    Condi_Ehat(it) = sum(join_cols(zeros(it+1),ones(n-it-1))%resid%dFhat_n_e)/(1-Fhat_n_e(it));
   }
   Condi_Ehat.replace(datum::nan,0);
   
   vec rhat_i = Delta%resid+(1-Delta)%Condi_Ehat;
   vec given_data_f = exp(rhat_i);
-  double bw_f = 1.06 * stddev(given_data_f) * pow(n,-0.2);
+  double bw_fn = 1.06 * stddev(given_data_f) * pow(n,-0.2);
   vec fhat_0_t = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_f);
+      fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_fn) * dFhat_n_e(it);
     }
   }
-  fhat_0_t /= (n*bw_f);
+  fhat_0_t /= bw_fn;
   
   List fhat_t_z(p);
   tempvec_n = fhat_0_t%Time;
@@ -909,25 +909,28 @@ List link_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     dMhat_i_t(it) = diff(join_cols(zero_vec_1,tempvec_n));
     obs_path += (tempvec_n(n-1))*(as<vec>(pi_i_z(it)));
   }
-  obs_path /= sqrtn;
-  obs_path -= obs_path(0) * ones(n);
+  // obs_path /= sqrtn;
+  // obs_path -= obs_path(0) * ones(n);
   
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
+  vec Fhat_n_e = 1-cumprod(1-Delta/S_0_t);
+  vec dFhat_n_e = diff(join_cols(zero_vec_1,Fhat_n_e));
+  
   vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
   // vec given_data_g = exp(resid);
   vec given_data_g = pred_data;
-  double bw_g = 1.06 * stddev(given_data_g) * pow(n,-0.2);
+  double bw_gn = 1.06 * stddev(given_data_g) * pow(n,-0.2);
   vec ghat_0_t = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_g);
+      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn);
     }
   }
-  ghat_0_t /= (n*bw_g);
+  ghat_0_t /= bw_gn;
   
   List ghat_t_z(p);
   tempvec_n = ghat_0_t%Time;
@@ -942,25 +945,22 @@ List link_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   }
   
   // -----------------------------f0----------------------------
-  vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
-  vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
-  
   vec Condi_Ehat = zero_vec_n;
   for(int it=0; it<n; it++){
-    Condi_Ehat(it) = sum(join_cols(zeros(it+1),ones(n-it-1))%resid%dFhat_0_e)/(1-Fhat_0_e(it));
+    Condi_Ehat(it) = sum(join_cols(zeros(it+1),ones(n-it-1))%resid%dFhat_n_e)/(1-Fhat_n_e(it));
   }
   Condi_Ehat.replace(datum::nan,0);
   
   vec rhat_i = Delta%resid+(1-Delta)%Condi_Ehat;
   vec given_data_f = exp(rhat_i);
-  double bw_f = 1.06 * stddev(given_data_f) * pow(n,-0.2);
+  double bw_fn = 1.06 * stddev(given_data_f) * pow(n,-0.2);
   vec fhat_0_t = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_f);
+      fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_fn) * dFhat_n_e(it);
     }
   }
-  fhat_0_t /= (n*bw_f);
+  fhat_0_t /= bw_fn;
   
   List fhat_inf_z(p);
   double tempvec_1 = fhat_0_t(n-1)*Time(n-1);
@@ -1133,25 +1133,28 @@ List link_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     dMhat_i_t(it) = diff(join_cols(zero_vec_1,tempvec_n));
     obs_path += (tempvec_n(n-1))*(as<vec>(pi_i_z(it)));
   }
-  obs_path /= sqrtn;
-  obs_path -= obs_path(0) * ones(n);
+  // obs_path /= sqrtn;
+  // obs_path -= obs_path(0) * ones(n);
   
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
+  vec Fhat_n_e = 1-cumprod(1-Delta/S_0_t);
+  vec dFhat_n_e = diff(join_cols(zero_vec_1,Fhat_n_e));
+  
   vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
   // vec given_data_g = exp(resid);
   vec given_data_g = pred_data;
-  double bw_g = 1.06 * stddev(given_data_g) * pow(n,-0.2);
+  double bw_gn = 1.06 * stddev(given_data_g) * pow(n,-0.2);
   vec ghat_0_t = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_g);
+      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn);
     }
   }
-  ghat_0_t /= (n*bw_g);
+  ghat_0_t /= bw_gn;
   
   List ghat_t_z(p);
   tempvec_n = ghat_0_t%Time;
@@ -1166,25 +1169,22 @@ List link_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   }
   
   // -----------------------------f0----------------------------
-  vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
-  vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
-  
   vec Condi_Ehat = zero_vec_n;
   for(int it=0; it<n; it++){
-    Condi_Ehat(it) = sum(join_cols(zeros(it+1),ones(n-it-1))%resid%dFhat_0_e)/(1-Fhat_0_e(it));
+    Condi_Ehat(it) = sum(join_cols(zeros(it+1),ones(n-it-1))%resid%dFhat_n_e)/(1-Fhat_n_e(it));
   }
   Condi_Ehat.replace(datum::nan,0);
   
   vec rhat_i = Delta%resid+(1-Delta)%Condi_Ehat;
   vec given_data_f = exp(rhat_i);
-  double bw_f = 1.06 * stddev(given_data_f) * pow(n,-0.2);
+  double bw_fn = 1.06 * stddev(given_data_f) * pow(n,-0.2);
   vec fhat_0_t = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_f);
+      fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_fn) * dFhat_n_e(it);
     }
   }
-  fhat_0_t /= (n*bw_f);
+  fhat_0_t /= bw_fn;
   
   List fhat_inf_z(p);
   double tempvec_1 = fhat_0_t(n-1)*Time(n-1);
@@ -1358,25 +1358,28 @@ List form_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     dMhat_i_t(it) = diff(join_cols(zero_vec_1,tempvec_n));
     obs_path += (tempvec_n(n-1))*(as<vec>(pi_i_z(it)));
   }
-  obs_path /= sqrtn;
-  obs_path -= obs_path(0) * ones(n);
+  // obs_path /= sqrtn;
+  // obs_path -= obs_path(0) * ones(n);
   
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
+  vec Fhat_n_e = 1-cumprod(1-Delta/S_0_t);
+  vec dFhat_n_e = diff(join_cols(zero_vec_1,Fhat_n_e));
+  
   vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
   // vec given_data_g = exp(resid);
   vec given_data_g = pred_data;
-  double bw_g = 1.06 * stddev(given_data_g) * pow(n,-0.2);
+  double bw_gn = 1.06 * stddev(given_data_g) * pow(n,-0.2);
   vec ghat_0_t = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_g);
+      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn);
     }
   }
-  ghat_0_t /= (n*bw_g);
+  ghat_0_t /= bw_gn;
   
   List ghat_t_z(p);
   tempvec_n = ghat_0_t%Time;
@@ -1391,25 +1394,22 @@ List form_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   }
   
   // -----------------------------f0----------------------------
-  vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
-  vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
-  
   vec Condi_Ehat = zero_vec_n;
   for(int it=0; it<n; it++){
-    Condi_Ehat(it) = sum(join_cols(zeros(it+1),ones(n-it-1))%resid%dFhat_0_e)/(1-Fhat_0_e(it));
+    Condi_Ehat(it) = sum(join_cols(zeros(it+1),ones(n-it-1))%resid%dFhat_n_e)/(1-Fhat_n_e(it));
   }
   Condi_Ehat.replace(datum::nan,0);
   
   vec rhat_i = Delta%resid+(1-Delta)%Condi_Ehat;
   vec given_data_f = exp(rhat_i);
-  double bw_f = 1.06 * stddev(given_data_f) * pow(n,-0.2);
+  double bw_fn = 1.06 * stddev(given_data_f) * pow(n,-0.2);
   vec fhat_0_t = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_f);
+      fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_fn) * dFhat_n_e(it);
     }
   }
-  fhat_0_t /= (n*bw_f);
+  fhat_0_t /= bw_fn;
   
   List fhat_inf_z(p);
   double tempvec_1 = fhat_0_t(n-1)*Time(n-1);
@@ -1583,25 +1583,28 @@ List form_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     dMhat_i_t(it) = diff(join_cols(zero_vec_1,tempvec_n));
     obs_path += (tempvec_n(n-1))*(as<vec>(pi_i_z(it)));
   }
-  obs_path /= sqrtn;
-  obs_path -= obs_path(0) * ones(n);
+  // obs_path /= sqrtn;
+  // obs_path -= obs_path(0) * ones(n);
   
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
+  vec Fhat_n_e = 1-cumprod(1-Delta/S_0_t);
+  vec dFhat_n_e = diff(join_cols(zero_vec_1,Fhat_n_e));
+  
   vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
   // vec given_data_g = exp(resid);
   vec given_data_g = pred_data;
-  double bw_g = 1.06 * stddev(given_data_g) * pow(n,-0.2);
+  double bw_gn = 1.06 * stddev(given_data_g) * pow(n,-0.2);
   vec ghat_0_t = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_g);
+      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn);
     }
   }
-  ghat_0_t /= (n*bw_g);
+  ghat_0_t /= bw_gn;
   
   List ghat_t_z(p);
   tempvec_n = ghat_0_t%Time;
@@ -1616,25 +1619,22 @@ List form_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   }
   
   // -----------------------------f0----------------------------
-  vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
-  vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
-  
   vec Condi_Ehat = zero_vec_n;
   for(int it=0; it<n; it++){
-    Condi_Ehat(it) = sum(join_cols(zeros(it+1),ones(n-it-1))%resid%dFhat_0_e)/(1-Fhat_0_e(it));
+    Condi_Ehat(it) = sum(join_cols(zeros(it+1),ones(n-it-1))%resid%dFhat_n_e)/(1-Fhat_n_e(it));
   }
   Condi_Ehat.replace(datum::nan,0);
   
   vec rhat_i = Delta%resid+(1-Delta)%Condi_Ehat;
   vec given_data_f = exp(rhat_i);
-  double bw_f = 1.06 * stddev(given_data_f) * pow(n,-0.2);
+  double bw_fn = 1.06 * stddev(given_data_f) * pow(n,-0.2);
   vec fhat_0_t = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_f);
+      fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_fn) * dFhat_n_e(it);
     }
   }
-  fhat_0_t /= (n*bw_f);
+  fhat_0_t /= bw_fn;
   
   List fhat_inf_z(p);
   double tempvec_1 = fhat_0_t(n-1)*Time(n-1);
@@ -1814,19 +1814,22 @@ List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
+  vec Fhat_n_e = 1-cumprod(1-Delta/S_0_t);
+  vec dFhat_n_e = diff(join_cols(zero_vec_1,Fhat_n_e));
+  
   vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
   // vec given_data_g = exp(resid);
   vec given_data_g = pred_data;
-  double bw_g = 1.06 * stddev(given_data_g) * pow(n,-0.2);
+  double bw_gn = 1.06 * stddev(given_data_g) * pow(n,-0.2);
   vec ghat_0_t = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_g);
+      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn);
     }
   }
-  ghat_0_t /= (n*bw_g);
+  ghat_0_t /= bw_gn;
   
   List ghat_t_z(p);
   tempvec_n = ghat_0_t%Time;
@@ -1841,25 +1844,22 @@ List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   }
   
   // -----------------------------f0----------------------------
-  vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
-  vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
-  
   vec Condi_Ehat = zero_vec_n;
   for(int it=0; it<n; it++){
-    Condi_Ehat(it) = sum(join_cols(zeros(it+1),ones(n-it-1))%resid%dFhat_0_e)/(1-Fhat_0_e(it));
+    Condi_Ehat(it) = sum(join_cols(zeros(it+1),ones(n-it-1))%resid%dFhat_n_e)/(1-Fhat_n_e(it));
   }
   Condi_Ehat.replace(datum::nan,0);
   
   vec rhat_i = Delta%resid+(1-Delta)%Condi_Ehat;
   vec given_data_f = exp(rhat_i);
-  double bw_f = 1.06 * stddev(given_data_f) * pow(n,-0.2);
+  double bw_fn = 1.06 * stddev(given_data_f) * pow(n,-0.2);
   vec fhat_0_t = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_f);
+      fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_fn) * dFhat_n_e(it);
     }
   }
-  fhat_0_t /= (n*bw_f);
+  fhat_0_t /= bw_fn;
   
   List fhat_t_z(p);
   tempvec_n = fhat_0_t%Time;
@@ -2046,19 +2046,22 @@ List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
+  vec Fhat_n_e = 1-cumprod(1-Delta/S_0_t);
+  vec dFhat_n_e = diff(join_cols(zero_vec_1,Fhat_n_e));
+  
   vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
   // vec given_data_g = exp(resid);
   vec given_data_g = pred_data;
-  double bw_g = 1.06 * stddev(given_data_g) * pow(n,-0.2);
+  double bw_gn = 1.06 * stddev(given_data_g) * pow(n,-0.2);
   vec ghat_0_t = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_g);
+      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn);
     }
   }
-  ghat_0_t /= (n*bw_g);
+  ghat_0_t /= bw_gn;
   
   List ghat_t_z(p);
   tempvec_n = ghat_0_t%Time;
@@ -2073,25 +2076,22 @@ List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   }
   
   // -----------------------------f0----------------------------
-  vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
-  vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
-  
   vec Condi_Ehat = zero_vec_n;
   for(int it=0; it<n; it++){
-    Condi_Ehat(it) = sum(join_cols(zeros(it+1),ones(n-it-1))%resid%dFhat_0_e)/(1-Fhat_0_e(it));
+    Condi_Ehat(it) = sum(join_cols(zeros(it+1),ones(n-it-1))%resid%dFhat_n_e)/(1-Fhat_n_e(it));
   }
   Condi_Ehat.replace(datum::nan,0);
   
   vec rhat_i = Delta%resid+(1-Delta)%Condi_Ehat;
   vec given_data_f = exp(rhat_i);
-  double bw_f = 1.06 * stddev(given_data_f) * pow(n,-0.2);
+  double bw_fn = 1.06 * stddev(given_data_f) * pow(n,-0.2);
   vec fhat_0_t = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_f);
+      fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_fn) * dFhat_n_e(it);
     }
   }
-  fhat_0_t /= (n*bw_f);
+  fhat_0_t /= bw_fn;
   
   List fhat_t_z(p);
   tempvec_n = fhat_0_t%Time;
@@ -2269,25 +2269,28 @@ List link_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
     dMhat_i_t(it) = diff(join_cols(zero_vec_1,tempvec_n));
     obs_path += (tempvec_n(n-1))*(as<vec>(pi_i_z(it)));
   }
-  obs_path /= sqrtn;
-  obs_path -= obs_path(0) * ones(n);
+  // obs_path /= sqrtn;
+  // obs_path -= obs_path(0) * ones(n);
   
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
+  vec Fhat_n_e = 1-cumprod(1-Delta/S_0_t);
+  vec dFhat_n_e = diff(join_cols(zero_vec_1,Fhat_n_e));
+  
   vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
   // vec given_data_g = exp(resid);
   vec given_data_g = pred_data;
-  double bw_g = 1.06 * stddev(given_data_g) * pow(n,-0.2);
+  double bw_gn = 1.06 * stddev(given_data_g) * pow(n,-0.2);
   vec ghat_0_t = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_g);
+      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn);
     }
   }
-  ghat_0_t /= (n*bw_g);
+  ghat_0_t /= bw_gn;
   
   List ghat_t_z(p);
   tempvec_n = ghat_0_t%Time;
@@ -2302,25 +2305,22 @@ List link_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   }
   
   // -----------------------------f0----------------------------
-  vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
-  vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
-  
   vec Condi_Ehat = zero_vec_n;
   for(int it=0; it<n; it++){
-    Condi_Ehat(it) = sum(join_cols(zeros(it+1),ones(n-it-1))%resid%dFhat_0_e)/(1-Fhat_0_e(it));
+    Condi_Ehat(it) = sum(join_cols(zeros(it+1),ones(n-it-1))%resid%dFhat_n_e)/(1-Fhat_n_e(it));
   }
   Condi_Ehat.replace(datum::nan,0);
   
   vec rhat_i = Delta%resid+(1-Delta)%Condi_Ehat;
   vec given_data_f = exp(rhat_i);
-  double bw_f = 1.06 * stddev(given_data_f) * pow(n,-0.2);
+  double bw_fn = 1.06 * stddev(given_data_f) * pow(n,-0.2);
   vec fhat_0_t = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_f);
+      fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_fn) * dFhat_n_e(it);
     }
   }
-  fhat_0_t /= (n*bw_f);
+  fhat_0_t /= bw_fn;
   
   List fhat_inf_z(p);
   double tempvec_1 = fhat_0_t(n-1)*Time(n-1);
@@ -2484,25 +2484,28 @@ List link_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
     dMhat_i_t(it) = diff(join_cols(zero_vec_1,tempvec_n));
     obs_path += (tempvec_n(n-1))*(as<vec>(pi_i_z(it)));
   }
-  obs_path /= sqrtn;
-  obs_path -= obs_path(0) * ones(n);
+  // obs_path /= sqrtn;
+  // obs_path -= obs_path(0) * ones(n);
   
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
+  vec Fhat_n_e = 1-cumprod(1-Delta/S_0_t);
+  vec dFhat_n_e = diff(join_cols(zero_vec_1,Fhat_n_e));
+  
   vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
   // vec given_data_g = exp(resid);
   vec given_data_g = pred_data;
-  double bw_g = 1.06 * stddev(given_data_g) * pow(n,-0.2);
+  double bw_gn = 1.06 * stddev(given_data_g) * pow(n,-0.2);
   vec ghat_0_t = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_g);
+      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn);
     }
   }
-  ghat_0_t /= (n*bw_g);
+  ghat_0_t /= bw_gn;
   
   List ghat_t_z(p);
   tempvec_n = ghat_0_t%Time;
@@ -2517,25 +2520,22 @@ List link_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   }
   
   // -----------------------------f0----------------------------
-  vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
-  vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
-  
   vec Condi_Ehat = zero_vec_n;
   for(int it=0; it<n; it++){
-    Condi_Ehat(it) = sum(join_cols(zeros(it+1),ones(n-it-1))%resid%dFhat_0_e)/(1-Fhat_0_e(it));
+    Condi_Ehat(it) = sum(join_cols(zeros(it+1),ones(n-it-1))%resid%dFhat_n_e)/(1-Fhat_n_e(it));
   }
   Condi_Ehat.replace(datum::nan,0);
   
   vec rhat_i = Delta%resid+(1-Delta)%Condi_Ehat;
   vec given_data_f = exp(rhat_i);
-  double bw_f = 1.06 * stddev(given_data_f) * pow(n,-0.2);
+  double bw_fn = 1.06 * stddev(given_data_f) * pow(n,-0.2);
   vec fhat_0_t = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_f);
+      fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_fn) * dFhat_n_e(it);
     }
   }
-  fhat_0_t /= (n*bw_f);
+  fhat_0_t /= bw_fn;
   
   List fhat_inf_z(p);
   double tempvec_1 = fhat_0_t(n-1)*Time(n-1);
@@ -2700,25 +2700,28 @@ List form_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
     dMhat_i_t(it) = diff(join_cols(zero_vec_1,tempvec_n));
     obs_path += (tempvec_n(n-1))*(as<vec>(pi_i_z(it)));
   }
-  obs_path /= sqrtn;
-  obs_path -= obs_path(0) * ones(n);
+  // obs_path /= sqrtn;
+  // obs_path -= obs_path(0) * ones(n);
   
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
+  vec Fhat_n_e = 1-cumprod(1-Delta/S_0_t);
+  vec dFhat_n_e = diff(join_cols(zero_vec_1,Fhat_n_e));
+  
   vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
   // vec given_data_g = exp(resid);
   vec given_data_g = pred_data;
-  double bw_g = 1.06 * stddev(given_data_g) * pow(n,-0.2);
+  double bw_gn = 1.06 * stddev(given_data_g) * pow(n,-0.2);
   vec ghat_0_t = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_g);
+      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn);
     }
   }
-  ghat_0_t /= (n*bw_g);
+  ghat_0_t /= bw_gn;
   
   List ghat_t_z(p);
   tempvec_n = ghat_0_t%Time;
@@ -2733,25 +2736,22 @@ List form_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
   }
   
   // -----------------------------f0----------------------------
-  vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
-  vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
-  
   vec Condi_Ehat = zero_vec_n;
   for(int it=0; it<n; it++){
-    Condi_Ehat(it) = sum(join_cols(zeros(it+1),ones(n-it-1))%resid%dFhat_0_e)/(1-Fhat_0_e(it));
+    Condi_Ehat(it) = sum(join_cols(zeros(it+1),ones(n-it-1))%resid%dFhat_n_e)/(1-Fhat_n_e(it));
   }
   Condi_Ehat.replace(datum::nan,0);
   
   vec rhat_i = Delta%resid+(1-Delta)%Condi_Ehat;
   vec given_data_f = exp(rhat_i);
-  double bw_f = 1.06 * stddev(given_data_f) * pow(n,-0.2);
+  double bw_fn = 1.06 * stddev(given_data_f) * pow(n,-0.2);
   vec fhat_0_t = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_f);
+      fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_fn) * dFhat_n_e(it);
     }
   }
-  fhat_0_t /= (n*bw_f);
+  fhat_0_t /= bw_fn;
   
   List fhat_inf_z(p);
   double tempvec_1 = fhat_0_t(n-1)*Time(n-1);
@@ -2916,25 +2916,28 @@ List form_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
     dMhat_i_t(it) = diff(join_cols(zero_vec_1,tempvec_n));
     obs_path += (tempvec_n(n-1))*(as<vec>(pi_i_z(it)));
   }
-  obs_path /= sqrtn;
-  obs_path -= obs_path(0) * ones(n);
+  // obs_path /= sqrtn;
+  // obs_path -= obs_path(0) * ones(n);
   
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
+  vec Fhat_n_e = 1-cumprod(1-Delta/S_0_t);
+  vec dFhat_n_e = diff(join_cols(zero_vec_1,Fhat_n_e));
+  
   vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
   // vec given_data_g = exp(resid);
   vec given_data_g = pred_data;
-  double bw_g = 1.06 * stddev(given_data_g) * pow(n,-0.2);
+  double bw_gn = 1.06 * stddev(given_data_g) * pow(n,-0.2);
   vec ghat_0_t = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_g);
+      ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn);
     }
   }
-  ghat_0_t /= (n*bw_g);
+  ghat_0_t /= bw_gn;
   
   List ghat_t_z(p);
   tempvec_n = ghat_0_t%Time;
@@ -2949,25 +2952,22 @@ List form_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
   }
   
   // -----------------------------f0----------------------------
-  vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
-  vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
-  
   vec Condi_Ehat = zero_vec_n;
   for(int it=0; it<n; it++){
-    Condi_Ehat(it) = sum(join_cols(zeros(it+1),ones(n-it-1))%resid%dFhat_0_e)/(1-Fhat_0_e(it));
+    Condi_Ehat(it) = sum(join_cols(zeros(it+1),ones(n-it-1))%resid%dFhat_n_e)/(1-Fhat_n_e(it));
   }
   Condi_Ehat.replace(datum::nan,0);
   
   vec rhat_i = Delta%resid+(1-Delta)%Condi_Ehat;
   vec given_data_f = exp(rhat_i);
-  double bw_f = 1.06 * stddev(given_data_f) * pow(n,-0.2);
+  double bw_fn = 1.06 * stddev(given_data_f) * pow(n,-0.2);
   vec fhat_0_t = zero_vec_n;
   for(int it=0; it<n; it++){
     for(int itt=0; itt<n; itt++){
-      fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_f);
+      fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_fn) * dFhat_n_e(it);
     }
   }
-  fhat_0_t /= (n*bw_f);
+  fhat_0_t /= bw_fn;
   
   List fhat_inf_z(p);
   double tempvec_1 = fhat_0_t(n-1)*Time(n-1);
