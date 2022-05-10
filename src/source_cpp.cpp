@@ -565,12 +565,12 @@ List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   mat se_boot = reshape(mat_se_boot,n,n);
   
   double kappa_x = 0.5 - sum(Delta)/(2*n);
-  int x_min = ceil(n*kappa_x);
-  int x_max = floor(n*(1-kappa_x));
-  // double kappa_t = 0.05;
-  // int t_min = ceil(n*kappa_t);
-  // int t_max = floor(n*(1-kappa_t));
-  // // .submat(t_min,t_min,x_max,x_max)
+  int x_min = floor(n*kappa_x);
+  int x_max = ceil(n*(1-kappa_x));
+  double kappa_t = 0.05;
+  int t_min = floor(n*kappa_t);
+  int t_max = ceil(n*(1-kappa_t));
+  // // .submat(t_min,x_min,t_max,x_max)
   // // .cols(x_min,x_max)
   
   // double quant = 0.5;
@@ -580,16 +580,16 @@ List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
     tempmat_nn = as<mat>(app_path(it));
-    absmax_app_path(it) = abs(tempmat_nn).max();
+    absmax_app_path(it) = (abs(tempmat_nn)).max();
     
     tempmat_nn /= se_boot;
     app_std_path(it) = tempmat_nn;
-    absmax_app_std_path(it) = abs(tempmat_nn.cols(x_min,x_max)).max();
+    absmax_app_std_path(it) = (abs(tempmat_nn.submat(t_min,x_min,t_max,x_max))).max();
   }
   
   mat obs_std_path = obs_path/se_boot;
   double absmax_obs_path = (abs(obs_path)).max();
-  double absmax_obs_std_path = (abs(obs_std_path.cols(x_min,x_max))).max();
+  double absmax_obs_std_path = (abs(obs_std_path.submat(t_min,x_min,t_max,x_max))).max();
   
   uvec ind_usd = (find(absmax_app_path>absmax_obs_path));
   double p_value = (ind_usd.size()); p_value = p_value/path;
@@ -807,11 +807,11 @@ List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   mat se_boot = reshape(mat_se_boot,n,n);
   
   double kappa_x = 0.5 - sum(Delta)/(2*n);
-  int x_min = ceil(n*kappa_x);
-  int x_max = floor(n*(1-kappa_x));
-  // double kappa_t = 0.05;
-  // int t_min = ceil(n*kappa_t);
-  // int t_max = floor(n*(1-kappa_t));
+  int x_min = floor(n*kappa_x);
+  int x_max = ceil(n*(1-kappa_x));
+  double kappa_t = 0.05;
+  int t_min = floor(n*kappa_t);
+  int t_max = ceil(n*(1-kappa_t));
   // .submat(x_min,x_min,x_max,x_max)
   // // .cols(x_min,x_max)
   
@@ -822,16 +822,16 @@ List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
     tempmat_nn = as<mat>(app_path(it));
-    absmax_app_path(it) = abs(tempmat_nn).max();
+    absmax_app_path(it) = (abs(tempmat_nn)).max();
     
     tempmat_nn /= se_boot;
     app_std_path(it) = tempmat_nn;
-    absmax_app_std_path(it) = abs(tempmat_nn.cols(x_min,x_max)).max();
+    absmax_app_std_path(it) = (abs(tempmat_nn.submat(t_min,x_min,t_max,x_max))).max();
   }
   
   mat obs_std_path = obs_path/se_boot;
   double absmax_obs_path = (abs(obs_path)).max();
-  double absmax_obs_std_path = (abs(obs_std_path.cols(x_min,x_max))).max();
+  double absmax_obs_std_path = (abs(obs_std_path.submat(t_min,x_min,t_max,x_max))).max();
   
   uvec ind_usd = (find(absmax_app_path>absmax_obs_path));
   double p_value = (ind_usd.size()); p_value = p_value/path;
@@ -1937,11 +1937,11 @@ List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   mat se_boot = reshape(mat_se_boot,n,n);
   
   double kappa_x = 0.5 - sum(Delta)/(2*n);
-  int x_min = ceil(n*kappa_x);
-  int x_max = floor(n*(1-kappa_x));
-  // double kappa_t = 0.05;
-  // int t_min = ceil(n*kappa_t);
-  // int t_max = floor(n*(1-kappa_t));
+  int x_min = floor(n*kappa_x);
+  int x_max = ceil(n*(1-kappa_x));
+  double kappa_t = 0.05;
+  int t_min = floor(n*kappa_t);
+  int t_max = ceil(n*(1-kappa_t));
   // .submat(x_min,x_min,x_max,x_max)
   // // .cols(x_min,x_max)
   
@@ -1952,16 +1952,16 @@ List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
     tempmat_nn = as<mat>(app_path(it));
-    absmax_app_path(it) = abs(tempmat_nn).max();
+    absmax_app_path(it) = (abs(tempmat_nn)).max();
     
     tempmat_nn /= se_boot;
     app_std_path(it) = tempmat_nn;
-    absmax_app_std_path(it) = abs(tempmat_nn.cols(x_min,x_max)).max();
+    absmax_app_std_path(it) = (abs(tempmat_nn.submat(t_min,x_min,t_max,x_max))).max();
   }
   
   mat obs_std_path = obs_path/se_boot;
   double absmax_obs_path = (abs(obs_path)).max();
-  double absmax_obs_std_path = (abs(obs_std_path.cols(x_min,x_max))).max();
+  double absmax_obs_std_path = (abs(obs_std_path.submat(t_min,x_min,t_max,x_max))).max();
   
   uvec ind_usd = (find(absmax_app_path>absmax_obs_path));
   double p_value = (ind_usd.size()); p_value = p_value/path;
@@ -2170,11 +2170,11 @@ List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   mat se_boot = reshape(mat_se_boot,n,n);
   
   double kappa_x = 0.5 - sum(Delta)/(2*n);
-  int x_min = ceil(n*kappa_x);
-  int x_max = floor(n*(1-kappa_x));
-  // double kappa_t = 0.05;
-  // int t_min = ceil(n*kappa_t);
-  // int t_max = floor(n*(1-kappa_t));
+  int x_min = floor(n*kappa_x);
+  int x_max = ceil(n*(1-kappa_x));
+  double kappa_t = 0.05;
+  int t_min = floor(n*kappa_t);
+  int t_max = ceil(n*(1-kappa_t));
   // .submat(x_min,x_min,x_max,x_max)
   // // .cols(x_min,x_max)
   
@@ -2185,16 +2185,16 @@ List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
     tempmat_nn = as<mat>(app_path(it));
-    absmax_app_path(it) = abs(tempmat_nn).max();
+    absmax_app_path(it) = (abs(tempmat_nn)).max();
     
     tempmat_nn /= se_boot;
     app_std_path(it) = tempmat_nn;
-    absmax_app_std_path(it) = abs(tempmat_nn.cols(x_min,x_max)).max();
+    absmax_app_std_path(it) = (abs(tempmat_nn.submat(t_min,x_min,t_max,x_max))).max();
   }
   
   mat obs_std_path = obs_path/se_boot;
   double absmax_obs_path = (abs(obs_path)).max();
-  double absmax_obs_std_path = (abs(obs_std_path.cols(x_min,x_max))).max();
+  double absmax_obs_std_path = (abs(obs_std_path.submat(t_min,x_min,t_max,x_max))).max();
   
   uvec ind_usd = (find(absmax_app_path>absmax_obs_path));
   double p_value = (ind_usd.size()); p_value = p_value/path;
