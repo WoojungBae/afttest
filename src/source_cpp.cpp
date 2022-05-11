@@ -12,8 +12,9 @@ double target_score2_mis(vec b, vec Time, vec Delta, mat Covari, vec targetvecto
   int n = Covari.n_rows;
   int p = Covari.n_cols;
   
-  vec resid = log(Time) + Covari*b;
+  double sqrtn = sqrt(n);
   
+  vec resid = log(Time) + Covari*b;
   uvec index_resid = sort_index(resid);
   
   Delta = Delta(index_resid);
@@ -26,11 +27,12 @@ double target_score2_mis(vec b, vec Time, vec Delta, mat Covari, vec targetvecto
     tempvec_n = sqrt(sum(tempmat_np%tempmat_np,1));
     tempvec_n.replace(0,1);
     
-    tempvec_n = normcdf(sqrt(n)*(resid-resid(it))/tempvec_n);
+    tempvec_n = normcdf(sqrtn*(resid-resid(it))/tempvec_n);
     F_vec += sum(tempmat_np.each_col()%tempvec_n,0).t()*Delta(it);
     
   }
-  F_vec = F_vec/n - targetvector;
+  F_vec -= targetvector;
+  F_vec /= n;
   
   double SumOfSqure = norm(F_vec);
   
@@ -55,7 +57,8 @@ double target_score2_mns(vec b, vec Time, vec Delta, mat Covari, vec targetvecto
     tempmat_np = Covari.row(it) - Covari.each_row();
     F_vec += sum(tempmat_np.each_col()%conv_to<vec>::from((resid>=resid(it))),0).t()*Delta(it);
   }
-  F_vec = F_vec/n - targetvector;
+  F_vec -= targetvector;
+  F_vec /= n;
   
   double SumOfSqure = norm(F_vec);
   
@@ -67,8 +70,9 @@ vec target_score_mis(vec b, vec Time, vec Delta, mat Covari, vec targetvector){
   int n = Covari.n_rows;
   int p = Covari.n_cols;
   
-  vec resid = log(Time) + Covari*b;
+  double sqrtn = sqrt(n);
   
+  vec resid = log(Time) + Covari*b;
   uvec index_resid = sort_index(resid);
   
   Delta = Delta(index_resid);
@@ -80,10 +84,11 @@ vec target_score_mis(vec b, vec Time, vec Delta, mat Covari, vec targetvector){
     tempmat_np = Covari.row(it) - Covari.each_row();
     tempvec_n = sqrt(sum(tempmat_np%tempmat_np,1));
     tempvec_n.replace(0,1);
-    tempvec_n = normcdf(sqrt(n)*(resid-resid(it))/tempvec_n);
+    tempvec_n = normcdf(sqrtn*(resid-resid(it))/tempvec_n);
     F_vec += sum(tempmat_np.each_col()%tempvec_n,0).t()*Delta(it);
   }
-  F_vec = F_vec/n - targetvector;
+  F_vec -= targetvector;
+  F_vec /= n;
   
   return F_vec;
 }
@@ -106,7 +111,8 @@ vec target_score_mns(vec b, vec Time, vec Delta, mat Covari, vec targetvector){
     tempmat_np = Covari.row(it) - Covari.each_row();
     F_vec += sum(tempmat_np.each_col()%conv_to<vec>::from((resid>=resid(it))),0).t()*Delta(it);
   }
-  F_vec = F_vec/n - targetvector;
+  F_vec -= targetvector;
+  F_vec /= n;
   
   return F_vec;
 }
@@ -393,7 +399,8 @@ List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   Covari = Covari.rows(index_resid);
   resid = resid(index_resid);
   
-  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
+  List pi_i_z(n); List N_i_t(n); List Y_i_t(n);
+  vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
   mat sorted_Covari = sort(Covari);
   tempvec_n = zero_vec_n;
   for(int it=0; it<n; it++){
@@ -503,7 +510,7 @@ List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
         tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
         tempmat_np += (as<vec>(dMhat_i_t(it))*(Covari.row(it)))*phi_i(it);
       }
-      vec U_phi_inf = (sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0)/n).t();
+      vec U_phi_inf = sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0).t();
       
       Rcpp::List b_s_opt_results = optim(Rcpp::_["par"]    = b,
                                          Rcpp::_["fn"]     = Rcpp::InternalFunction(&target_score2_mis),
@@ -558,14 +565,19 @@ List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   // mat_se_boot.clamp(1/path,path);
   mat se_boot = reshape(mat_se_boot,n,n);
   
-  // double delta = 0.5 - sum(Delta)/(2*n);
-  // int tau_min = ceil(n*delta);
-  // int tau_max = floor(n*(1-delta));
-  // // .submat(tau_min,tau_min,tau_max,tau_max)
+  // double kappa_x = 0.5 - sum(Delta)/(2*n);
+  // int x_min = ceil(n*kappa_x);
+  // int x_max = floor(n*(1-kappa_x));
+  // double kappa_t = 0.05;
+  // int t_min = ceil(n*kappa_t);
+  // int t_max = floor(n*(1-kappa_t));
+  // // .submat(t_min,x_min,t_max,x_max)
+  // // .rows(t_min,t_max)
+  // // .cols(x_min,x_max)
   
   double quant = 0.5;
-  int x = round(n*quant);
-  // .col(x)
+  int x_quant = round(n*quant);
+  // .col(x_quant)
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
@@ -574,12 +586,12 @@ List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     
     tempmat_nn /= se_boot;
     app_std_path(it) = tempmat_nn;
-    absmax_app_std_path(it) = abs(tempmat_nn.col(x)).max();
+    absmax_app_std_path(it) = abs(tempmat_nn.col(x_quant)).max();
   }
   
   mat obs_std_path = obs_path/se_boot;
   double absmax_obs_path = (abs(obs_path)).max();
-  double absmax_obs_std_path = (abs(obs_std_path.col(x))).max();
+  double absmax_obs_std_path = (abs(obs_std_path.col(x_quant))).max();
   
   uvec ind_usd = (find(absmax_app_path>absmax_obs_path));
   double p_value = (ind_usd.size()); p_value = p_value/path;
@@ -629,7 +641,8 @@ List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   Covari = Covari.rows(index_resid);
   resid = resid(index_resid);
   
-  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
+  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); 
+  vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
   mat sorted_Covari = sort(Covari);
   tempvec_n = zero_vec_n;
   for(int it=0; it<n; it++){
@@ -739,7 +752,7 @@ List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
         tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
         tempmat_np += (as<vec>(dMhat_i_t(it))*(Covari.row(it)))*phi_i(it);
       }
-      vec U_phi_inf = (sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0)/n).t();
+      vec U_phi_inf = sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0).t();
       
       Rcpp::List b_s_opt_results = optim(Rcpp::_["par"]    = b,
                                          Rcpp::_["fn"]     = Rcpp::InternalFunction(&target_score2_mns),
@@ -794,14 +807,19 @@ List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   // mat_se_boot.clamp(1/path,path);
   mat se_boot = reshape(mat_se_boot,n,n);
   
-  // double delta = 0.5 - sum(Delta)/(2*n);
-  // int tau_min = ceil(n*delta);
-  // int tau_max = floor(n*(1-delta));
-  // // .submat(tau_min,tau_min,tau_max,tau_max)
+  // double kappa_x = 0.5 - sum(Delta)/(2*n);
+  // int x_min = ceil(n*kappa_x);
+  // int x_max = floor(n*(1-kappa_x));
+  // double kappa_t = 0.05;
+  // int t_min = ceil(n*kappa_t);
+  // int t_max = floor(n*(1-kappa_t));
+  // // .submat(t_min,x_min,t_max,x_max)
+  // // .rows(t_min,t_max)
+  // // .cols(x_min,x_max)
   
   double quant = 0.5;
-  int x = round(n*quant);
-  // .row(x)
+  int x_quant = round(n*quant);
+  // .col(x_quant)
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
@@ -810,12 +828,12 @@ List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     
     tempmat_nn /= se_boot;
     app_std_path(it) = tempmat_nn;
-    absmax_app_std_path(it) = abs(tempmat_nn.col(x)).max();
+    absmax_app_std_path(it) = abs(tempmat_nn.col(x_quant)).max();
   }
   
   mat obs_std_path = obs_path/se_boot;
   double absmax_obs_path = (abs(obs_path)).max();
-  double absmax_obs_std_path = (abs(obs_std_path.col(x))).max();
+  double absmax_obs_std_path = (abs(obs_std_path.col(x_quant))).max();
   
   uvec ind_usd = (find(absmax_app_path>absmax_obs_path));
   double p_value = (ind_usd.size()); p_value = p_value/path;
@@ -865,7 +883,8 @@ List link_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   Covari = Covari.rows(index_resid);
   resid = resid(index_resid);
   
-  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
+  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); 
+  vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
   mat sorted_Covari = sort(Covari);
   tempvec_n = zero_vec_n;
   for(int it=0; it<n; it++){
@@ -971,7 +990,7 @@ List link_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
         tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
         tempmat_np += (as<vec>(dMhat_i_t(it))*(Covari.row(it)))*phi_i(it);
       }
-      vec U_phi_inf = (sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0)/n).t();
+      vec U_phi_inf = sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0).t();
       
       Rcpp::List b_s_opt_results = optim(Rcpp::_["par"]    = b,
                                          Rcpp::_["fn"]     = Rcpp::InternalFunction(&target_score2_mis),
@@ -1087,7 +1106,8 @@ List link_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   Covari = Covari.rows(index_resid);
   resid = resid(index_resid);
   
-  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
+  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); 
+  vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
   mat sorted_Covari = sort(Covari);
   tempvec_n = zero_vec_n;
   for(int it=0; it<n; it++){
@@ -1193,7 +1213,7 @@ List link_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
         tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
         tempmat_np += (as<vec>(dMhat_i_t(it))*(Covari.row(it)))*phi_i(it);
       }
-      vec U_phi_inf = (sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0)/n).t();
+      vec U_phi_inf = sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0).t();
       
       Rcpp::List b_s_opt_results = optim(Rcpp::_["par"]    = b,
                                          Rcpp::_["fn"]     = Rcpp::InternalFunction(&target_score2_mns),
@@ -1309,7 +1329,8 @@ List form_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   Covari = Covari.rows(index_resid);
   resid = resid(index_resid);
   
-  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
+  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); 
+  vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
   vec form_Covari = Covari.col(form-1);
   vec sorted_form_Covari = sort(form_Covari);
   tempvec_n = zero_vec_n;
@@ -1416,7 +1437,7 @@ List form_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
         tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
         tempmat_np += (as<vec>(dMhat_i_t(it))*(Covari.row(it)))*phi_i(it);
       }
-      vec U_phi_inf = (sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0)/n).t();
+      vec U_phi_inf = sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0).t();
       
       Rcpp::List b_s_opt_results = optim(Rcpp::_["par"]    = b,
                                          Rcpp::_["fn"]     = Rcpp::InternalFunction(&target_score2_mis),
@@ -1532,7 +1553,8 @@ List form_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   Covari = Covari.rows(index_resid);
   resid = resid(index_resid);
   
-  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
+  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); 
+  vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
   vec form_Covari = Covari.col(form-1);
   vec sorted_form_Covari = sort(form_Covari);
   tempvec_n = zero_vec_n;
@@ -1639,7 +1661,7 @@ List form_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
         tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
         tempmat_np += (as<vec>(dMhat_i_t(it))*(Covari.row(it)))*phi_i(it);
       }
-      vec U_phi_inf = (sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0)/n).t();
+      vec U_phi_inf = sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0).t();
       
       Rcpp::List b_s_opt_results = optim(Rcpp::_["par"]    = b,
                                          Rcpp::_["fn"]     = Rcpp::InternalFunction(&target_score2_mns),
@@ -1752,7 +1774,8 @@ List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   Covari = Covari.rows(index_resid);
   resid = resid(index_resid);
   
-  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
+  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); 
+  vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
   mat sorted_Covari = sort(Covari);
   tempvec_n = zero_vec_n;
   for(int it=0; it<n; it++){
@@ -1862,7 +1885,7 @@ List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
         tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
         tempmat_np += (as<vec>(dMhat_i_t(it))*(Covari.row(it)))*phi_i(it);
       }
-      vec U_phi_inf = (sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0)/n).t();
+      vec U_phi_inf = sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0).t();
       
       List b_s_result = dfsane_mis(n, b, Time, Delta, Covari, U_phi_inf);
       b_s = as<vec>(b_s_result[1]);
@@ -1910,14 +1933,19 @@ List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   // mat_se_boot.clamp(1/path,path);
   mat se_boot = reshape(mat_se_boot,n,n);
   
-  // double delta = 0.5 - sum(Delta)/(2*n);
-  // int tau_min = ceil(n*delta);
-  // int tau_max = floor(n*(1-delta));
-  // // .submat(tau_min,tau_min,tau_max,tau_max)
+  // double kappa_x = 0.5 - sum(Delta)/(2*n);
+  // int x_min = ceil(n*kappa_x);
+  // int x_max = floor(n*(1-kappa_x));
+  // double kappa_t = 0.05;
+  // int t_min = ceil(n*kappa_t);
+  // int t_max = floor(n*(1-kappa_t));
+  // // .submat(t_min,x_min,t_max,x_max)
+  // // .rows(t_min,t_max)
+  // // .cols(x_min,x_max)
   
   double quant = 0.5;
-  int x = round(n*quant);
-  // .row(x)
+  int x_quant = round(n*quant);
+  // .col(x_quant)
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
@@ -1926,12 +1954,12 @@ List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
     
     tempmat_nn /= se_boot;
     app_std_path(it) = tempmat_nn;
-    absmax_app_std_path(it) = abs(tempmat_nn.col(x)).max();
+    absmax_app_std_path(it) = abs(tempmat_nn.col(x_quant)).max();
   }
   
   mat obs_std_path = obs_path/se_boot;
   double absmax_obs_path = (abs(obs_path)).max();
-  double absmax_obs_std_path = (abs(obs_std_path.col(x))).max();
+  double absmax_obs_std_path = (abs(obs_std_path.col(x_quant))).max();
   
   uvec ind_usd = (find(absmax_app_path>absmax_obs_path));
   double p_value = (ind_usd.size()); p_value = p_value/path;
@@ -1978,7 +2006,8 @@ List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   Covari = Covari.rows(index_resid);
   resid = resid(index_resid);
   
-  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
+  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); 
+  vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
   mat sorted_Covari = sort(Covari);
   tempvec_n = zero_vec_n;
   for(int it=0; it<n; it++){
@@ -2089,7 +2118,7 @@ List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
         tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
         tempmat_np += (as<vec>(dMhat_i_t(it))*(Covari.row(it)))*phi_i(it);
       }
-      vec U_phi_inf = (sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0)/n).t();
+      vec U_phi_inf = sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0).t();
       
       List b_s_result = dfsane_mns(n, b, Time, Delta, Covari, U_phi_inf);
       b_s = as<vec>(b_s_result[1]);
@@ -2137,14 +2166,19 @@ List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   // mat_se_boot.clamp(1/path,path);
   mat se_boot = reshape(mat_se_boot,n,n);
   
-  // double delta = 0.5 - sum(Delta)/(2*n);
-  // int tau_min = ceil(n*delta);
-  // int tau_max = floor(n*(1-delta));
-  // // .submat(tau_min,tau_min,tau_max,tau_max)
+  // double kappa_x = 0.5 - sum(Delta)/(2*n);
+  // int x_min = ceil(n*kappa_x);
+  // int x_max = floor(n*(1-kappa_x));
+  // double kappa_t = 0.05;
+  // int t_min = ceil(n*kappa_t);
+  // int t_max = floor(n*(1-kappa_t));
+  // // .submat(t_min,x_min,t_max,x_max)
+  // // .rows(t_min,t_max)
+  // // .cols(x_min,x_max)
   
   double quant = 0.5;
-  int x = round(n*quant);
-  // .row(x)
+  int x_quant = round(n*quant);
+  // .col(x_quant)
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
@@ -2153,12 +2187,12 @@ List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
     
     tempmat_nn /= se_boot;
     app_std_path(it) = tempmat_nn;
-    absmax_app_std_path(it) = abs(tempmat_nn.col(x)).max();
+    absmax_app_std_path(it) = abs(tempmat_nn.col(x_quant)).max();
   }
   
   mat obs_std_path = obs_path/se_boot;
   double absmax_obs_path = (abs(obs_path)).max();
-  double absmax_obs_std_path = (abs(obs_std_path.col(x))).max();
+  double absmax_obs_std_path = (abs(obs_std_path.col(x_quant))).max();
   
   uvec ind_usd = (find(absmax_app_path>absmax_obs_path));
   double p_value = (ind_usd.size()); p_value = p_value/path;
@@ -2205,7 +2239,8 @@ List link_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   Covari = Covari.rows(index_resid);
   resid = resid(index_resid);
   
-  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
+  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); 
+  vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
   mat sorted_Covari = sort(Covari);
   tempvec_n = zero_vec_n;
   for(int it=0; it<n; it++){
@@ -2312,7 +2347,7 @@ List link_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
         tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
         tempmat_np += (as<vec>(dMhat_i_t(it))*(Covari.row(it)))*phi_i(it);
       }
-      vec U_phi_inf = (sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0)/n).t();
+      vec U_phi_inf = sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0).t();
       
       List b_s_result = dfsane_mis(n, b, Time, Delta, Covari, U_phi_inf);
       b_s = as<vec>(b_s_result[1]);
@@ -2418,7 +2453,8 @@ List link_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   Covari = Covari.rows(index_resid);
   resid = resid(index_resid);
   
-  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
+  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); 
+  vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
   mat sorted_Covari = sort(Covari);
   tempvec_n = zero_vec_n;
   for(int it=0; it<n; it++){
@@ -2525,7 +2561,7 @@ List link_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
         tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
         tempmat_np += (as<vec>(dMhat_i_t(it))*(Covari.row(it)))*phi_i(it);
       }
-      vec U_phi_inf = (sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0)/n).t();
+      vec U_phi_inf = sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0).t();
       
       List b_s_result = dfsane_mns(n, b, Time, Delta, Covari, U_phi_inf);
       b_s = as<vec>(b_s_result[1]);
@@ -2631,7 +2667,8 @@ List form_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
   Covari = Covari.rows(index_resid);
   resid = resid(index_resid);
   
-  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
+  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); 
+  vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
   vec form_Covari = Covari.col(form-1);
   vec sorted_form_Covari = sort(form_Covari);
   tempvec_n = zero_vec_n;
@@ -2739,7 +2776,7 @@ List form_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
         tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
         tempmat_np += (as<vec>(dMhat_i_t(it))*(Covari.row(it)))*phi_i(it);
       }
-      vec U_phi_inf = (sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0)/n).t();
+      vec U_phi_inf = sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0).t();
       
       List b_s_result = dfsane_mis(n, b, Time, Delta, Covari, U_phi_inf);
       b_s = as<vec>(b_s_result[1]);
@@ -2845,7 +2882,8 @@ List form_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
   Covari = Covari.rows(index_resid);
   resid = resid(index_resid);
   
-  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
+  List pi_i_z(n); List N_i_t(n); List Y_i_t(n); 
+  vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
   vec form_Covari = Covari.col(form-1);
   vec sorted_form_Covari = sort(form_Covari);
   tempvec_n = zero_vec_n;
@@ -2953,7 +2991,7 @@ List form_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
         tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
         tempmat_np += (as<vec>(dMhat_i_t(it))*(Covari.row(it)))*phi_i(it);
       }
-      vec U_phi_inf = (sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0)/n).t();
+      vec U_phi_inf = sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0).t();
       
       List b_s_result = dfsane_mns(n, b, Time, Delta, Covari, U_phi_inf);
       b_s = as<vec>(b_s_result[1]);
