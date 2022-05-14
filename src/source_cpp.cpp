@@ -552,25 +552,12 @@ List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
     tempmat_n2path(_,it) = (as<NumericVector>(app_path(it)));
   }
   vec mat_se_boot = stddev(as<mat>(tempmat_n2path),0,1);
-  // mat_se_boot.clean(1);
-  // mat_se_boot.replace(0,1);
-  mat_se_boot.clamp(median(mat_se_boot),max(mat_se_boot));
+  // too low values which are 0 or computationally 0 of se_boot makes a 
+  // problem, so we adjust them to have kappa = quantile of mat_se_boot
+  vec kappa = {0.2, 1};
+  kappa = quantile(mat_se_boot, kappa);
+  mat_se_boot.clamp(kappa(0),kappa(1));
   mat se_boot = reshape(mat_se_boot,n,n);
-  
-  // double kappa_x = 0.5 - sum(Delta)/(2*n);
-  // int x_min = ceil(n*kappa_x);
-  // int x_max = floor(n*(1-kappa_x));
-  // double kappa_t = 0.05;
-  // int t_min = ceil(n*kappa_t);
-  // int t_max = floor(n*(1-kappa_t));
-  // // .submat(t_min,x_min,t_max,x_max)
-  // // .rows(t_min,t_max)
-  // // .cols(x_min,x_max)
-  
-  // double quant = 0.5;
-  // int x_quant = round(n*quant);
-  // // .col(x_quant)
-  // // .head_rows(x_quant)
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
@@ -788,25 +775,12 @@ List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
     tempmat_n2path(_,it) = (as<NumericVector>(app_path(it)));
   }
   vec mat_se_boot = stddev(as<mat>(tempmat_n2path),0,1);
-  // mat_se_boot.clean(1);
-  // mat_se_boot.replace(0,1);
-  mat_se_boot.clamp(median(mat_se_boot),max(mat_se_boot));
+  // too low values which are 0 or computationally 0 of se_boot makes a 
+  // problem, so we adjust them to have kappa = quantile of mat_se_boot
+  vec kappa = {0.2, 1};
+  kappa = quantile(mat_se_boot, kappa);
+  mat_se_boot.clamp(kappa(0),kappa(1));
   mat se_boot = reshape(mat_se_boot,n,n);
-  
-  // double kappa_x = 0.5 - sum(Delta)/(2*n);
-  // int x_min = ceil(n*kappa_x);
-  // int x_max = floor(n*(1-kappa_x));
-  // double kappa_t = 0.05;
-  // int t_min = ceil(n*kappa_t);
-  // int t_max = floor(n*(1-kappa_t));
-  // // .submat(t_min,x_min,t_max,x_max)
-  // // .rows(t_min,t_max)
-  // // .cols(x_min,x_max)
-  
-  // double quant = 0.5;
-  // int x_quant = round(n*quant);
-  // // .col(x_quant)
-  // // .head_rows(x_quant)
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
@@ -1895,25 +1869,12 @@ List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     tempmat_n2path(_,it) = (as<NumericVector>(app_path(it)));
   }
   vec mat_se_boot = stddev(as<mat>(tempmat_n2path),0,1);
-  // mat_se_boot.clean(1);
-  // mat_se_boot.replace(0,1);
-  mat_se_boot.clamp(median(mat_se_boot),max(mat_se_boot));
+  // too low values which are 0 or computationally 0 of se_boot makes a 
+  // problem, so we adjust them to have kappa = quantile of mat_se_boot
+  vec kappa = {0.2, 1};
+  kappa = quantile(mat_se_boot, kappa);
+  mat_se_boot.clamp(kappa(0),kappa(1));
   mat se_boot = reshape(mat_se_boot,n,n);
-  
-  // double kappa_x = 0.5 - sum(Delta)/(2*n);
-  // int x_min = ceil(n*kappa_x);
-  // int x_max = floor(n*(1-kappa_x));
-  // double kappa_t = 0.05;
-  // int t_min = ceil(n*kappa_t);
-  // int t_max = floor(n*(1-kappa_t));
-  // // .submat(t_min,x_min,t_max,x_max)
-  // // .rows(t_min,t_max)
-  // // .cols(x_min,x_max)
-  
-  // double quant = 0.5;
-  // int x_quant = round(n*quant);
-  // // .col(x_quant)
-  // // .head_rows(x_quant)
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
@@ -2140,25 +2101,12 @@ List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     tempmat_n2path(_,it) = (as<NumericVector>(app_path(it)));
   }
   vec mat_se_boot = stddev(as<mat>(tempmat_n2path),0,1);
-  // mat_se_boot.clean(1);
-  // mat_se_boot.replace(0,1);
-  mat_se_boot.clamp(median(mat_se_boot),max(mat_se_boot));
+  // too low values which are 0 or computationally 0 of se_boot makes a 
+  // problem, so we adjust them to have kappa = quantile of mat_se_boot
+  vec kappa = {0.2, 1};
+  kappa = quantile(mat_se_boot, kappa);
+  mat_se_boot.clamp(kappa(0),kappa(1));
   mat se_boot = reshape(mat_se_boot,n,n);
-  
-  // double kappa_x = 0.5 - sum(Delta)/(2*n);
-  // int x_min = ceil(n*kappa_x);
-  // int x_max = floor(n*(1-kappa_x));
-  // double kappa_t = 0.05;
-  // int t_min = ceil(n*kappa_t);
-  // int t_max = floor(n*(1-kappa_t));
-  // // .submat(t_min,x_min,t_max,x_max)
-  // // .rows(t_min,t_max)
-  // // .cols(x_min,x_max)
-  
-  // double quant = 0.5;
-  // int x_quant = round(n*quant);
-  // // .col(x_quant)
-  // // .head_rows(x_quant)
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
