@@ -554,7 +554,7 @@ List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   vec mat_se_boot = stddev(as<mat>(tempmat_n2path),0,1);
   // too low values which are 0 or computationally 0 of se_boot makes a 
   // problem, so we adjust them to have kappa = quantile of mat_se_boot
-  vec kappa = {0.2, 1};
+  vec kappa = {0.1, 1};
   kappa = quantile(mat_se_boot, kappa);
   mat_se_boot.clamp(kappa(0),kappa(1));
   mat se_boot = reshape(mat_se_boot,n,n);
@@ -777,7 +777,7 @@ List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   vec mat_se_boot = stddev(as<mat>(tempmat_n2path),0,1);
   // too low values which are 0 or computationally 0 of se_boot makes a 
   // problem, so we adjust them to have kappa = quantile of mat_se_boot
-  vec kappa = {0.2, 1};
+  vec kappa = {0.1, 1};
   kappa = quantile(mat_se_boot, kappa);
   mat_se_boot.clamp(kappa(0),kappa(1));
   mat se_boot = reshape(mat_se_boot,n,n);
@@ -1871,7 +1871,7 @@ List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   vec mat_se_boot = stddev(as<mat>(tempmat_n2path),0,1);
   // too low values which are 0 or computationally 0 of se_boot makes a 
   // problem, so we adjust them to have kappa = quantile of mat_se_boot
-  vec kappa = {0.2, 1};
+  vec kappa = {0.1, 1};
   kappa = quantile(mat_se_boot, kappa);
   mat_se_boot.clamp(kappa(0),kappa(1));
   mat se_boot = reshape(mat_se_boot,n,n);
@@ -2103,7 +2103,7 @@ List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   vec mat_se_boot = stddev(as<mat>(tempmat_n2path),0,1);
   // too low values which are 0 or computationally 0 of se_boot makes a 
   // problem, so we adjust them to have kappa = quantile of mat_se_boot
-  vec kappa = {0.2, 1};
+  vec kappa = {0.1, 1};
   kappa = quantile(mat_se_boot, kappa);
   mat_se_boot.clamp(kappa(0),kappa(1));
   mat se_boot = reshape(mat_se_boot,n,n);
