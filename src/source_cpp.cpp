@@ -555,7 +555,7 @@ List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   // too low values which are 0 or computationally 0 of se_boot makes a problem, 
   // so we adjust them to have kappa = quantile of mat_se_boot
   // e.g., kappa_min =; sqrt(censoring)/2; quantile(mat_se_boot) = {0.2, 1};
-  vec kappa = {0.2, 1};
+  vec kappa = {0.5, 1};
   kappa = quantile(mat_se_boot, kappa);
   mat_se_boot.clamp(kappa(0),kappa(1));
   mat se_boot = reshape(mat_se_boot,n,n);
@@ -779,7 +779,7 @@ List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   // too low values which are 0 or computationally 0 of se_boot makes a problem, 
   // so we adjust them to have kappa = quantile of mat_se_boot
   // e.g., kappa_min =; sqrt(censoring)/2; quantile(mat_se_boot) = {0.2, 1};
-  vec kappa = {0.2, 1};
+  vec kappa = {0.5, 1};
   kappa = quantile(mat_se_boot, kappa);
   mat_se_boot.clamp(kappa(0),kappa(1));
   mat se_boot = reshape(mat_se_boot,n,n);
@@ -996,8 +996,12 @@ List link_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
     tempmat_npath(_,it) = (as<NumericVector>(app_path(it)));
   }
   vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
-  se_boot.replace(0,1);
-  // se_boot.clamp(1/path,path);
+  // too low values which are 0 or computationally 0 of se_boot makes a problem, 
+  // so we adjust them to have kappa = quantile of mat_se_boot
+  // e.g., kappa_min =; sqrt(censoring)/2; quantile(mat_se_boot) = {0.2, 1};
+  vec kappa = {0.2, 1};
+  kappa = quantile(se_boot, kappa);
+  se_boot.clamp(kappa(0),kappa(1));
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
@@ -1211,8 +1215,12 @@ List link_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
     tempmat_npath(_,it) = (as<NumericVector>(app_path(it)));
   }
   vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
-  se_boot.replace(0,1);
-  // se_boot.clamp(1/path,path);
+  // too low values which are 0 or computationally 0 of se_boot makes a problem, 
+  // so we adjust them to have kappa = quantile of mat_se_boot
+  // e.g., kappa_min =; sqrt(censoring)/2; quantile(mat_se_boot) = {0.2, 1};
+  vec kappa = {0.2, 1};
+  kappa = quantile(se_boot, kappa);
+  se_boot.clamp(kappa(0),kappa(1));
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
@@ -1427,8 +1435,12 @@ List form_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
     tempmat_npath(_,it) = (as<NumericVector>(app_path(it)));
   }
   vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
-  se_boot.replace(0,1);
-  // se_boot.clamp(1/path,path);
+  // too low values which are 0 or computationally 0 of se_boot makes a problem, 
+  // so we adjust them to have kappa = quantile of mat_se_boot
+  // e.g., kappa_min =; sqrt(censoring)/2; quantile(mat_se_boot) = {0.2, 1};
+  vec kappa = {0.2, 1};
+  kappa = quantile(se_boot, kappa);
+  se_boot.clamp(kappa(0),kappa(1));
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
@@ -1643,8 +1655,12 @@ List form_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
     tempmat_npath(_,it) = (as<NumericVector>(app_path(it)));
   }
   vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
-  se_boot.replace(0,1);
-  // se_boot.clamp(1/path,path);
+  // too low values which are 0 or computationally 0 of se_boot makes a problem, 
+  // so we adjust them to have kappa = quantile of mat_se_boot
+  // e.g., kappa_min =; sqrt(censoring)/2; quantile(mat_se_boot) = {0.2, 1};
+  vec kappa = {0.2, 1};
+  kappa = quantile(se_boot, kappa);
+  se_boot.clamp(kappa(0),kappa(1));
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
@@ -1874,7 +1890,7 @@ List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   // too low values which are 0 or computationally 0 of se_boot makes a problem, 
   // so we adjust them to have kappa = quantile of mat_se_boot
   // e.g., kappa_min =; sqrt(censoring)/2; quantile(mat_se_boot) = {0.2, 1};
-  vec kappa = {0.2, 1};
+  vec kappa = {0.5, 1};
   kappa = quantile(mat_se_boot, kappa);
   mat_se_boot.clamp(kappa(0),kappa(1));
   mat se_boot = reshape(mat_se_boot,n,n);
@@ -2107,7 +2123,7 @@ List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   // too low values which are 0 or computationally 0 of se_boot makes a problem, 
   // so we adjust them to have kappa = quantile of mat_se_boot
   // e.g., kappa_min =; sqrt(censoring)/2; quantile(mat_se_boot) = {0.2, 1};
-  vec kappa = {0.2, 1};
+  vec kappa = {0.5, 1};
   kappa = quantile(mat_se_boot, kappa);
   mat_se_boot.clamp(kappa(0),kappa(1));
   mat se_boot = reshape(mat_se_boot,n,n);
@@ -2333,8 +2349,12 @@ List link_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     tempmat_npath(_,it) = (as<NumericVector>(app_path(it)));
   }
   vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
-  se_boot.replace(0,1);
-  // se_boot.clamp(1/path,path);
+  // too low values which are 0 or computationally 0 of se_boot makes a problem, 
+  // so we adjust them to have kappa = quantile of mat_se_boot
+  // e.g., kappa_min =; sqrt(censoring)/2; quantile(mat_se_boot) = {0.2, 1};
+  vec kappa = {0.2, 1};
+  kappa = quantile(se_boot, kappa);
+  se_boot.clamp(kappa(0),kappa(1));
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
@@ -2557,8 +2577,12 @@ List link_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     tempmat_npath(_,it) = (as<NumericVector>(app_path(it)));
   }
   vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
-  se_boot.replace(0,1);
-  // se_boot.clamp(1/path,path);
+  // too low values which are 0 or computationally 0 of se_boot makes a problem, 
+  // so we adjust them to have kappa = quantile of mat_se_boot
+  // e.g., kappa_min =; sqrt(censoring)/2; quantile(mat_se_boot) = {0.2, 1};
+  vec kappa = {0.2, 1};
+  kappa = quantile(se_boot, kappa);
+  se_boot.clamp(kappa(0),kappa(1));
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
@@ -2782,8 +2806,12 @@ List form_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     tempmat_npath(_,it) = (as<NumericVector>(app_path(it)));
   }
   vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
-  se_boot.replace(0,1);
-  // se_boot.clamp(1/path,path);
+  // too low values which are 0 or computationally 0 of se_boot makes a problem, 
+  // so we adjust them to have kappa = quantile of mat_se_boot
+  // e.g., kappa_min =; sqrt(censoring)/2; quantile(mat_se_boot) = {0.2, 1};
+  vec kappa = {0.2, 1};
+  kappa = quantile(se_boot, kappa);
+  se_boot.clamp(kappa(0),kappa(1));
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
@@ -3007,8 +3035,12 @@ List form_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     tempmat_npath(_,it) = (as<NumericVector>(app_path(it)));
   }
   vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
-  se_boot.replace(0,1);
-  // se_boot.clamp(1/path,path);
+  // too low values which are 0 or computationally 0 of se_boot makes a problem, 
+  // so we adjust them to have kappa = quantile of mat_se_boot
+  // e.g., kappa_min =; sqrt(censoring)/2; quantile(mat_se_boot) = {0.2, 1};
+  vec kappa = {0.2, 1};
+  kappa = quantile(se_boot, kappa);
+  se_boot.clamp(kappa(0),kappa(1));
   
   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
   for(int it=0; it<path; it++){
