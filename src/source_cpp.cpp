@@ -120,7 +120,7 @@ vec target_score_mns(vec b, vec Time, vec Delta, mat Covari, vec targetvector){
 List dfsane_mis(int n, vec b, vec Time, vec Delta, mat Covari, vec targetvector){
   
   vec b_old = b;
-  vec F_old = target_score_mns(b_old,Time,Delta,Covari,targetvector);
+  vec F_old = target_score_mis(b_old,Time,Delta,Covari,targetvector);
   double sig_k = (1/sqrt(sum(F_old%F_old))); if (sig_k>1){sig_k=1;}
   
   vec b_new = b_old - sig_k*F_old;
@@ -136,8 +136,8 @@ List dfsane_mis(int n, vec b, vec Time, vec Delta, mat Covari, vec targetvector)
   double tol_f = sum(F_new%F_new);
   
   // Stop sqrt(tol_f)/sqrt(n) <= e_a + e_r * sqrt(tol_0)/sqrt(n)
-  // Stop tol_f <= (e_a * sqrt(n) + e_r * tol_0)^{2}
-  double e_a = 1e-5; double e_r = 1e-4; 
+  // Stop tol_f <= (e_a * sqrt(n) + e_r * sqrt(tol_0))^{2}
+  double e_a = 1e-4; double e_r = 1e-3; 
   double optim_tol = pow(e_a * sqrt(n) + e_r * sqrt(tol_0),2);
   
   double tolerance=tol_f+1; double tau_min=0.1; double tau_max=0.5; 
@@ -263,7 +263,7 @@ List dfsane_mns(int n, vec b, vec Time, vec Delta, mat Covari, vec targetvector)
   
   // Stop sqrt(tol_f)/sqrt(n) <= e_a + e_r * sqrt(tol_0)/sqrt(n)
   // Stop tol_f <= (e_a * sqrt(n) + e_r * tol_0)^{2}
-  double e_a = 1e-5; double e_r = 1e-4; 
+  double e_a = 1e-4; double e_r = 1e-3; 
   double optim_tol = pow(e_a * sqrt(n) + e_r * sqrt(tol_0),2);
   
   double tolerance=tol_f+1; double tau_min=0.1; double tau_max=0.5; 
