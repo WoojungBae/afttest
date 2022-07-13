@@ -554,11 +554,11 @@ List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   vec mat_se_boot = stddev(as<mat>(tempmat_n2path),0,1);
   // too low values which are 0 or computationally 0 of se_boot makes a problem, 
   // so we adjust them to have kappa = quantile of mat_se_boot
-  // e.g., kappa_min =; sqrt(censoring)/2; quantile(mat_se_boot) = {0.2, 1};
-  double kappa_max = 1;
-  double kappa_min = 0.5;
+  // e.g., kappa_min = censoring; sqrt(censoring)/2; quantile(mat_se_boot) = {0.2, 1};
   double censoring = 1-sum(Delta)/n;
-  if(censoring>0.5){kappa_min = censoring;}
+  double kappa_min = sqrt(censoring);
+  double kappa_max = 1;
+  if(kappa_min<0.5){kappa_min = 0.5;}
   
   vec kappa = {kappa_min, kappa_max};
   kappa = quantile(mat_se_boot, kappa);
@@ -783,11 +783,11 @@ List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   vec mat_se_boot = stddev(as<mat>(tempmat_n2path),0,1);
   // too low values which are 0 or computationally 0 of se_boot makes a problem, 
   // so we adjust them to have kappa = quantile of mat_se_boot
-  // e.g., kappa_min =; sqrt(censoring)/2; quantile(mat_se_boot) = {0.2, 1};
-  double kappa_max = 1;
-  double kappa_min = 0.5;
+  // e.g., kappa_min = censoring; sqrt(censoring)/2; quantile(mat_se_boot) = {0.2, 1};
   double censoring = 1-sum(Delta)/n;
-  if(censoring>0.5){kappa_min = censoring;}
+  double kappa_min = sqrt(censoring);
+  double kappa_max = 1;
+  if(kappa_min<0.5){kappa_min = 0.5;}
   
   vec kappa = {kappa_min, kappa_max};
   kappa = quantile(mat_se_boot, kappa);
@@ -1899,11 +1899,11 @@ List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   vec mat_se_boot = stddev(as<mat>(tempmat_n2path),0,1);
   // too low values which are 0 or computationally 0 of se_boot makes a problem, 
   // so we adjust them to have kappa = quantile of mat_se_boot
-  // e.g., kappa_min =; sqrt(censoring)/2; quantile(mat_se_boot) = {0.2, 1};
-  double kappa_max = 1;
-  double kappa_min = 0.5;
+  // e.g., kappa_min = censoring; sqrt(censoring)/2; quantile(mat_se_boot) = {0.2, 1};
   double censoring = 1-sum(Delta)/n;
-  if(censoring>0.5){kappa_min = censoring;}
+  double kappa_min = sqrt(censoring);
+  double kappa_max = 1;
+  if(kappa_min<0.5){kappa_min = 0.5;}
   
   vec kappa = {kappa_min, kappa_max};
   kappa = quantile(mat_se_boot, kappa);
@@ -2138,10 +2138,10 @@ List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   // too low values which are 0 or computationally 0 of se_boot makes a problem, 
   // so we adjust them to have kappa = quantile of mat_se_boot
   // e.g., kappa_min = censoring; sqrt(censoring)/2; quantile(mat_se_boot) = {0.2, 1};
-  double kappa_max = 1;
-  double kappa_min = 0.5;
   double censoring = 1-sum(Delta)/n;
-  if(censoring>0.5){kappa_min = censoring;}
+  double kappa_min = sqrt(censoring);
+  double kappa_max = 1;
+  if(kappa_min<0.5){kappa_min = 0.5;}
   
   vec kappa = {kappa_min, kappa_max};
   kappa = quantile(mat_se_boot, kappa);
