@@ -111,7 +111,6 @@ afttest = function(formula, path = 200, testtype = c("omni","link","form"), eqTy
   Time = dataset$Time
   Delta = dataset$Delta
   Covari = as.matrix(dataset[, 3:var.length])
-  # Covari = apply(as.matrix(dataset[, 3:var.length]),2,function(l) scale(l,T,F))
   
   if (length(which(varnames == form[1])) != 0) {
     form = which(varnames == form[1]) - 2
