@@ -37,34 +37,25 @@ library(afttest)
 library(survival)
 
 set.seed(1)
+path = 5
 
-cgd_data = subset(cgd,enum==1,c(tstop,status,treat,age,steroids))
+cgd_data = subset(cgd,enum==1)
+D_cgd = cgd_data$status
+X_cgd = cgd_data$tstop - cgd_data$tstart
+X_cgd = X_cgd + runif(length(X_cgd))/1e4
 
 trt = ifelse(cgd_data$treat=="placebo",0,1)
-age = cgd_data$age ; log_age = log(age)
 str = cgd_data$steroids
+age = cgd_data$age; log_age = log(age)
+wei = cgd_data$weight; log_wei = log(wei)
 
-X_cgd = cgd_data$tstop
-D_cgd = cgd_data$status
-table(D_cgd)
+trt = trt - 0.5
+str = str - 0.5
+age = scale(age);log_age = scale(log_age)
+wei = scale(wei);log_wei = scale(log_wei)
 
-#---------------------------------------------------------
-
-path=30
-
-result_omni = afttest(Surv(X_cgd,D_cgd)~trt+str+age,path=path,testtype="omni")
-
-# graph_omni_unstd = afttestplot(result_omni,path=10,std="unstd")
-# graph_omni_std = afttestplot(result_omni,path=10,std="std")
-
-# result_link = afttest(Surv(X_cgd,D_cgd)~trt+str+age,path=path,testtype="link")
-#   
-# graph_link_unstd = afttestplot(result_link,path=10,std="unstd")
-# graph_link_std = afttestplot(result_link,path=10,std="std")
-# 
-# result_form = afttest(Surv(X_cgd,D_cgd)~trt+str+age,path=path,testtype="form")
-# 
-# graph_form_unstd = afttestplot(result_form,path=10,std="unstd")
-# graph_form_std = afttestplot(result_form,path=10,std="std")
+result01_afttest_omni_mns=afttest(Surv(X_cgd,D_cgd)~
+trt+str+age+wei,path=path,testtype="omni",eqType="mns")
+afttestplot(result01_afttest_omni_mns,std="std")
 
 }
