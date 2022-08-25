@@ -58,7 +58,7 @@
 #' library(survival)
 #' 
 #' set.seed(1)
-#' path = 5
+#' path = 3
 #' 
 #' cgd_data = subset(cgd,enum==1)
 #' D_cgd = cgd_data$status
@@ -67,16 +67,11 @@
 #' 
 #' trt = ifelse(cgd_data$treat=="placebo",0,1)
 #' str = cgd_data$steroids
-#' age = cgd_data$age; log_age = log(age)
-#' wei = cgd_data$weight; log_wei = log(wei)
-#' 
-#' trt = trt - 0.5
-#' str = str - 0.5
-#' age = scale(age);log_age = scale(log_age)
-#' wei = scale(wei);log_wei = scale(log_wei)
+#' age = cgd_data$age
+#' wei = cgd_data$weight
 #' 
 #' result01_afttest_omni_mns=afttest(Surv(X_cgd,D_cgd)~
-#' trt+str+age+wei,path=path,testtype="omni",eqType="mns")
+#'    trt+str+age+wei,path=path,testtype="omni",eqType="mns")
 #' result01_afttest_omni_mns$p_value
 #' result01_afttest_omni_mns$p_std_value
 #' 
@@ -102,7 +97,7 @@ afttest = function(formula, path = 200, testtype = c("omni","link","form"), eqTy
   
   Time = dataset$Time
   Delta = dataset$Delta
-  Covari = as.matrix(dataset[, 3:var.length])
+  Covari = scale(as.matrix(dataset[, 3:var.length]))
   
   if (length(which(varnames == form[1])) != 0) {
     form = which(varnames == form[1]) - 2
