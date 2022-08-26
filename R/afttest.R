@@ -143,6 +143,6 @@ afttest = function(formula, path = 200, testtype = c("omni","link","form"), eqTy
     }
   }
   
-  return(print("Check your code"))
+  stop("Check your code")
 }
 
