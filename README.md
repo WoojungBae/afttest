@@ -1,2 +1,2 @@
 # afttest
-R package afttest: Goodness-of-fit test for semi-parametric Accelerated Failure Time (AFT) models
+R package afttest: Model Diagnostics for Semiparametric Accelerated Failure Time Models in R
