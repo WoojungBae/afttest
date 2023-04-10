@@ -58,20 +58,15 @@
 #' library(survival)
 #' 
 #' set.seed(1)
-#' path = 3
+#' path = 10
 #' 
 #' cgd_data = subset(cgd,enum==1)
 #' D_cgd = cgd_data$status
 #' X_cgd = cgd_data$tstop - cgd_data$tstart
 #' X_cgd = X_cgd + runif(length(X_cgd))/1e4
-#' 
 #' trt = ifelse(cgd_data$treat=="placebo",0,1)
-#' str = cgd_data$steroids
-#' age = cgd_data$age
-#' wei = cgd_data$weight
 #' 
-#' result01_afttest_omni_mns=afttest(Surv(X_cgd,D_cgd)~
-#'    trt+str+age+wei,path=path,testtype="omni",eqType="mns")
+#' result01_afttest_omni_mns=afttest(Surv(X_cgd,D_cgd)~trt,path=path,testtype="omni",eqType="mns")
 #' result01_afttest_omni_mns$p_value
 #' result01_afttest_omni_mns$p_std_value
 #' 
