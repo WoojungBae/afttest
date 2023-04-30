@@ -2,7 +2,7 @@
 % Please edit documentation in R/afttest.R
 \name{afttest}
 \alias{afttest}
-\title{afttest}
+\title{It gives several test statistics for checking the aft model assumptions.}
 \usage{
 afttest(
   formula,
@@ -74,23 +74,27 @@ form and a link function are given by the n by 1 vector which is a function
 of x in the time-transformed residual order.
 }
 \description{
-It gives several test statistics for cheking the aft model assumptions.
+It gives several test statistics for checking the aft model assumptions.
 }
 \examples{
-# library(afttest)
-# library(survival)
+## Simulate data from an AFT model
+datgen <- function(n = 100) {
+  z1 <- rbinom(n, 1, 0.5)
+  z2 <- rnorm(n)
+  e <- rnorm(n)
+  tt <- exp(2 + z1 + z2 + e)
+  cen <- runif(n, 0, 100)
+  data.frame(Time = pmin(tt, cen), status = 1 * (tt < cen),
+             z1 = z1, z2 = z2, id = 1:n)
+}
+set.seed(1)
+simdata = datgen(n = 50)
 
-# set.seed(1)
-# path = 200
+X = simdata$Time
+D = simdata$status
+z1 = simdata$z1
+z2 = simdata$z2
 
-# cgd_data = subset(cgd,enum==1)
-# D_cgd = cgd_data$status
-# X_cgd = cgd_data$tstop - cgd_data$tstart
-# X_cgd = X_cgd + runif(length(X_cgd))/1e4
-# trt = ifelse(cgd_data$treat=="placebo",0,1)
-
-# result01_afttest_link_mns=afttest(Surv(X_cgd,D_cgd)~trt,path=path,testtype="link",eqType="mns")
-# result01_afttest_link_mns$p_value
-# result01_afttest_link_mns$p_std_value
-
+result = afttest(Surv(X, D) ~ z1 + z2, testtype="link", eqType="mns")
+c(result$p_value,result$p_std_value)
 }

@@ -1,6 +1,7 @@
-#' afttest
-#'
-#' It gives several test statistics for cheking the aft model assumptions.
+##############################################################################
+## User's Main Function
+##############################################################################
+#' It gives several test statistics for checking the aft model assumptions.
 #' 
 #' @param formula The argument formula specifies the model to be fitted with
 #' the variables coming with data. The expression of the formula argument
@@ -53,28 +54,12 @@
 #' form and a link function are given by the n by 1 vector which is a function 
 #' of x in the time-transformed residual order. 
 #' 
-#' @examples 
-#' # library(afttest)
-#' # library(survival)
-#' 
-#' # set.seed(1)
-#' # path = 200
-#' 
-#' # cgd_data = subset(cgd,enum==1)
-#' # D_cgd = cgd_data$status
-#' # X_cgd = cgd_data$tstop - cgd_data$tstart
-#' # X_cgd = X_cgd + runif(length(X_cgd))/1e4
-#' # trt = ifelse(cgd_data$treat=="placebo",0,1)
-#' 
-#' # result01_afttest_link_mns=afttest(Surv(X_cgd,D_cgd)~trt,path=path,testtype="link",eqType="mns")
-#' # result01_afttest_link_mns$p_value
-#' # result01_afttest_link_mns$p_std_value
-#' 
 #' @importFrom stats optim get_all_vars
 #' @importFrom aftgee aftsrr
 #' @importFrom survival Surv
 #' 
 #' @export
+#' @example inst/examples/ex_afttest.R
 afttest = function(formula, path = 200, testtype = c("omni","link","form"), eqType = c("mis","mns"), 
                    optimType = c("DFSANE","Nelder-Mead","BFGS","CG","L-BFGS-B","SANN","Brent"),
                    form = 1, pathsave = 100) {
@@ -140,4 +125,3 @@ afttest = function(formula, path = 200, testtype = c("omni","link","form"), eqTy
   
   stop("Check your code")
 }
-

@@ -2,9 +2,10 @@ Package: afttest
 Type: Package
 Title: Model Diagnostics for Accelerated Failure Time Models
 Version: 4.2.3
-Date: 2023-04-09
+Date: 2023-04-30
 Authors@R: c(person("WooJung", "Bae", email = "matt.woojung@gmail.com", role = c("aut", "cre")),
 	   person("Dongrak", "Choi", role = "aut"),
+	   person("Jun", "Yan", role = "aut"),
 	   person("Sangwook", "Kang", role = "aut"))
 Author: WooJung Bae [aut, cre], Dongrak Choi [aut], Sangwook Kang [aut]
 Maintainer: WooJung Bae <matt.woojung@gmail.com>
@@ -17,9 +18,9 @@ Depends: R (>= 3.4.0)
 Imports: Rcpp, survival, aftgee, ggplot2, gridExtra
 LinkingTo: Rcpp, RcppArmadillo
 Encoding: UTF-8
+Language: en-US
 Collate: 
     'RcppExports.R'
     'afttest.R'
-    'source_r.R'
     'afttestplot.R'
 RoxygenNote: 7.2.3
