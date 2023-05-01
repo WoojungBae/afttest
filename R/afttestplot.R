@@ -1,73 +1,62 @@
 ##############################################################################
 ## User's Main Function
 ##############################################################################
-
 #' afttestplot
 #'
 #' It gives plot for checking the aft model assumptions.
-#' @param result is a \code{afttest} fit
-#' @param path The argument path is for the number of the simulation paths
-#' that is plotted in the graph. Therefore it needs to be equal or less than
-#' the number of paths used in by afttest function, otherwise it is given as
-#' the number of paths used in by afttest function. The default is set to be 100.
-#' @param std The option for the argument std is "unstd" and "std". In this 
-#' argument, "std" is the default.
-#' @return Basically, a graph from the afttestplot is based on the packages
-#' ggplot2 (Wickham, 2009) and gridExtra (Auguie, 2017). It offers a graph that
-#' y-axis is the test statistics and x-axis represents the rank of the subjects
-#' ordered by time transformed residual. Since the result of the omnibus test
-#' is the form of n by n matrix, some quantiles of x, which are used in weight,
-#' are plotted for graphs, i.e. 0%, 10%, 25%, 40%, 50%, 60%, 75%, 90%, and 100%
-#' are used.
-#' 
-#' @importFrom ggplot2 ggplot geom_step theme theme_minimal ggtitle ylab xlab aes element_text
-#' @importFrom gridExtra grid.arrange
-#' @importFrom stats quantile
-#' 
+#' @param object is a \code{afttest} fit
+#' @param path A numeric value specifies the number of approximated processes plotted
+#'    The default is set to be 100.
+#' @param std A character string specifying if the graph is based on the 
+#'    unstandardized test statistics or standardized test statistics
+#'    The default is set to be "std".
+#' @return \code{afttestplot} returns a plot based on the \code{testtype}:
+#' \describe{
+#'    \item{omni}{an object of the omnibus test is the form of n by n matrix, 
+#'    some quantiles of x, which are used in weight, are plotted for graphs, 
+#'    i.e. 0\%, 10\%, 25\%, 40\%, 50\%, 60\%, 75\%, 90\%, and 100\% are used.}
+#'    \item{link}{an object of the link function test is the form of n by 1 matrix}
+#'    \item{form}{an object of the functional form test is the form of n by 1 matrix}
+#' }
+#'    See the documentation of \pkg{ggplot2} and \pkg{gridExtra} for details.
+#'    
 #' @export
 #' @example inst/examples/ex_afttestplot.R
-afttestplot=function(result,path=100,std="std"){
+afttestplot=function(object,path=100,std="std"){
   
-  testtype=result$TestType
+  testtype=object$TestType
   
   if(testtype=="Omni"){
-    return(plotting_omni(result,path,std))
+    return(afttestplot_omni(object,path,std))
   }
   if(testtype=="Form"){
-    return(plotting_form(result,path,std))
+    return(afttestplot_form(object,path,std))
   }
   if(testtype=="Link"){
-    return(plotting_link(result,path,std))
+    return(afttestplot_link(object,path,std))
   }
 }
 
 ##############################################################################
 ## Background functions
 ##############################################################################
-
-#' plotting_omni
+#' afttestplot_omni
 #'
 #' It gives plot for cheking the aft model assumptions.
-#' @param result is a \code{afttest} fit
-#' @param path The argument path is for the number of the simulation paths
-#' that is plotted in the graph. Therefore it needs to be equal or less than
-#' the number of paths used in by afttest function, otherwise it is given as
-#' the number of paths used in by afttest function. The default is set to be 100.
-#' @param std The option for the argument std is "unstd" and "std". In this 
-#' argument, "std" is the default.
-#' @return Basically, a graph from the afttestplot is based on the packages
-#' ggplot2 (Wickham, 2009) and gridExtra (Auguie, 2017). It offers a graph that
-#' y-axis is the test statistics and x-axis represents the rank of the subjects
-#' ordered by time transformed residual. Since the result of the omnibus test
-#' is the form of n by n matrix, some quantiles of x, which are used in weight,
-#' are plotted for graphs, i.e. 0%, 10%, 25%, 40%, 50%, 60%, 75%, 90%, and 100%
-#' are used.
+#' @param object is a \code{afttest} fit
+#' @param path A numeric value specifies the number of approximated processes plotted
+#'    The default is set to be 100.
+#' @param std A character string specifying if the graph is based on the 
+#'    unstandardized test statistics or standardized test statistics
+#'    The default is set to be "std".
+#' @return \code{afttestplot_omni} returns a plot based on the \code{omni}:
+#'    An object of the omnibus test is the form of n by n matrix, 
+#'    some quantiles of x, which are used in weight, are plotted for graphs, 
+#'    i.e. 0\%, 10\%, 25\%, 40\%, 50\%, 60\%, 75\%, 90\%, and 100\% are used.
+#'    See the documentation of \pkg{ggplot2} and \pkg{gridExtra} for details.
 #' 
-#' @importFrom ggplot2 ggplot geom_step theme theme_minimal ggtitle ylab xlab aes element_text
-#' @importFrom gridExtra grid.arrange
-#' @importFrom stats quantile
 #' @keywords internal
-plotting_omni=function(result,path,std){
+afttestplot_omni=function(object,path,std){
   
   e_i = c(NA)
   std_What = matrix(NA)
@@ -75,18 +64,18 @@ plotting_omni=function(result,path,std){
   What = matrix(NA)
   W = matrix(NA)
   
-  result_resid=result$Resid
-  n=length(result_resid)
+  object_resid=object$Resid
+  n=length(object_resid)
   xaxix=(1:n)
   
-  pathsave = length(result$app_std_path)
+  pathsave = length(object$app_std_path)
   if (pathsave<path){
     path = pathsave
   }
   
-  # if (xaxix=="rank"){xaxix=(1:n)[order(result_Time)]}
-  # else if (xaxix=="real"){xaxix=result_Time}
-  # else (xaxix=result_Time)
+  # if (xaxix=="rank"){xaxix=(1:n)[order(object_Time)]}
+  # else if (xaxix=="real"){xaxix=object_Time}
+  # else (xaxix=object_Time)
   if (std=="std"){
     Figure=list(NA)
     
@@ -100,13 +89,13 @@ plotting_omni=function(result,path,std){
       
       for (i in 1:path){
         group=i
-        A=result$app_std_path[[i]][,Q]
+        A=object$app_std_path[[i]][,Q]
         AA=data.frame(group,e_i=xaxix,std_What=A)
         dataset_std_What=rbind(dataset_std_What,AA)
       }
       #dataset_std_What
       
-      dataset_std_W=data.frame(group,e_i=xaxix,std_W=result$obs_std_path[,Q])
+      dataset_std_W=data.frame(group,e_i=xaxix,std_W=object$obs_std_path[,Q])
       #dataset_std_W
       
       Figure_std_W=
@@ -138,13 +127,13 @@ plotting_omni=function(result,path,std){
       
       for (i in 1:path){
         group=i
-        A=result$app_path[[i]][,Q]
+        A=object$app_path[[i]][,Q]
         AA=data.frame(group,e_i=xaxix,What=A)
         dataset_What=rbind(dataset_What,AA)
       }
       #dataset_What
       
-      dataset_W=data.frame(group,e_i=xaxix,W=result$obs_path[,Q])
+      dataset_W=data.frame(group,e_i=xaxix,W=object$obs_path[,Q])
       #dataset_W
       
       Figure_W=
@@ -166,25 +155,21 @@ plotting_omni=function(result,path,std){
   }
 }
 
-#' plotting_link
+#' afttestplot_link
 #'
 #' It gives plot for cheking the aft model assumptions.
-#' @param result is a \code{afttest} fit
-#' @param path The argument path is for the number of the simulation paths
-#' that is plotted in the graph. Therefore it needs to be equal or less than
-#' the number of paths used in by afttest function, otherwise it is given as
-#' the number of paths used in by afttest function. The default is set to be 100.
-#' @param std The option for the argument std is "unstd" and "std". In this 
-#' argument, "std" is the default.
-#' @return Basically, a graph from the afttestplot is based on the packages
-#' ggplot2 (Wickham, 2009) and gridExtra (Auguie, 2017). It offers a graph that
-#' y-axis is the test statistics and x-axis represents the rank of the subjects
-#' ordered by time transformed residual.
+#' @param object is a \code{afttest} fit
+#' @param path A numeric value specifies the number of approximated processes plotted
+#'    The default is set to be 100.
+#' @param std A character string specifying if the graph is based on the 
+#'    unstandardized test statistics or standardized test statistics
+#'    The default is set to be "std".
+#' @return \code{afttestplot_link} returns a plot based on the \code{link}:
+#'    An object of the functional form test is the form of n by 1 matrix.
+#'    See the documentation of \pkg{ggplot2} and \pkg{gridExtra} for details.
 #' 
-#' @importFrom ggplot2 ggplot geom_step theme theme_minimal ggtitle ylab xlab aes
-#' @importFrom gridExtra grid.arrange
 #' @keywords internal
-plotting_link=function(result,path,std){
+afttestplot_link=function(object,path,std){
   
   e_i = c(NA)
   std_What = c(NA)
@@ -192,29 +177,29 @@ plotting_link=function(result,path,std){
   What = c(NA)
   W = c(NA)
   
-  n=length(result$Time)
+  n=length(object$Time)
   xaxix=(1:n)
   
-  pathsave = length(result$app_std_path)
+  pathsave = length(object$app_std_path)
   if (pathsave<path){
     path = pathsave
   }
-  # result_Covari=result$Covari
-  # if (xaxix=="rank"){xaxix=(1:n)[order(result_Covari)]}
-  # else {xaxix=result_Covari}
+  # object_Covari=object$Covari
+  # if (xaxix=="rank"){xaxix=(1:n)[order(object_Covari)]}
+  # else {xaxix=object_Covari}
   if (std=="std"){
     
     dataset_std_What=data.frame()
     
     for (i in 1:path){
       group=i
-      A=result$app_std_path[[i]]
+      A=object$app_std_path[[i]]
       AA=data.frame(group,e_i=xaxix,std_What=A)
       dataset_std_What=rbind(dataset_std_What,AA)
     }
     #dataset_std_What
     
-    dataset_std_W=data.frame(group,e_i=xaxix,std_W=result$obs_std_path)
+    dataset_std_W=data.frame(group,e_i=xaxix,std_W=object$obs_std_path)
     #dataset_std_W
     
     Figure_std_W=
@@ -233,13 +218,13 @@ plotting_link=function(result,path,std){
     
     for (i in 1:path){
       group=i
-      A=result$app_path[[i]]
+      A=object$app_path[[i]]
       AA=data.frame(group,e_i=xaxix,What=A)
       dataset_What=rbind(dataset_What,AA)
     }
     #dataset_What
     
-    dataset_W=data.frame(group,e_i=xaxix,W=result$obs_path)
+    dataset_W=data.frame(group,e_i=xaxix,W=object$obs_path)
     #dataset_W
     
     Figure_W=
@@ -255,25 +240,21 @@ plotting_link=function(result,path,std){
   }
 }
 
-#' plotting_form
+#' afttestplot_form
 #'
 #' It gives plot for cheking the aft model assumptions.
-#' @param result is a \code{afttest} fit
-#' @param path The argument path is for the number of the simulation paths
-#' that is plotted in the graph. Therefore it needs to be equal or less than
-#' the number of paths used in by afttest function, otherwise it is given as
-#' the number of paths used in by afttest function. The default is set to be 100.
-#' @param std The option for the argument std is "unstd" and "std". In this 
-#' argument, "std" is the default.
-#' @return Basically, a graph from the afttestplot is based on the packages
-#' ggplot2 (Wickham, 2009) and gridExtra (Auguie, 2017). It offers a graph that
-#' y-axis is the test statistics and x-axis represents the rank of the subjects
-#' ordered by time transformed residual.
+#' @param object is a \code{afttest} fit
+#' @param path A numeric value specifies the number of approximated processes plotted
+#'    The default is set to be 100.
+#' @param std A character string specifying if the graph is based on the 
+#'    unstandardized test statistics or standardized test statistics
+#'    The default is set to be "std".
+#' @return \code{afttestplot_form} returns a plot based on the \code{form}:
+#'    An object of the functional form test is the form of n by 1 matrix.
+#'    See the documentation of \pkg{ggplot2} and \pkg{gridExtra} for details.
 #' 
-#' @importFrom ggplot2 ggplot geom_step theme theme_minimal ggtitle ylab xlab aes
-#' @importFrom gridExtra grid.arrange
 #' @keywords internal
-plotting_form=function(result,path,std){
+afttestplot_form=function(object,path,std){
   
   e_i = c(NA)
   std_What = c(NA)
@@ -281,29 +262,29 @@ plotting_form=function(result,path,std){
   What = c(NA)
   W = c(NA)
   
-  n=length(result$Time)
+  n=length(object$Time)
   xaxix=(1:n)
   
-  pathsave = length(result$app_std_path)
+  pathsave = length(object$app_std_path)
   if (pathsave<path){
     path = pathsave
   }
-  # result_Covari=result$Covari
-  # if (xaxix=="rank"){xaxix=(1:n)[order(result_Covari)]}
-  # else {xaxix=result_Covari}
+  # object_Covari=object$Covari
+  # if (xaxix=="rank"){xaxix=(1:n)[order(object_Covari)]}
+  # else {xaxix=object_Covari}
   if (std=="std"){
     
     dataset_std_What=data.frame()
     
     for (i in 1:path){
       group=i
-      A=result$app_std_path[[i]]
+      A=object$app_std_path[[i]]
       AA=data.frame(group,e_i=xaxix,std_What=A)
       dataset_std_What=rbind(dataset_std_What,AA)
     }
     #dataset_std_What
     
-    dataset_std_W=data.frame(group,e_i=xaxix,std_W=result$obs_std_path)
+    dataset_std_W=data.frame(group,e_i=xaxix,std_W=object$obs_std_path)
     #dataset_std_W
     
     Figure_std_W=
@@ -322,13 +303,13 @@ plotting_form=function(result,path,std){
     
     for (i in 1:path){
       group=i
-      A=result$app_path[[i]]
+      A=object$app_path[[i]]
       AA=data.frame(group,e_i=xaxix,What=A)
       dataset_What=rbind(dataset_What,AA)
     }
     #dataset_What
     
-    dataset_W=data.frame(group,e_i=xaxix,W=result$obs_path)
+    dataset_W=data.frame(group,e_i=xaxix,W=object$obs_path)
     #dataset_W
     
     Figure_W=

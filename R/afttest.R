@@ -3,87 +3,97 @@
 ##############################################################################
 #' It gives several test statistics for checking the aft model assumptions.
 #' 
-#' @param formula The argument formula specifies the model to be fitted with
-#' the variables coming with data. The expression of the formula argument
-#' is equivalent to the Surv in the survival package. The object Surv
-#' consists of two columns. The first one is the observed failure time and
-#'  the second one is the indicator variable, specifying right censoring.
-#' @param path The argument path determines the number of simulations of
-#' the approximated process. The default is given by 200.
-#' @param testtype The argument testtype includes the aforementioned an
-#' omnibus test ("omni"), a functional form ("form") and a link function
-#' ("linkftn"). The rank weight in the package is the Gehan"s weight and
-#' each weight of the test statistics is determined by the testtype
-#' arguments. The default option for testtype is given by "omni".
-#' @param eqType The argument eqType determines the equation type to estimate
-#' the regression parameter while generating approximated process. The following
-#' are permitted. Regression parameters are estimated by directly solving
-#' the monotonic nonsmooth estimating equations ("mns"). Regression parameters
-#' are estimated by directly solving the monotonic induced-smoothing
-#' estimating equations.
-#' @param optimType The argument optimType determines the algorithm to the
-#' objective function be minimized. User can choose one of the following algorithms: 
-#' "DFSANE", "Nelder-Mead", "BFGS", "CG", "L-BFGS-B", "SANN", and "Brent". The
-#' default option is "DFSANE".
-#' @param form The argument form is necessary only if testtype
-#' is given as "form" and it determines a covariate which will be tested.
-#' It needs to be specified the name of covariates in the formula argument
-#' and the default option is "1, which represents the first covariate
-#' in the formula argument.
-#' @param pathsave The argument pathsave is optional and it is the number
-#' of paths saved among all the paths. It must be less than or equal to the
-#' argument path. 100 is set to be the default. Note that it requires a lot 
-#' of memory if we save all sampled paths (N by N matrix for each path and 
-#' so path*N*N elements)
-#' 
-#' @return The function afttest gives the list as a result. The result 
-#' consists of the number of paths ($path), the estimated beta ($beta), 
-#' the observed failure time ($Time), the right censoring indicator ($Delta), 
-#' the covariates ($Covari), the time-transformed residual ($Resid), the 
-#' estimated standard error of the observed process ($SE_process), the 
-#' observed process ($obs_process), a number of the simulated processes 
-#' ($app_process), the standardized observed process ($obs_std_process), 
-#' the standardized processes of realizations ($app_std_process) and two 
-#' kinds of the p-value obtained by the unstandardized test and the 
-#' standardized test ($p_value and $p_std_value). Now, we offer two types of 
-#' p-values for all tests even though the p-value for the standardized test 
-#' is only used for an omnibus test. For an omnibus test, the observed process 
-#' and the realizations are composed of the n by n matrix that rows represent 
-#' the t and columns represent the x in the time-transformed residual order. 
-#' The observed process and the simulated processes for checking a functional 
-#' form and a link function are given by the n by 1 vector which is a function 
-#' of x in the time-transformed residual order. 
-#' 
-#' @importFrom stats optim get_all_vars
-#' @importFrom aftgee aftsrr
-#' @importFrom survival Surv
-#' 
+#' @param formula A formula expression, of the form \code{response ~ predictors}.
+#'    The \code{response} is a \code{Surv} object object with right censoring.
+#'    See the documentation of \code{lm}, \code{coxph} and \code{formula} for details.
+#' @param path A numeric value specifies the approximated processes number.
+#'    The default is given by 200.
+#' @param testtype A character string specifying the type of the test.
+#'    The following are permitted:
+#'    \describe{
+#'      \item{\code{omni}}{an omnibus test}
+#'      \item{\code{link}}{a link function test}
+#'      \item{\code{form}}{a functional form}
+#' }
+#' @param eqType A character string specifying the type of the 
+#'    estimating equation used to obtain the regression parameters.
+#'    The readers are refered to the \pkg{aftgee} package for details.
+#'    The following are permitted:
+#'    \describe{
+#'      \item{\code{mis}}{Regression parameters are estimated by iterating 
+#'      the monotonic smoothed Gehan-based estimating equations.}
+#'      \item{\code{mns}}{Regression parameters are estimated by iterating 
+#'      the monotonic non-smoothed Gehan-based estimating equations.}
+#' }
+#' @param optimType A character string specifying the type of the optimization method.
+#'    The following are permitted:
+#'    \describe{
+#'      \item{\code{DFSANE}}{See the documentation of \pkg{BB} packages for details.}
+#'      \item{\code{Nelder-Mead}}{See the documentation of \code{optim} for details.}
+#'      \item{\code{BFGS}}{See the documentation of \code{optim} for details.}
+#'      \item{\code{CG}}{See the documentation of \code{optim} for details.}
+#'      \item{\code{L-BFGS-B}}{See the documentation of \code{optim} for details.}
+#'      \item{\code{SANN}}{See the documentation of \code{optim} for details.}
+#'      \item{\code{Brent}}{See the documentation of \code{optim} for details.}
+#' }
+#' @param form A character string specifying the covariate which will be tested.
+#'    The argument form is necessary only if testtype \code{form}.
+#'    The default option for testtype is given by "1", which represents the 
+#'    first covariate in the formula argument.
+#' @param pathsave A numeric value specifies he number of paths saved among all the paths.
+#'    The default is given by 100. Note that it requires a lot of memory if save all
+#'    sampled paths (N by N matrix for each path andso path*N*N elements)
+#' @return \code{afttest} returns an object of class \code{afttest}.
+#'    An object of class \code{afttest} is a list containing at least the following components:
+#' \describe{
+#'    \item{beta}{a vector of beta estimates based on \code{aftsrr}}
+#'    \item{path}{the number of sample paths}
+#'    \item{Time}{observed failure time}
+#'    \item{Delta}{right censoring indicator}
+#'    \item{Covari}{covariates}
+#'    \item{Resid}{time-transformed residual based on beta estimates}
+#'    \item{SE_process}{estimated standard error of the observed process}
+#'    \item{obs_process}{observed process}
+#'    \item{app_process}{approximated process}
+#'    \item{obs_std_process}{standardized observed process}
+#'    \item{app_std_process}{standardized approximated processes}
+#'    \item{p_value}{obtained by the unstandardized test}
+#'    \item{p_std_value}{obtained by the standardized test}
+#' }
+#'    For an omnibus test, the observed process and the realizations are composed of the 
+#'    n by n matrix that rows represent the t and columns represent the x in the 
+#'    time-transformed residual order.The observed process and the simulated processes
+#'    for checking a functional form and a link function are given by the n by 1 vector
+#'    which is a function of x in the time-transformed residual order. 
+#'    
 #' @export
 #' @example inst/examples/ex_afttest.R
 afttest = function(formula, path = 200, testtype = c("omni","link","form"), eqType = c("mis","mns"), 
                    optimType = c("DFSANE","Nelder-Mead","BFGS","CG","L-BFGS-B","SANN","Brent"),
-                   form = 1, pathsave = 100) {
+                   form = NULL, pathsave = 100) {
   
-  if(length(testtype) != 1){testtype = "omni"}
-  if(length(eqType) != 1){eqType = "mis"}
-  if(length(optimType) != 1){optimType = "DFSANE"}
-  
-  dataset = get_all_vars(formula)
+  DF = get_all_vars(formula)
   varnames = noquote(all.vars(formula))
-  var.length = ncol(dataset)
+  var.length = ncol(DF)
   cov.length = var.length - 2
   
-  colnames(dataset) = c("Time", "Delta", paste0("Covari", 1:cov.length))
+  colnames(DF) = c("Time", "Delta", paste0("Covari", 1:cov.length))
   
-  Time = dataset$Time
-  Delta = dataset$Delta
-  Covari = scale(as.matrix(dataset[, 3:var.length]))
+  Time = DF$Time
+  Delta = DF$Delta
+  Covari = scale(as.matrix(DF[, 3:var.length]))
   
-  if (length(which(varnames == form[1])) != 0) {
+  eqType = match.arg(eqType)
+  testtype = match.arg(testtype)
+  optimType = match.arg(optimType)
+  
+  if (is.null(form)){
+    form = 1
+  } else {
     form = which(varnames == form[1]) - 2
   }
   
-  b = - aftgee::aftsrr(formula, eqType = eqType)$beta
+  b = - aftsrr(formula, eqType = eqType)$beta
   
   if (optimType != "DFSANE"){
     if (eqType=="mns"){

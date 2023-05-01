@@ -4,30 +4,28 @@
 \alias{afttestplot}
 \title{afttestplot}
 \usage{
-afttestplot(result, path = 100, std = "std")
+afttestplot(object, path = 100, std = "std")
 }
 \arguments{
-\item{result}{For function afttestplot, the only required argument is
-afttestresult based on the result from the afttest function. Whatever
-the testtype of the result is, it automatically gives the corresponding
-graph.}
+\item{object}{is a \code{afttest} fit}
 
-\item{path}{The argument path is for the number of the simulation paths
-that is plotted in the graph. Therefore it needs to be equal or less than
-the number of paths used in by afttest function, otherwise it is given as
-the number of paths used in by afttest function. The default is set to be 100.}
+\item{path}{A numeric value specifies the number of approximated processes plotted
+The default is set to be 100.}
 
-\item{std}{The option for the argument std is "unstd" and "std". In this 
-argument, "std" is the default.}
+\item{std}{A character string specifying if the graph is based on the 
+unstandardized test statistics or standardized test statistics
+The default is set to be "std".}
 }
 \value{
-Basically, a graph from the afttestplot is based on the packages
-ggplot2 (Wickham, 2009) and gridExtra (Auguie, 2017). It offers a graph that
-y-axis is the test statistics and x-axis represents the rank of the subjects
-ordered by time transformed residual. Since the result of the omnibus test
-is the form of n by n matrix, some quantiles of x, which are used in weight,
-are plotted for graphs, i.e. 0%, 10%, 25%, 40%, 50%, 60%, 75%, 90%, and 100%
-are used.
+\code{afttestplot} returns a plot based on the \code{testtype}:
+\describe{
+   \item{omni}{an object of the omnibus test is the form of n by n matrix, 
+   some quantiles of x, which are used in weight, are plotted for graphs, 
+   i.e. 0\%, 10\%, 25\%, 40\%, 50\%, 60\%, 75\%, 90\%, and 100\% are used.}
+   \item{link}{an object of the link function test is the form of n by 1 matrix}
+   \item{form}{an object of the functional form test is the form of n by 1 matrix}
+}
+   See the documentation of \pkg{ggplot2} and \pkg{gridExtra} for details.
 }
 \description{
 It gives plot for checking the aft model assumptions.
