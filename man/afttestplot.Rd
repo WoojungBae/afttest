@@ -4,7 +4,7 @@
 \alias{afttestplot}
 \title{afttestplot}
 \usage{
-afttestplot(object, path = 100, std = "std")
+afttestplot(object, path = 50, std = "std")
 }
 \arguments{
 \item{object}{is a \code{afttest} fit}
@@ -28,7 +28,7 @@ The default is set to be "std".}
    See the documentation of \pkg{ggplot2} and \pkg{gridExtra} for details.
 }
 \description{
-It gives plot for checking the aft model assumptions.
+afttestplot
 }
 \examples{
 ## Simulate data from an AFT model

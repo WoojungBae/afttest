@@ -2,15 +2,15 @@
 % Please edit documentation in R/afttest.R
 \name{afttest}
 \alias{afttest}
-\title{It gives several test statistics for checking the aft model assumptions.}
+\title{afttest}
 \usage{
 afttest(
   formula,
   path = 200,
-  testtype = c("omni", "link", "form"),
-  eqType = c("mis", "mns"),
-  optimType = c("DFSANE", "Nelder-Mead", "BFGS", "CG", "L-BFGS-B", "SANN", "Brent"),
-  form = NULL,
+  testtype = "omni",
+  eqType = "mis",
+  optimType = "DFSANE",
+  form = 1,
   pathsave = 100
 )
 }
@@ -87,7 +87,7 @@ sampled paths (N by N matrix for each path andso path*N*N elements)}
    which is a function of x in the time-transformed residual order.
 }
 \description{
-It gives several test statistics for checking the aft model assumptions.
+afttest
 }
 \examples{
 ## Simulate data from an AFT model

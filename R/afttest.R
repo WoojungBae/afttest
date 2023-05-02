@@ -1,7 +1,8 @@
 ##############################################################################
 ## User's Main Function
 ##############################################################################
-#' It gives several test statistics for checking the aft model assumptions.
+
+#' afttest
 #' 
 #' @param formula A formula expression, of the form \code{response ~ predictors}.
 #'    The \code{response} is a \code{Surv} object object with right censoring.
@@ -68,9 +69,8 @@
 #'    
 #' @export
 #' @example inst/examples/ex_afttest.R
-afttest = function(formula, path = 200, testtype = c("omni","link","form"), eqType = c("mis","mns"), 
-                   optimType = c("DFSANE","Nelder-Mead","BFGS","CG","L-BFGS-B","SANN","Brent"),
-                   form = NULL, pathsave = 100) {
+afttest = function(formula, path = 200, testtype = "omni", eqType = "mis", 
+                   optimType = "DFSANE", form = 1, pathsave = 100) {
   
   DF = get_all_vars(formula)
   varnames = noquote(all.vars(formula))
@@ -83,55 +83,108 @@ afttest = function(formula, path = 200, testtype = c("omni","link","form"), eqTy
   Delta = DF$Delta
   Covari = scale(as.matrix(DF[, 3:var.length]))
   
-  eqType = match.arg(eqType)
-  testtype = match.arg(testtype)
-  optimType = match.arg(optimType)
-  
-  if (is.null(form)){
-    form = 1
+  # path
+  if (!is.numeric(path)) {
+    path = 200
   } else {
-    form = which(varnames == form[1]) - 2
+    path = max(path,10)
   }
   
+  # testtype
+  if (!testtype %in% c("omni","link","form")) {
+    testtype = "omni"
+  } else {
+    testtype = match.arg(testtype, c("omni","link","form"))
+  }
+  
+  # eqType
+  if (!eqType %in% c("mis","mns")) {
+    eqType = "mis"
+  } else {
+    eqType = match.arg(eqType, c("mis","mns"))
+  }
+  
+  # optimType
+  if (!optimType %in% c("DFSANE","Nelder-Mead","BFGS","CG","L-BFGS-B","SANN","Brent")) {
+    optimType = "DFSANE"
+  } else {
+    optimType = match.arg(optimType, c("DFSANE","Nelder-Mead","BFGS","CG","L-BFGS-B","SANN","Brent"))
+  }
+  
+  # pathsave
+  if (!is.numeric(pathsave)) {
+    pathsave = 200
+  } else {
+    pathsave = max(path,10)
+  }
+  
+  # form
+  if (testtype == "form") {
+    if (length(form) > 1){
+      stop("the length if form needs to be exactly 1." )
+    } else {
+      if (is.character(form)) {
+        if (!form %in% varnames) {
+          form = "mis"
+        } else {
+          form = match.arg(form, varnames) - 2
+        }
+      } else if (is.numeric(form)) {
+        if (form > cov.length){
+          stop("form is greater than the lenght of covariates. form needs to be specified correctly." )
+        } 
+      } else {
+        stop("form needs to be specified correctly." )
+      }
+    }
+  }
+  
+  # beta coefficients from aftsrr function (aftgee package)
   b = - aftsrr(formula, eqType = eqType)$beta
   
   if (optimType != "DFSANE"){
     if (eqType=="mns"){
       if (testtype == "omni") {
-        return(.Call(`_afttest_omni_mns_optim`, path, b, Time, Delta, Covari, optimType, pathsave))
+        out = .Call(`_afttest_omni_mns_optim`, path, b, Time, Delta, Covari, optimType, pathsave)
       } else if (testtype == "link") {
-        return(.Call(`_afttest_link_mns_optim`, path, b, Time, Delta, Covari, optimType, pathsave))
+        out = .Call(`_afttest_link_mns_optim`, path, b, Time, Delta, Covari, optimType, pathsave)
       } else if (testtype == "form") {
-        return(.Call(`_afttest_form_mns_optim`, path, b, Time, Delta, Covari, optimType, form, pathsave))
+        out = .Call(`_afttest_form_mns_optim`, path, b, Time, Delta, Covari, optimType, form, pathsave)
       }
     } else if (eqType=="mis"){
       if (testtype == "omni") {
-        return(.Call(`_afttest_omni_mis_optim`, path, b, Time, Delta, Covari, optimType, pathsave))
+        out = .Call(`_afttest_omni_mis_optim`, path, b, Time, Delta, Covari, optimType, pathsave)
       } else if (testtype == "link") {
-        return(.Call(`_afttest_link_mis_optim`, path, b, Time, Delta, Covari, optimType, pathsave))
+        out = .Call(`_afttest_link_mis_optim`, path, b, Time, Delta, Covari, optimType, pathsave)
       } else if (testtype == "form") {
-        return(.Call(`_afttest_form_mis_optim`, path, b, Time, Delta, Covari, optimType, form, pathsave))
+        out = .Call(`_afttest_form_mis_optim`, path, b, Time, Delta, Covari, optimType, form, pathsave)
       }
     }
   } else if (optimType == "DFSANE"){
     if (eqType=="mns"){
       if (testtype == "omni") {
-        return(.Call(`_afttest_omni_mns_DFSANE`, path, b, Time, Delta, Covari, pathsave))
+        out = .Call(`_afttest_omni_mns_DFSANE`, path, b, Time, Delta, Covari, pathsave)
       } else if (testtype == "link") {
-        return(.Call(`_afttest_link_mns_DFSANE`, path, b, Time, Delta, Covari, pathsave))
+        out = .Call(`_afttest_link_mns_DFSANE`, path, b, Time, Delta, Covari, pathsave)
       } else if (testtype == "form") {
-        return(.Call(`_afttest_form_mns_DFSANE`, path, b, Time, Delta, Covari, form, pathsave))
+        out = .Call(`_afttest_form_mns_DFSANE`, path, b, Time, Delta, Covari, form, pathsave)
       }
     } else if (eqType=="mis"){
       if (testtype == "omni") {
-        return(.Call(`_afttest_omni_mis_DFSANE`, path, b, Time, Delta, Covari, pathsave))
+        out = .Call(`_afttest_omni_mis_DFSANE`, path, b, Time, Delta, Covari, pathsave)
       } else if (testtype == "link") {
-        return(.Call(`_afttest_link_mis_DFSANE`, path, b, Time, Delta, Covari, pathsave))
+        out = .Call(`_afttest_link_mis_DFSANE`, path, b, Time, Delta, Covari, pathsave)
       } else if (testtype == "form") {
-        return(.Call(`_afttest_form_mis_DFSANE`, path, b, Time, Delta, Covari, form, pathsave))
+        out = .Call(`_afttest_form_mis_DFSANE`, path, b, Time, Delta, Covari, form, pathsave)
       }
     }
+  } else {
+    stop("Check your code")
   }
   
-  stop("Check your code")
+  class(out) = "afttest"
+  out$names = varnames
+  out$call = match.call()
+  
+  return(out)
 }

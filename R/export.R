@@ -201,3 +201,15 @@ NULL
 #' @aliases element_text
 #' @export element_text
 NULL
+
+#' \code{scale_y_continuous} function imported from \code{ggplot2}
+#'
+#' This function is imported from the \code{ggplot2} package. See
+#' \code{\link[ggplot2]{scale_y_continuous}}.
+#' 
+#' @keywords internal
+#' @importFrom ggplot2 scale_y_continuous
+#' @name export_scale_y_continuous
+#' @aliases scale_y_continuous
+#' @export scale_y_continuous
+NULL
