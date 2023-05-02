@@ -109,5 +109,6 @@ z1 = simdata$z1
 z2 = simdata$z2
 
 result = afttest(Surv(X, D) ~ z1 + z2, testtype="link", eqType="mns")
-c(result$p_value,result$p_std_value)
+summary(result)
+afttestplot(result)
 }

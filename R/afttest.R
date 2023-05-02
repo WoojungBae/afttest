@@ -67,8 +67,8 @@
 #'    for checking a functional form and a link function are given by the n by 1 vector
 #'    which is a function of x in the time-transformed residual order. 
 #'    
-#' @export
 #' @example inst/examples/ex_afttest.R
+#' @export
 afttest = function(formula, path = 200, testtype = "omni", eqType = "mis", 
                    optimType = "DFSANE", form = 1, pathsave = 100) {
   

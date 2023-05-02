@@ -20,8 +20,8 @@
 #' }
 #'    See the documentation of \pkg{ggplot2} and \pkg{gridExtra} for details.
 #'    
-#' @export
 #' @example inst/examples/ex_afttestplot.R
+#' @export
 afttestplot = function(object, path = 50, std = "std"){
   
   # class
@@ -82,7 +82,7 @@ afttestplot = function(object, path = 50, std = "std"){
             geom_step(data=DF_obs,aes(x=resid,y=obs),colour="tomato",lwd=0.25) +
             ylab("Test Statistic")+xlab("Residuals") +
             ggtitle(paste0("quantile(z): ",names(Q)[k])) + 
-            scale_y_continuous(breaks = round(seq(min(c(DF_app$app,DF_obs$obs)), max(c(DF_app$app,DF_obs$obs)), length.out = 5),1)) +
+            scale_y_continuous(breaks = round(seq(min(c(DF_app$app,DF_obs$obs)), max(c(DF_app$app,DF_obs$obs)), length.out = 3),1)) +
             theme(plot.title=element_text(hjust=0.5))
         }
         Figure[[k]] = Figure_k
@@ -119,7 +119,7 @@ afttestplot = function(object, path = 50, std = "std"){
             geom_step(data=DF_obs,aes(x=resid,y=obs),colour="tomato",lwd=0.25) +
             ylab("Test Statistic")+xlab("Residuals") +
             ggtitle(paste0("quantile(z): ",names(Q)[k])) + 
-            scale_y_continuous(breaks = round(seq(min(c(DF_app$app,DF_obs$obs)), max(c(DF_app$app,DF_obs$obs)), length.out = 5),1)) +
+            scale_y_continuous(breaks = round(seq(min(c(DF_app$app,DF_obs$obs)), max(c(DF_app$app,DF_obs$obs)), length.out = 3),1)) +
             theme(plot.title=element_text(hjust=0.5))
         }
         Figure[[k]] = Figure_k
