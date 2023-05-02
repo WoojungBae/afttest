@@ -72,7 +72,7 @@ afttestplot = function(object, path = 50, std = "std"){
             geom_step(data=DF_app,aes(x=resid,y=app,group=group),colour="grey",alpha=0.5) +
             geom_step(data=DF_obs,aes(x=resid,y=obs),colour="tomato",lwd=0.25) +
             ylab("Test Statistic")+xlab("Residuals") +
-            ggtitle(paste0("Standardized Omnibus: quantile(z): ",names(Q)[k])) + 
+            ggtitle(paste0("Omnibus (standardized): quantile(z): ",names(Q)[k])) + 
             scale_y_continuous(breaks = round(seq(min(c(DF_app$app,DF_obs$obs)), max(c(DF_app$app,DF_obs$obs)), length.out = 5),1)) +
             theme(plot.title=element_text(hjust=0.5))
         } else {
@@ -109,7 +109,7 @@ afttestplot = function(object, path = 50, std = "std"){
             geom_step(data=DF_app,aes(x=resid,y=app,group=group),colour="grey",alpha=0.5) +
             geom_step(data=DF_obs,aes(x=resid,y=obs),colour="tomato",lwd=0.25) +
             ylab("Test Statistic")+xlab("Residuals") +
-            ggtitle(paste0("Unstandardized Omnibus: quantile(z): ",names(Q)[k])) + 
+            ggtitle(paste0("Omnibus (unstandardized): quantile(z): ",names(Q)[k])) + 
             scale_y_continuous(breaks = round(seq(min(c(DF_app$app,DF_obs$obs)), max(c(DF_app$app,DF_obs$obs)), length.out = 5),1)) +
             theme(plot.title=element_text(hjust=0.5))
         } else {
@@ -153,7 +153,7 @@ afttestplot = function(object, path = 50, std = "std"){
         ggplot() +
         geom_step(data=DF_app,aes(x=resid,y=app,group=group),colour="grey",alpha=0.5) +
         geom_step(data=DF_obs,aes(x=resid,y=obs),colour="tomato",lwd=0.25) +
-        ylab("Test Statistic")+xlab("Residuals")+ggtitle("Standardized Link Function") + 
+        ylab("Test Statistic")+xlab("Residuals")+ggtitle("Link Function (standardized)") + 
         scale_y_continuous(breaks = round(seq(min(c(DF_app$app,DF_obs$obs)), max(c(DF_app$app,DF_obs$obs)), length.out = 5),1)) +
         theme(plot.title=element_text(hjust=0.5))
       
@@ -174,7 +174,7 @@ afttestplot = function(object, path = 50, std = "std"){
         ggplot() +
         geom_step(data=DF_app,aes(x=resid,y=app,group=group),colour="grey",alpha=0.5) +
         geom_step(data=DF_obs,aes(x=resid,y=obs),colour="tomato",lwd=0.25) +
-        ylab("Test Statistic")+xlab("Residuals")+ggtitle("Untandardized Link Function") + 
+        ylab("Test Statistic")+xlab("Residuals")+ggtitle("Link Function (uUntandardized)") + 
         scale_y_continuous(breaks = round(seq(min(c(DF_app$app,DF_obs$obs)), max(c(DF_app$app,DF_obs$obs)), length.out = 5),1)) +
         theme(plot.title=element_text(hjust=0.5))
     }
@@ -202,7 +202,7 @@ afttestplot = function(object, path = 50, std = "std"){
         ggplot() +
         geom_step(data=DF_app,aes(x=resid,y=app,group=group),colour="grey",alpha=0.5) +
         geom_step(data=DF_obs,aes(x=resid,y=obs),colour="tomato",lwd=0.25) +
-        ylab("Test Statistic")+xlab("Residuals")+ggtitle("Standardized Functional Form") + 
+        ylab("Test Statistic")+xlab("Residuals")+ggtitle("Functional Form (standardized)") + 
         scale_y_continuous(breaks = round(seq(min(c(DF_app$app,DF_obs$obs)), max(c(DF_app$app,DF_obs$obs)), length.out = 5),1)) +
         theme(plot.title=element_text(hjust=0.5))
     } else {
@@ -222,7 +222,7 @@ afttestplot = function(object, path = 50, std = "std"){
         ggplot() +
         geom_step(data=DF_app,aes(x=resid,y=app,group=group),colour="grey",alpha=0.5) +
         geom_step(data=DF_obs,aes(x=resid,y=obs),colour="tomato",lwd=0.25) +
-        ylab("Test Statistic")+xlab("Residuals")+ggtitle("Untandardized Functional Form") + 
+        ylab("Test Statistic")+xlab("Residuals")+ggtitle("Functional Form (untandardized)") + 
         scale_y_continuous(breaks = round(seq(min(c(DF_app$app,DF_obs$obs)), max(c(DF_app$app,DF_obs$obs)), length.out = 5))) +
         theme(plot.title=element_text(hjust=0.5))
     }
@@ -232,5 +232,4 @@ afttestplot = function(object, path = 50, std = "std"){
   } else {
     stop("Check your code")
   }
-  
 }
