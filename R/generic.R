@@ -14,11 +14,12 @@ summary.afttest = function(object, ...) {
   if (!inherits(object,"afttest")) stop("Must be afttest class")
   
   out = list(call = object$call,
-                 path = object$path,
-                 TestType = object$TestType,
-                 coefficients = object$beta,
-                 p_value = object$p_value,
-                 p_std_value = object$p_std_value)
+             path = object$path,
+             TestType = object$TestType,
+             coefficients = object$beta,
+             p_value = object$p_value,
+             p_std_value = object$p_std_value,
+             missingmessage = object$missingmessage)
   
   class(out) = "summary.afttest"
   out

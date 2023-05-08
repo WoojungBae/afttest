@@ -72,17 +72,6 @@
 afttest = function(formula, path = 200, testtype = "omni", eqType = "mis", 
                    optimType = "DFSANE", form = 1, pathsave = 100) {
   
-  DF = get_all_vars(formula)
-  varnames = noquote(all.vars(formula))
-  var.length = ncol(DF)
-  cov.length = var.length - 2
-  
-  colnames(DF) = c("Time", "Delta", paste0("Covari", 1:cov.length))
-  
-  Time = DF$Time
-  Delta = DF$Delta
-  Covari = scale(as.matrix(DF[, 3:var.length]))
-  
   # path
   if (!is.numeric(path)) {
     path = 200
@@ -139,8 +128,34 @@ afttest = function(formula, path = 200, testtype = "omni", eqType = "mis",
     }
   }
   
+  # Data Frame
+  DF = get_all_vars(formula)
+  varnames = noquote(all.vars(formula))
+  var.length = ncol(DF)
+  cov.length = var.length - 2
+  colnames(DF) = c("Time", "Delta", paste0("Covari", 1:cov.length))
+  
+  # check NA, -Inf, Inf, ...
+  missingmessage = NA
+  DF[DF=="-Inf" | DF=="Inf"] = NA
+  whichNA_DF = which(apply(is.na(DF), 1, sum)>0)
+  nNA_DF = length(whichNA_DF)
+  if (nNA_DF > 0){
+    missingmessage = paste0("(",nNA_DF, " observations deleted due to missingness out of ", nrow(DF), ")")
+    DF = DF[-whichNA_DF,]
+  } else {
+    missingmessage = paste0("(No missing observed)")
+  }
+  
+  # Covariate Scaling
+  Time = DF$Time
+  Delta = DF$Delta
+  Covari = scale(as.matrix(DF[, 3:var.length]))
+  DF[, 3:var.length] = Covari
+  
   # beta coefficients from aftsrr function (aftgee package)
-  b = - aftsrr(formula, eqType = eqType)$beta
+  formula = as.formula(paste0("Surv(Time,Delta)~",paste(paste0("Covari", 1:cov.length), collapse="+")))
+  b = - aftsrr(formula, data = DF, eqType = eqType)$beta
   
   if (optimType != "DFSANE"){
     if (eqType=="mns"){
@@ -185,6 +200,7 @@ afttest = function(formula, path = 200, testtype = "omni", eqType = "mis",
   class(out) = "afttest"
   out$names = varnames
   out$call = match.call()
+  out$missingmessage = missingmessage
   
   return(out)
 }

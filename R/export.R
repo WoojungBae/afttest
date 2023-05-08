@@ -46,6 +46,18 @@ NULL
 #' @export optim
 NULL
 
+#' \code{as.formula} function imported from \code{stats}
+#'
+#' This function is imported from the \code{stats} package. See
+#' \code{\link[stats]{as.formula}}.
+#'
+#' @keywords internal
+#' @importFrom stats as.formula
+#' @name export_as.formula
+#' @aliases as.formula
+#' @export as.formula
+NULL
+
 #' \code{get_all_vars} function imported from \code{stats}
 #'
 #' This function is imported from the \code{stats} package. See
