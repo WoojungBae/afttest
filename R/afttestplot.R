@@ -10,7 +10,7 @@
 #' @param std A character string specifying if the graph is based on the 
 #'    unstandardized test statistics or standardized test statistics
 #'    The default is set to be "std".
-#' @return \code{afttestplot} returns a plot based on the \code{testtype}:
+#' @return \code{afttestplot} returns a plot based on the \code{testType}:
 #' \describe{
 #'    \item{omni}{an object of the omnibus test is the form of n by n matrix, 
 #'    some quantiles of x, which are used in weight, are plotted for graphs, 
@@ -26,8 +26,8 @@ afttestplot = function(object, path = 50, std = "std"){
   
   # class
   if (!inherits(object,"afttest")) stop("Must be afttest class")
-  # testtype
-  testtype = object$TestType
+  # testType
+  testType = object$testType
   # std
   if (!std %in% c("std","unstd")) {
     std = "std"
@@ -39,12 +39,12 @@ afttestplot = function(object, path = 50, std = "std"){
     path = max(min(path,length(object$app_std_path)),10)
   }
   
-  x_axis = 1:length(object$Resid)
+  x_axis = 1:nrow(object$DF)
   Q = c(0,0.1,0.25,0.4,0.5,0.6,0.75,0.9,1)
   Q = round(quantile(x_axis,Q))
   K = length(Q)
   
-  if(testtype=="Omni"){
+  if(testType=="omni"){
     resid = c(NA)
     app = matrix(NA)
     obs = matrix(NA)
@@ -132,7 +132,7 @@ afttestplot = function(object, path = 50, std = "std"){
                         Figure[[6]],Figure[[7]],Figure[[8]],Figure[[9]],
                         layout_matrix=lay))
     
-  } else if(testtype=="Link"){
+  } else if(testType=="link"){
     resid = c(NA)
     app = c(NA)
     obs = c(NA)
@@ -181,7 +181,7 @@ afttestplot = function(object, path = 50, std = "std"){
     
     return(Figure)
     
-  } else if(testtype=="Form"){
+  } else if(testType=="form"){
     resid = c(NA)
     app = c(NA)
     obs = c(NA)

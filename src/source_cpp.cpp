@@ -608,10 +608,10 @@ List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
     app_std_path = app_std_path[Range(0,pathsave)];
   }
   
-  return List::create(_["TestType"]="Omni",_["path"]=path,_["beta"]=b,_["Time"]=Time,
-                      _["Delta"]=Delta,_["Covari"]=Covari,_["Resid"]=resid,_["SE_boot"]=se_boot,
-                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,_["p_std_value"]=p_std_value,
-                          _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
+  return List::create(_["beta"]=b,_["SE_boot"]=se_boot,
+                      _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
+                      _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                      _["p_value"]=p_value,_["p_std_value"]=p_std_value);
 }
 
 List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int pathsave){
@@ -855,10 +855,10 @@ List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
     app_std_path = app_std_path[Range(0,pathsave)];
   }
   
-  return List::create(_["TestType"]="Omni",_["path"]=path,_["beta"]=b,_["Time"]=Time,
-                      _["Delta"]=Delta,_["Covari"]=Covari,_["Resid"]=resid,_["SE_boot"]=se_boot,
-                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,_["p_std_value"]=p_std_value,
-                          _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
+  return List::create(_["beta"]=b,_["SE_boot"]=se_boot,
+                      _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
+                      _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                      _["p_value"]=p_value,_["p_std_value"]=p_std_value);
 }
 
 List link_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int pathsave){
@@ -1094,10 +1094,10 @@ List link_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
     app_std_path = app_std_path[Range(0,pathsave)];
   }
   
-  return List::create(_["TestType"]="Link",_["path"]=path,_["beta"]=b,_["Time"]=Time,
-                      _["Delta"]=Delta,_["Covari"]=Covari,_["Resid"]=resid,_["SE_boot"]=se_boot,
-                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,_["p_std_value"]=p_std_value,
-                          _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
+  return List::create(_["beta"]=b,_["SE_boot"]=se_boot,
+                      _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
+                      _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                      _["p_value"]=p_value,_["p_std_value"]=p_std_value);
 }
 
 List link_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int pathsave){
@@ -1333,10 +1333,10 @@ List link_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
     app_std_path = app_std_path[Range(0,pathsave)];
   }
   
-  return List::create(_["TestType"]="Link",_["path"]=path,_["beta"]=b,_["Time"]=Time,
-                      _["Delta"]=Delta,_["Covari"]=Covari,_["Resid"]=resid,_["SE_boot"]=se_boot,
-                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,_["p_std_value"]=p_std_value,
-                          _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
+  return List::create(_["beta"]=b,_["SE_boot"]=se_boot,
+                      _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
+                      _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                      _["p_value"]=p_value,_["p_std_value"]=p_std_value);
 }
 
 List form_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form, int pathsave){
@@ -1572,10 +1572,10 @@ List form_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
     app_std_path = app_std_path[Range(0,pathsave)];
   }
   
-  return List::create(_["TestType"]="Form",_["path"]=path,_["beta"]=b,_["Time"]=Time,
-                      _["Delta"]=Delta,_["Covari"]=Covari,_["Resid"]=resid,_["SE_boot"]=se_boot,
-                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,_["p_std_value"]=p_std_value,
-                          _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
+  return List::create(_["beta"]=b,_["SE_boot"]=se_boot,
+                      _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
+                      _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                      _["p_value"]=p_value,_["p_std_value"]=p_std_value);
 }
 
 List form_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form, int pathsave){
@@ -1811,10 +1811,10 @@ List form_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
     app_std_path = app_std_path[Range(0,pathsave)];
   }
   
-  return List::create(_["TestType"]="Form",_["path"]=path,_["beta"]=b,_["Time"]=Time,
-                      _["Delta"]=Delta,_["Covari"]=Covari,_["Resid"]=resid,_["SE_boot"]=se_boot,
-                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,_["p_std_value"]=p_std_value,
-                          _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
+  return List::create(_["beta"]=b,_["SE_boot"]=se_boot,
+                      _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
+                      _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                      _["p_value"]=p_value,_["p_std_value"]=p_std_value);
 }
 
 List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int pathsave){
@@ -2067,10 +2067,10 @@ List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     app_std_path = app_std_path[Range(0,pathsave)];
   }
   
-  return List::create(_["TestType"]="Omni",_["path"]=path,_["beta"]=b,_["Time"]=Time,
-                      _["Delta"]=Delta,_["Covari"]=Covari,_["Resid"]=resid,_["SE_boot"]=se_boot,
-                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,_["p_std_value"]=p_std_value,
-                          _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
+  return List::create(_["beta"]=b,_["SE_boot"]=se_boot,
+                      _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
+                      _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                      _["p_value"]=p_value,_["p_std_value"]=p_std_value);
 }
 
 List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int pathsave){
@@ -2323,10 +2323,10 @@ List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     app_std_path = app_std_path[Range(0,pathsave)];
   }
   
-  return List::create(_["TestType"]="Omni",_["path"]=path,_["beta"]=b,_["Time"]=Time,
-                      _["Delta"]=Delta,_["Covari"]=Covari,_["Resid"]=resid,_["SE_boot"]=se_boot,
-                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,_["p_std_value"]=p_std_value,
-                          _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
+  return List::create(_["beta"]=b,_["SE_boot"]=se_boot,
+                      _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
+                      _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                      _["p_value"]=p_value,_["p_std_value"]=p_std_value);
 }
 
 List link_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int pathsave){
@@ -2571,10 +2571,10 @@ List link_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     app_std_path = app_std_path[Range(0,pathsave)];
   }
   
-  return List::create(_["TestType"]="Link",_["path"]=path,_["beta"]=b,_["Time"]=Time,
-                      _["Delta"]=Delta,_["Covari"]=Covari,_["Resid"]=resid,_["SE_boot"]=se_boot,
-                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,_["p_std_value"]=p_std_value,
-                          _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
+  return List::create(_["beta"]=b,_["SE_boot"]=se_boot,
+                      _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
+                      _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                      _["p_value"]=p_value,_["p_std_value"]=p_std_value);
 }
 
 List link_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int pathsave){
@@ -2819,10 +2819,10 @@ List link_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     app_std_path = app_std_path[Range(0,pathsave)];
   }
   
-  return List::create(_["TestType"]="Link",_["path"]=path,_["beta"]=b,_["Time"]=Time,
-                      _["Delta"]=Delta,_["Covari"]=Covari,_["Resid"]=resid,_["SE_boot"]=se_boot,
-                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,_["p_std_value"]=p_std_value,
-                          _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
+  return List::create(_["beta"]=b,_["SE_boot"]=se_boot,
+                      _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
+                      _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                      _["p_value"]=p_value,_["p_std_value"]=p_std_value);
 }
 
 List form_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int form, int pathsave){
@@ -3067,10 +3067,10 @@ List form_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     app_std_path = app_std_path[Range(0,pathsave)];
   }
   
-  return List::create(_["TestType"]="Form",_["path"]=path,_["beta"]=b,_["Time"]=Time,
-                      _["Delta"]=Delta,_["Covari"]=Covari,_["Resid"]=resid,_["SE_boot"]=se_boot,
-                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,_["p_std_value"]=p_std_value,
-                          _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
+  return List::create(_["beta"]=b,_["SE_boot"]=se_boot,
+                      _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
+                      _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                      _["p_value"]=p_value,_["p_std_value"]=p_std_value);
 }
 
 List form_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int form, int pathsave){
@@ -3315,10 +3315,10 @@ List form_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     app_std_path = app_std_path[Range(0,pathsave)];
   }
   
-  return List::create(_["TestType"]="Form",_["path"]=path,_["beta"]=b,_["Time"]=Time,
-                      _["Delta"]=Delta,_["Covari"]=Covari,_["Resid"]=resid,_["SE_boot"]=se_boot,
-                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,_["p_std_value"]=p_std_value,
-                          _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
+  return List::create(_["beta"]=b,_["SE_boot"]=se_boot,
+                      _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
+                      _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                      _["p_value"]=p_value,_["p_std_value"]=p_std_value);
 }
 
 // omni_mis_DFSANE

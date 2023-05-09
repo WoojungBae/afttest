@@ -36,7 +36,7 @@ D = simdata$status
 z1 = simdata$z1
 z2 = simdata$z2
 
-result = afttest(Surv(X, D) ~ z1 + z2, testtype="link", eqType="mns")
+result = afttest(Surv(X, D) ~ z1 + z2, testType="link", eqType="mns")
 summary(result)
 afttestplot(result)
 }

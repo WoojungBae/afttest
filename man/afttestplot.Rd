@@ -17,7 +17,7 @@ unstandardized test statistics or standardized test statistics
 The default is set to be "std".}
 }
 \value{
-\code{afttestplot} returns a plot based on the \code{testtype}:
+\code{afttestplot} returns a plot based on the \code{testType}:
 \describe{
    \item{omni}{an object of the omnibus test is the form of n by n matrix, 
    some quantiles of x, which are used in weight, are plotted for graphs, 
@@ -49,7 +49,7 @@ D = simdata$status
 z1 = simdata$z1
 z2 = simdata$z2
 
-result = afttest(Surv(X, D) ~ z1 + z2, testtype="link", eqType="mns")
+result = afttest(Surv(X, D) ~ z1 + z2, testType="link", eqType="mns")
 summary(result)
 afttestplot(result)
 }

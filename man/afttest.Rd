@@ -7,7 +7,7 @@
 afttest(
   formula,
   path = 200,
-  testtype = "omni",
+  testType = "omni",
   eqType = "mis",
   optimType = "DFSANE",
   form = 1,
@@ -22,7 +22,7 @@ See the documentation of \code{lm}, \code{coxph} and \code{formula} for details.
 \item{path}{A numeric value specifies the approximated processes number.
 The default is given by 200.}
 
-\item{testtype}{A character string specifying the type of the test.
+\item{testType}{A character string specifying the type of the test.
    The following are permitted:
    \describe{
      \item{\code{omni}}{an omnibus test}
@@ -54,8 +54,8 @@ The default is given by 200.}
 }}
 
 \item{form}{A character string specifying the covariate which will be tested.
-The argument form is necessary only if testtype \code{form}.
-The default option for testtype is given by "1", which represents the 
+The argument form is necessary only if \code{testType} is \code{form}.
+The default option for \code{form} is given by "1", which represents the 
 first covariate in the formula argument.}
 
 \item{pathsave}{A numeric value specifies he number of paths saved among all the paths.
@@ -67,11 +67,6 @@ sampled paths (N by N matrix for each path andso path*N*N elements)}
    An object of class \code{afttest} is a list containing at least the following components:
 \describe{
    \item{beta}{a vector of beta estimates based on \code{aftsrr}}
-   \item{path}{the number of sample paths}
-   \item{Time}{observed failure time}
-   \item{Delta}{right censoring indicator}
-   \item{Covari}{covariates}
-   \item{Resid}{time-transformed residual based on beta estimates}
    \item{SE_process}{estimated standard error of the observed process}
    \item{obs_process}{observed process}
    \item{app_process}{approximated process}
@@ -79,6 +74,12 @@ sampled paths (N by N matrix for each path andso path*N*N elements)}
    \item{app_std_process}{standardized approximated processes}
    \item{p_value}{obtained by the unstandardized test}
    \item{p_std_value}{obtained by the standardized test}
+   \item{DF}{a data frame of observed failure time, right censoring indicator, covariates (scaled), 
+   time-transformed residual based on beta estimates}
+   \item{path}{the number of sample paths}
+   \item{eqType}{eqType}
+   \item{testType}{testType}
+   \item{optimType}{optimType}
 }
    For an omnibus test, the observed process and the realizations are composed of the 
    n by n matrix that rows represent the t and columns represent the x in the 
@@ -108,7 +109,7 @@ D = simdata$status
 z1 = simdata$z1
 z2 = simdata$z2
 
-result = afttest(Surv(X, D) ~ z1 + z2, testtype="link", eqType="mns")
+result = afttest(Surv(X, D) ~ z1 + z2, testType="link", eqType="mns")
 summary(result)
 afttestplot(result)
 }

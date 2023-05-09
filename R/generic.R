@@ -15,7 +15,9 @@ summary.afttest = function(object, ...) {
   
   out = list(call = object$call,
              path = object$path,
-             TestType = object$TestType,
+             eqType = object$eqType,
+             testType = object$testType,
+             optimType = object$optimType,
              coefficients = object$beta,
              p_value = object$p_value,
              p_std_value = object$p_std_value,
