@@ -4,7 +4,7 @@
 \alias{afttestplot}
 \title{afttestplot}
 \usage{
-afttestplot(object, path = 50, std = "std")
+afttestplot(object, path = 50, stdType = "std")
 }
 \arguments{
 \item{object}{is a \code{afttest} fit}
@@ -12,7 +12,7 @@ afttestplot(object, path = 50, std = "std")
 \item{path}{A numeric value specifies the number of approximated processes plotted
 The default is set to be 100.}
 
-\item{std}{A character string specifying if the graph is based on the 
+\item{stdType}{A character string specifying if the graph is based on the 
 unstandardized test statistics or standardized test statistics
 The default is set to be "std".}
 }

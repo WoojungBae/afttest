@@ -7,7 +7,7 @@
 #' @param object is a \code{afttest} fit
 #' @param path A numeric value specifies the number of approximated processes plotted
 #'    The default is set to be 100.
-#' @param std A character string specifying if the graph is based on the 
+#' @param stdType A character string specifying if the graph is based on the 
 #'    unstandardized test statistics or standardized test statistics
 #'    The default is set to be "std".
 #' @return \code{afttestplot} returns a plot based on the \code{testType}:
@@ -22,15 +22,15 @@
 #'    
 #' @example inst/examples/ex_afttestplot.R
 #' @export
-afttestplot = function(object, path = 50, std = "std"){
+afttestplot = function(object, path = 50, stdType = "std"){
   
   # class
   if (!inherits(object,"afttest")) stop("Must be afttest class")
   # testType
   testType = object$testType
-  # std
-  if (!std %in% c("std","unstd")) {
-    std = "std"
+  # stdType
+  if (!stdType %in% c("std","unstd")) {
+    stdType = "std"
   }
   # path
   if (!is.numeric(path)) {
@@ -50,7 +50,7 @@ afttestplot = function(object, path = 50, std = "std"){
     obs = matrix(NA)
     
     Figure = list(NA)
-    if (std == "std") {
+    if (stdType == "std") {
       for(k in 1:K){
         Q_k = Q[k]
         
@@ -136,7 +136,7 @@ afttestplot = function(object, path = 50, std = "std"){
     resid = c(NA)
     app = c(NA)
     obs = c(NA)
-    if (std=="std"){
+    if (stdType == "std"){
       # DF_app
       DF_app = data.frame()
       for (group in 1:path){
@@ -185,7 +185,7 @@ afttestplot = function(object, path = 50, std = "std"){
     resid = c(NA)
     app = c(NA)
     obs = c(NA)
-    if (std=="std"){
+    if (stdType == "std"){
       # DF_app
       DF_app = data.frame()
       for (group in 1:path){
