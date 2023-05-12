@@ -26,11 +26,42 @@ The default is set to be "std".}
    \item{form}{an object of the functional form test is the form of n by 1 matrix}
 }
    See the documentation of \pkg{ggplot2} and \pkg{gridExtra} for details.
+
+\code{afttestplot} returns a plot based on the \code{testType}:
+\describe{
+   \item{omni}{an object of the omnibus test is the form of n by n matrix, 
+   some quantiles of x, which are used in weight, are plotted for graphs, 
+   i.e. 0\%, 10\%, 25\%, 40\%, 50\%, 60\%, 75\%, 90\%, and 100\% are used.}
+   \item{link}{an object of the link function test is the form of n by 1 matrix}
+   \item{form}{an object of the functional form test is the form of n by 1 matrix}
+}
+   See the documentation of \pkg{ggplot2} and \pkg{gridExtra} for details.
 }
 \description{
 afttestplot
 }
 \examples{
+## Simulate data from an AFT model
+datgen <- function(n = 100) {
+  z1 <- rbinom(n, 1, 0.5)
+  z2 <- rnorm(n)
+  e <- rnorm(n)
+  tt <- exp(2 + z1 + z2 + e)
+  cen <- runif(n, 0, 100)
+  data.frame(Time = pmin(tt, cen), status = 1 * (tt < cen),
+             z1 = z1, z2 = z2, id = 1:n)
+}
+set.seed(1)
+simdata = datgen(n = 50)
+
+X = simdata$Time
+D = simdata$status
+z1 = simdata$z1
+z2 = simdata$z2
+
+result = afttest(Surv(X, D) ~ z1 + z2, testType="link", eqType="mns")
+summary(result)
+afttestplot(result)
 ## Simulate data from an AFT model
 datgen <- function(n = 100) {
   z1 <- rbinom(n, 1, 0.5)

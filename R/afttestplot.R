@@ -22,10 +22,36 @@
 #'    
 #' @example inst/examples/ex_afttestplot.R
 #' @export
+##############################################################################
+## User's Main Function
+##############################################################################
+
+#' afttestplot
+#'
+#' @param object is a \code{afttest} fit
+#' @param path A numeric value specifies the number of approximated processes plotted
+#'    The default is set to be 100.
+#' @param stdType A character string specifying if the graph is based on the 
+#'    unstandardized test statistics or standardized test statistics
+#'    The default is set to be "std".
+#' @return \code{afttestplot} returns a plot based on the \code{testType}:
+#' \describe{
+#'    \item{omni}{an object of the omnibus test is the form of n by n matrix, 
+#'    some quantiles of x, which are used in weight, are plotted for graphs, 
+#'    i.e. 0\%, 10\%, 25\%, 40\%, 50\%, 60\%, 75\%, 90\%, and 100\% are used.}
+#'    \item{link}{an object of the link function test is the form of n by 1 matrix}
+#'    \item{form}{an object of the functional form test is the form of n by 1 matrix}
+#' }
+#'    See the documentation of \pkg{ggplot2} and \pkg{gridExtra} for details.
+#'    
+#' @example inst/examples/ex_afttestplot.R
+#' @export
 afttestplot = function(object, path = 50, stdType = "std"){
   
   # class
   if (!inherits(object,"afttest")) stop("Must be afttest class")
+  # eqType
+  eqType = object$eqType
   # testType
   testType = object$testType
   # stdType
@@ -72,7 +98,7 @@ afttestplot = function(object, path = 50, stdType = "std"){
             geom_step(data=DF_app,aes(x=resid,y=app,group=group),colour="grey",alpha=0.5) +
             geom_step(data=DF_obs,aes(x=resid,y=obs),colour="tomato",lwd=0.25) +
             ylab("Test Statistic")+xlab("Residuals") +
-            ggtitle(paste0("Omnibus (standardized): quantile(z): ",names(Q)[k])) + 
+            ggtitle(paste0("Omnibus ", "(", stdType, ", ", eqType, ", quantile(z): ",names(Q)[k], ")")) + 
             scale_y_continuous(breaks = round(seq(min(c(DF_app$app,DF_obs$obs)), max(c(DF_app$app,DF_obs$obs)), length.out = 5),1)) +
             theme(plot.title=element_text(hjust=0.5))
         } else {
@@ -109,7 +135,7 @@ afttestplot = function(object, path = 50, stdType = "std"){
             geom_step(data=DF_app,aes(x=resid,y=app,group=group),colour="grey",alpha=0.5) +
             geom_step(data=DF_obs,aes(x=resid,y=obs),colour="tomato",lwd=0.25) +
             ylab("Test Statistic")+xlab("Residuals") +
-            ggtitle(paste0("Omnibus (unstandardized): quantile(z): ",names(Q)[k])) + 
+            ggtitle(paste0("Omnibus ", "(", stdType, ", ", eqType, ", quantile(z): ",names(Q)[k], ")")) + 
             scale_y_continuous(breaks = round(seq(min(c(DF_app$app,DF_obs$obs)), max(c(DF_app$app,DF_obs$obs)), length.out = 5),1)) +
             theme(plot.title=element_text(hjust=0.5))
         } else {
@@ -153,7 +179,7 @@ afttestplot = function(object, path = 50, stdType = "std"){
         ggplot() +
         geom_step(data=DF_app,aes(x=resid,y=app,group=group),colour="grey",alpha=0.5) +
         geom_step(data=DF_obs,aes(x=resid,y=obs),colour="tomato",lwd=0.25) +
-        ylab("Test Statistic")+xlab("Residuals")+ggtitle("Link Function (standardized)") + 
+        ylab("Test Statistic")+xlab("Residuals")+ggtitle(paste0("Link Function ", "(", stdType, ", ", eqType, ")")) + 
         scale_y_continuous(breaks = round(seq(min(c(DF_app$app,DF_obs$obs)), max(c(DF_app$app,DF_obs$obs)), length.out = 5),1)) +
         theme(plot.title=element_text(hjust=0.5))
       
@@ -174,7 +200,7 @@ afttestplot = function(object, path = 50, stdType = "std"){
         ggplot() +
         geom_step(data=DF_app,aes(x=resid,y=app,group=group),colour="grey",alpha=0.5) +
         geom_step(data=DF_obs,aes(x=resid,y=obs),colour="tomato",lwd=0.25) +
-        ylab("Test Statistic")+xlab("Residuals")+ggtitle("Link Function (uUntandardized)") + 
+        ylab("Test Statistic")+xlab("Residuals")+ggtitle(paste0("Link Function ", "(", stdType, ", ", eqType, ")")) + 
         scale_y_continuous(breaks = round(seq(min(c(DF_app$app,DF_obs$obs)), max(c(DF_app$app,DF_obs$obs)), length.out = 5),1)) +
         theme(plot.title=element_text(hjust=0.5))
     }
@@ -202,7 +228,7 @@ afttestplot = function(object, path = 50, stdType = "std"){
         ggplot() +
         geom_step(data=DF_app,aes(x=resid,y=app,group=group),colour="grey",alpha=0.5) +
         geom_step(data=DF_obs,aes(x=resid,y=obs),colour="tomato",lwd=0.25) +
-        ylab("Test Statistic")+xlab("Residuals")+ggtitle("Functional Form (standardized)") + 
+        ylab("Test Statistic")+xlab("Residuals")+ggtitle(paste0("Functional Form ", "(", stdType, ", ", eqType, ")")) + 
         scale_y_continuous(breaks = round(seq(min(c(DF_app$app,DF_obs$obs)), max(c(DF_app$app,DF_obs$obs)), length.out = 5),1)) +
         theme(plot.title=element_text(hjust=0.5))
     } else {
@@ -222,7 +248,7 @@ afttestplot = function(object, path = 50, stdType = "std"){
         ggplot() +
         geom_step(data=DF_app,aes(x=resid,y=app,group=group),colour="grey",alpha=0.5) +
         geom_step(data=DF_obs,aes(x=resid,y=obs),colour="tomato",lwd=0.25) +
-        ylab("Test Statistic")+xlab("Residuals")+ggtitle("Functional Form (untandardized)") + 
+        ylab("Test Statistic")+xlab("Residuals")+ggtitle(paste0("Functional Form ", "(", stdType, ", ", eqType, ")")) + 
         scale_y_continuous(breaks = round(seq(min(c(DF_app$app,DF_obs$obs)), max(c(DF_app$app,DF_obs$obs)), length.out = 5))) +
         theme(plot.title=element_text(hjust=0.5))
     }
