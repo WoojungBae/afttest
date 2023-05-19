@@ -144,9 +144,9 @@ afttest = function(formula, path = 200, testType = "omni", eqType = "mis",
     } else {
       if (is.character(form)) {
         if (!form %in% varnames) {
-          form = "mis"
+          form = 1
         } else {
-          form = match.arg(form, varnames) - 2
+          form = which(form == varnames) - 2
         }
       } else if (is.numeric(form)) {
         if (form > cov.length){
