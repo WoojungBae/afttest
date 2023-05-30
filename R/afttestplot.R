@@ -14,7 +14,7 @@
 #' \describe{
 #'    \item{omni}{an object of the omnibus test is the form of n by n matrix, 
 #'    some quantiles of x, which are used in weight, are plotted for graphs, 
-#'    i.e. 0\%, 10\%, 25\%, 40\%, 50\%, 60\%, 75\%, 90\%, and 100\% are used.}
+#'    i.e. 10\%, 25\%, 50\%, 75\%, and 90\% are used.}
 #'    \item{link}{an object of the link function test is the form of n by 1 matrix}
 #'    \item{form}{an object of the functional form test is the form of n by 1 matrix}
 #' }
@@ -65,8 +65,11 @@ afttestplot = function(object, path = 50, stdType = "std"){
     path = max(min(path,length(object$app_std_path)),10)
   }
   
+  stdTypeQuote = ifelse(stdType=="std","standardized","unstandardized")
+  testTypeQuote = ifelse(eqType=="mns","non-smooth","induced-smoothed")
+  
   x_axis = 1:nrow(object$DF)
-  Q = c(0,0.1,0.25,0.4,0.5,0.6,0.75,0.9,1)
+  Q = c(0.1,0.25,0.5,0.75,0.9)
   Q = round(quantile(x_axis,Q))
   K = length(Q)
   
@@ -92,13 +95,15 @@ afttestplot = function(object, path = 50, stdType = "std"){
         DF_obs = data.frame(group,resid=x_axis,obs=object$obs_std_path[,Q_k])
         
         # Figure
-        if (k==5){
+        if (k==((K+1)/2)){
           Figure_k =
             ggplot() +
             geom_step(data=DF_app,aes(x=resid,y=app,group=group),colour="grey",alpha=0.5) +
             geom_step(data=DF_obs,aes(x=resid,y=obs),colour="tomato",lwd=0.25) +
-            ylab("Test Statistic")+xlab("Residuals") +
-            ggtitle(paste0("Omnibus ", "(", stdType, ", ", eqType, ", quantile(z): ",names(Q)[k], ")")) + 
+            # ylab("Test Statistic") + xlab("Residuals") +
+            labs(y = NULL) + labs(x = NULL) +
+            ggtitle(paste0("Omnibus test ","(",stdTypeQuote,")"," with ",names(Q)[k], " percentile for z")) +
+            # ggtitle(paste0("Omnibus test ","(",stdTypeQuote,", ",testTypeQuote,")"," with ",names(Q)[k], " percentile for z")) + 
             scale_y_continuous(breaks = round(seq(min(c(DF_app$app,DF_obs$obs)), max(c(DF_app$app,DF_obs$obs)), length.out = 5),1)) +
             theme(plot.title=element_text(hjust=0.5))
         } else {
@@ -106,11 +111,12 @@ afttestplot = function(object, path = 50, stdType = "std"){
             ggplot() +
             geom_step(data=DF_app,aes(x=resid,y=app,group=group),colour="grey",alpha=0.5) +
             geom_step(data=DF_obs,aes(x=resid,y=obs),colour="tomato",lwd=0.25) +
-            ylab("Test Statistic")+xlab("Residuals") +
-            ggtitle(paste0("quantile(z): ",names(Q)[k])) + 
+            # ylab("Test Statistic") + xlab("Residuals") +
+            labs(y = NULL) + labs(x = NULL) +
+            ggtitle(paste0(names(Q)[k])) + 
             scale_y_continuous(breaks = round(seq(min(c(DF_app$app,DF_obs$obs)), max(c(DF_app$app,DF_obs$obs)), length.out = 3),1)) +
             theme(plot.title=element_text(hjust=0.5))
-        }
+        } 
         Figure[[k]] = Figure_k
       }
     } else {
@@ -129,13 +135,15 @@ afttestplot = function(object, path = 50, stdType = "std"){
         DF_obs = data.frame(group,resid=x_axis,obs=object$obs_path[,Q_k])
         
         # Figure
-        if (k==5){
+        if (k==((K+1)/2)){
           Figure_k =
             ggplot() +
             geom_step(data=DF_app,aes(x=resid,y=app,group=group),colour="grey",alpha=0.5) +
             geom_step(data=DF_obs,aes(x=resid,y=obs),colour="tomato",lwd=0.25) +
-            ylab("Test Statistic")+xlab("Residuals") +
-            ggtitle(paste0("Omnibus ", "(", stdType, ", ", eqType, ", quantile(z): ",names(Q)[k], ")")) + 
+            # ylab("Test Statistic") + xlab("Residuals") +
+            labs(y = NULL) + labs(x = NULL) +
+            ggtitle(paste0("Omnibus test ","(",stdTypeQuote,")"," with ",names(Q)[k], " percentile for z")) + 
+            # ggtitle(paste0("Omnibus test ","(",stdTypeQuote,", ",testTypeQuote,")"," with ",names(Q)[k], " percentile for z")) + 
             scale_y_continuous(breaks = round(seq(min(c(DF_app$app,DF_obs$obs)), max(c(DF_app$app,DF_obs$obs)), length.out = 5),1)) +
             theme(plot.title=element_text(hjust=0.5))
         } else {
@@ -143,8 +151,9 @@ afttestplot = function(object, path = 50, stdType = "std"){
             ggplot() +
             geom_step(data=DF_app,aes(x=resid,y=app,group=group),colour="grey",alpha=0.5) +
             geom_step(data=DF_obs,aes(x=resid,y=obs),colour="tomato",lwd=0.25) +
-            ylab("Test Statistic")+xlab("Residuals") +
-            ggtitle(paste0("quantile(z): ",names(Q)[k])) + 
+            # ylab("Test Statistic") + xlab("Residuals") +
+            labs(y = NULL) + labs(x = NULL) +
+            ggtitle(paste0(names(Q)[k])) + 
             scale_y_continuous(breaks = round(seq(min(c(DF_app$app,DF_obs$obs)), max(c(DF_app$app,DF_obs$obs)), length.out = 3),1)) +
             theme(plot.title=element_text(hjust=0.5))
         }
@@ -152,11 +161,19 @@ afttestplot = function(object, path = 50, stdType = "std"){
       }
     }
     
-    lay = rbind(c(1,1,1,1),c(1,1,1,1),c(2,3,4,5),c(6,7,8,9))
-    return(grid.arrange(Figure[[5]],
-                        Figure[[1]],Figure[[2]],Figure[[3]],Figure[[4]],
-                        Figure[[6]],Figure[[7]],Figure[[8]],Figure[[9]],
+    lay = rbind(c(1,1),c(1,1),c(2,3),c(4,5))
+    return(grid.arrange(Figure[[3]],
+                        Figure[[1]],Figure[[2]],
+                        Figure[[4]],Figure[[5]],
+                        left = "Test Statistic",
+                        bottom = "Residuals",
                         layout_matrix=lay))
+    
+    # lay = rbind(c(1,1,1,1),c(1,1,1,1),c(2,3,4,5))
+    # return(grid.arrange(Figure[[3]],
+    #                     Figure[[1]],Figure[[2]],
+    #                     Figure[[4]],Figure[[5]],
+    #                     layout_matrix=lay))
     
   } else if(testType=="link"){
     resid = c(NA)
@@ -179,10 +196,11 @@ afttestplot = function(object, path = 50, stdType = "std"){
         ggplot() +
         geom_step(data=DF_app,aes(x=resid,y=app,group=group),colour="grey",alpha=0.5) +
         geom_step(data=DF_obs,aes(x=resid,y=obs),colour="tomato",lwd=0.25) +
-        ylab("Test Statistic")+xlab("Residuals")+ggtitle(paste0("Link Function ", "(", stdType, ", ", eqType, ")")) + 
+        ylab("Test Statistic")+xlab("Residuals")+
+        ggtitle(paste0("Link Function ","(",stdTypeQuote,")","")) + 
+        # ggtitle(paste0("Link Function ","(",stdTypeQuote,", ",testTypeQuote,")","")) + 
         scale_y_continuous(breaks = round(seq(min(c(DF_app$app,DF_obs$obs)), max(c(DF_app$app,DF_obs$obs)), length.out = 5),1)) +
         theme(plot.title=element_text(hjust=0.5))
-      
     } else {
       # DF_app
       DF_app = data.frame()
@@ -200,7 +218,9 @@ afttestplot = function(object, path = 50, stdType = "std"){
         ggplot() +
         geom_step(data=DF_app,aes(x=resid,y=app,group=group),colour="grey",alpha=0.5) +
         geom_step(data=DF_obs,aes(x=resid,y=obs),colour="tomato",lwd=0.25) +
-        ylab("Test Statistic")+xlab("Residuals")+ggtitle(paste0("Link Function ", "(", stdType, ", ", eqType, ")")) + 
+        ylab("Test Statistic")+xlab("Residuals")+
+        ggtitle(paste0("Link Function ","(",stdTypeQuote,")","")) + 
+        # ggtitle(paste0("Link Function ","(",stdTypeQuote,", ",testTypeQuote,")","")) + 
         scale_y_continuous(breaks = round(seq(min(c(DF_app$app,DF_obs$obs)), max(c(DF_app$app,DF_obs$obs)), length.out = 5),1)) +
         theme(plot.title=element_text(hjust=0.5))
     }
@@ -228,7 +248,9 @@ afttestplot = function(object, path = 50, stdType = "std"){
         ggplot() +
         geom_step(data=DF_app,aes(x=resid,y=app,group=group),colour="grey",alpha=0.5) +
         geom_step(data=DF_obs,aes(x=resid,y=obs),colour="tomato",lwd=0.25) +
-        ylab("Test Statistic")+xlab("Residuals")+ggtitle(paste0("Functional Form ", "(", stdType, ", ", eqType, ")")) + 
+        ylab("Test Statistic")+xlab("Residuals") +
+        ggtitle(paste0("Functional Form ","(",stdTypeQuote,")","")) + 
+        # ggtitle(paste0("Functional Form ","(",stdTypeQuote,", ",testTypeQuote,")","")) + 
         scale_y_continuous(breaks = round(seq(min(c(DF_app$app,DF_obs$obs)), max(c(DF_app$app,DF_obs$obs)), length.out = 5),1)) +
         theme(plot.title=element_text(hjust=0.5))
     } else {
@@ -248,7 +270,9 @@ afttestplot = function(object, path = 50, stdType = "std"){
         ggplot() +
         geom_step(data=DF_app,aes(x=resid,y=app,group=group),colour="grey",alpha=0.5) +
         geom_step(data=DF_obs,aes(x=resid,y=obs),colour="tomato",lwd=0.25) +
-        ylab("Test Statistic")+xlab("Residuals")+ggtitle(paste0("Functional Form ", "(", stdType, ", ", eqType, ")")) + 
+        ylab("Test Statistic")+xlab("Residuals") +
+        ggtitle(paste0("Functional Form ","(",stdTypeQuote,")","")) + 
+        # ggtitle(paste0("Functional Form ","(",stdTypeQuote,", ",testTypeQuote,")",")","")) + 
         scale_y_continuous(breaks = round(seq(min(c(DF_app$app,DF_obs$obs)), max(c(DF_app$app,DF_obs$obs)), length.out = 5))) +
         theme(plot.title=element_text(hjust=0.5))
     }

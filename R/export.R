@@ -225,3 +225,35 @@ NULL
 #' @aliases scale_y_continuous
 #' @export scale_y_continuous
 NULL
+
+#' \code{labs} function imported from \code{ggplot2}
+#'
+#' This function is imported from the \code{ggplot2} package. See
+#' \code{\link[ggplot2]{labs}}.
+#' 
+#' @keywords internal
+#' @importFrom ggplot2 labs
+#' @name export_labs
+#' @aliases labs
+#' @export labs
+NULL
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

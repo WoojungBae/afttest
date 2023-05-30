@@ -21,7 +21,7 @@ The default is set to be "std".}
 \describe{
    \item{omni}{an object of the omnibus test is the form of n by n matrix, 
    some quantiles of x, which are used in weight, are plotted for graphs, 
-   i.e. 0\%, 10\%, 25\%, 40\%, 50\%, 60\%, 75\%, 90\%, and 100\% are used.}
+   i.e. 10\%, 25\%, 50\%, 75\%, and 90\% are used.}
    \item{link}{an object of the link function test is the form of n by 1 matrix}
    \item{form}{an object of the functional form test is the form of n by 1 matrix}
 }

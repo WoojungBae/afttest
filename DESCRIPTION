@@ -2,7 +2,7 @@ Package: afttest
 Type: Package
 Title: Model Diagnostics for Accelerated Failure Time Models
 Version: 4.3.0
-Date: 2023-05-18 EDT
+Date: 2023-05-30 EDT
 Authors@R: c(person("WooJung", "Bae", email = "matt.woojung@gmail.com", role = c("aut", "cre")),
 	   person("Dongrak", "Choi", role = "aut"),
 	   person("Jun", "Yan", role = "aut"),

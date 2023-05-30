@@ -78,6 +78,7 @@ afttest = function(formula, path = 200, testType = "omni", eqType = "mis",
   varnames = noquote(all.vars(formula))
   var.length = ncol(DF)
   cov.length = var.length - 2
+  covnames = varnames[3:var.length]
   colnames(DF) = c("Time", "Delta", paste0("Covari", 1:cov.length))
   
   # check NA, -Inf, Inf, ...
@@ -143,10 +144,10 @@ afttest = function(formula, path = 200, testType = "omni", eqType = "mis",
       stop("the length if form needs to be exactly 1." )
     } else {
       if (is.character(form)) {
-        if (!form %in% varnames) {
+        if (!form %in% covnames) {
           form = 1
         } else {
-          form = which(form == varnames) - 2
+          form = which(form == covnames)
         }
       } else if (is.numeric(form)) {
         if (form > cov.length){
