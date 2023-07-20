@@ -81,7 +81,7 @@ afttest = function(formula, path = 200, testType = "omni", eqType = "mis",
   covnames = varnames[3:var.length]
   colnames(DF) = c("Time", "Delta", paste0("Covari", 1:cov.length))
   
-  # check NA, -Inf, Inf, ...
+  # check&delete NA, -Inf, Inf, ...
   missingmessage = NA
   DF[DF=="-Inf" | DF=="Inf"] = NA
   whichNA_DF = which(apply(is.na(DF), 1, sum)>0)
@@ -98,6 +98,19 @@ afttest = function(formula, path = 200, testType = "omni", eqType = "mis",
   Delta = DF$Delta
   Covari = scale(as.matrix(DF[, 3:var.length]))
   DF[, 3:var.length] = Covari
+  
+  # unique_Delta = unique(Delta)
+  # if (length(unique_Delta)==2){
+  #   if (any(c(0,1) == sort(unique_Delta))){
+  #     Delta = ifelse(Delta == unique_Delta[1], 0, 1)
+  #     warning(paste0(unique_Delta[1], "=0 is assumed to be observed and ", unique_Delta[2], "=1 is assumed to be censred"))
+  #   }
+  #  else {
+  #   stop("Delta must have 2 statuses (0=observed and 1=censored)")
+  # }
+  
+  if (any(Time <= 0)) stop("Time must be positive number")
+  if (cov.length==1 && length(unique(Covari))==1) stop("Intercept-only model detected; The semiparametric AFT model is unable to handle an intercept-only model")
   
   # beta coefficients from aftsrr function (aftgee package)
   formula = as.formula(paste0("Surv(Time,Delta)~",paste(paste0("Covari", 1:cov.length), collapse="+")))
