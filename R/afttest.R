@@ -106,11 +106,11 @@ afttest = function(formula, path = 200, testType = "omni", eqType = "mis",
   #     warning(paste0(unique_Delta[1], "=0 is assumed to be observed and ", unique_Delta[2], "=1 is assumed to be censred"))
   #   }
   #  else {
-  #   stop("Delta must have 2 statuses (0=observed and 1=censored)")
+  #   return(warning("Delta must have 2 statuses (0=observed and 1=censored)"))
   # }
   
-  if (any(Time <= 0)) stop("Time must be positive number")
-  if (cov.length==1 && length(unique(Covari))==1) stop("Intercept-only model detected; The semiparametric AFT model is unable to handle an intercept-only model")
+  if (any(Time <= 0)) return(warning("Time must be positive number"))
+  if (cov.length==1 && length(unique(Covari))==1) return(warning("Intercept-only model detected; The semiparametric AFT model is unable to handle an intercept-only model"))
   
   # beta coefficients from aftsrr function (aftgee package)
   formula = as.formula(paste0("Surv(Time,Delta)~",paste(paste0("Covari", 1:cov.length), collapse="+")))
@@ -154,7 +154,7 @@ afttest = function(formula, path = 200, testType = "omni", eqType = "mis",
   # form
   if (testType == "form") {
     if (length(form) > 1){
-      stop("the length if form needs to be exactly 1." )
+      return(warning("the length if form needs to be exactly 1."))
     } else {
       if (is.character(form)) {
         if (!form %in% covnames) {
@@ -164,10 +164,10 @@ afttest = function(formula, path = 200, testType = "omni", eqType = "mis",
         }
       } else if (is.numeric(form)) {
         if (form > cov.length){
-          stop("form is greater than the lenght of covariates. form needs to be specified correctly." )
+          return(warning("form is greater than the lenght of covariates. form needs to be specified correctly."))
         } 
       } else {
-        stop("form needs to be specified correctly." )
+        return(warning("form needs to be specified correctly."))
       }
     }
   }
@@ -209,7 +209,7 @@ afttest = function(formula, path = 200, testType = "omni", eqType = "mis",
       }
     }
   } else {
-    stop("Check your code")
+    return(warning("Check your code"))
   }
   
   class(out) = "afttest"

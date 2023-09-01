@@ -9,7 +9,7 @@ test_that("test afttest", {
     data.frame(Time = pmin(tt, cen), status = 1 * (tt < cen),
                z1 = z1, z2 = z2, id = 1:n)
   }
-  set.seed(1)
+  set.seed(0)
   simdata = datgen(n = 20)
   
   X = simdata$Time
@@ -22,6 +22,9 @@ test_that("test afttest", {
   result = afttest(formula = Surv(X, D) ~ z1 + z2, path = path, 
                    testType = testType, eqType = eqType, 
                    optimType = optimType, form = form, pathsave = 100)
+  
+  expect_equal(result$p_value, 0.260)
+  expect_equal(result$p_std_value, 0.265)
   
   expect_equal(result$path, path)
   expect_equal(result$testType, testType)

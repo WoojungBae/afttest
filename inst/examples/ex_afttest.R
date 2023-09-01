@@ -8,7 +8,7 @@ datgen <- function(n = 100) {
   data.frame(Time = pmin(tt, cen), status = 1 * (tt < cen),
              z1 = z1, z2 = z2, id = 1:n)
 }
-set.seed(1)
+set.seed(0)
 simdata = datgen(n = 20)
 
 X = simdata$Time

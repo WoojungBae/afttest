@@ -4,7 +4,7 @@
 \alias{afttestplot}
 \title{afttestplot}
 \usage{
-afttestplot(object, path = 50, stdType = "std")
+afttestplot(object, path = 50, stdType = "std", quantile = NULL)
 }
 \arguments{
 \item{object}{is a \code{afttest} fit}
@@ -15,6 +15,9 @@ The default is set to be 100.}
 \item{stdType}{A character string specifying if the graph is based on the 
 unstandardized test statistics or standardized test statistics
 The default is set to be "std".}
+
+\item{quantile}{A numeric vector specifies 5 of five quantiles within the range [0,1]. 
+The default is set to be c(0.1,0.25,0.5,0.75,0.9).}
 }
 \value{
 \code{afttestplot} returns a plot based on the \code{testType}:
@@ -51,7 +54,7 @@ datgen <- function(n = 100) {
   data.frame(Time = pmin(tt, cen), status = 1 * (tt < cen),
              z1 = z1, z2 = z2, id = 1:n)
 }
-set.seed(1)
+set.seed(0)
 simdata = datgen(n = 20)
 
 X = simdata$Time
@@ -71,7 +74,7 @@ datgen <- function(n = 100) {
   data.frame(Time = pmin(tt, cen), status = 1 * (tt < cen),
              z1 = z1, z2 = z2, id = 1:n)
 }
-set.seed(1)
+set.seed(0)
 simdata = datgen(n = 20)
 
 X = simdata$Time

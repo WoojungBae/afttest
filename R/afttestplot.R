@@ -34,6 +34,8 @@
 #' @param stdType A character string specifying if the graph is based on the 
 #'    unstandardized test statistics or standardized test statistics
 #'    The default is set to be "std".
+#' @param quantile A numeric vector specifies 5 of five quantiles within the range [0,1]. 
+#'    The default is set to be c(0.1,0.25,0.5,0.75,0.9).
 #' @return \code{afttestplot} returns a plot based on the \code{testType}:
 #' \describe{
 #'    \item{omni}{an object of the omnibus test is the form of n by n matrix, 
@@ -46,10 +48,10 @@
 #'    
 #' @example inst/examples/ex_afttestplot.R
 #' @export
-afttestplot = function(object, path = 50, stdType = "std"){
+afttestplot = function(object, path = 50, stdType = "std", quantile = NULL){
   
   # class
-  if (!inherits(object,"afttest")) stop("Must be afttest class")
+  if (!inherits(object,"afttest")) return(warning("Must be afttest class"))
   # eqType
   eqType = object$eqType
   # testType
@@ -69,7 +71,20 @@ afttestplot = function(object, path = 50, stdType = "std"){
   testTypeQuote = ifelse(eqType=="mns","non-smooth","induced-smoothed")
   
   x_axis = 1:nrow(object$DF)
-  Q = c(0.1,0.25,0.5,0.75,0.9)
+  
+  defaultQ = c(0.1,0.25,0.5,0.75,0.9)
+  lengthdefaultQ = length(defaultQ)
+  
+  quantile = sort(quantile)
+  lengthquantile = length(quantile)
+  if (is.null(quantile)){
+    Q = defaultQ
+  } else if (!is.numeric(quantile) || !lengthquantile == 5 || 
+             min(quantile)<0 || max(quantile)>1) {
+    return(warning("quantile needs to be numeric vector of 5 quantiles in [0,1]."))
+  } else {
+    Q = quantile
+  }
   Q = round(quantile(x_axis,Q))
   K = length(Q)
   
@@ -280,6 +295,6 @@ afttestplot = function(object, path = 50, stdType = "std"){
     return(Figure)
     
   } else {
-    stop("Check your code")
+    return(warning("Check your code"))
   }
 }
