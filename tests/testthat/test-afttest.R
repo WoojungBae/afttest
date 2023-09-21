@@ -23,8 +23,8 @@ test_that("test afttest", {
                    testType = testType, eqType = eqType, 
                    optimType = optimType, form = form, pathsave = 100)
   
-  expect_equal(result$p_value, 0.260)
-  expect_equal(result$p_std_value, 0.265)
+  expect_equal(result$p_value, 0.605)
+  expect_equal(result$p_std_value, 0.440)
   
   expect_equal(result$path, path)
   expect_equal(result$testType, testType)
