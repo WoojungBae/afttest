@@ -238,7 +238,29 @@ NULL
 #' @export labs
 NULL
 
+#' \code{unit} function imported from \code{ggplot2}
+#'
+#' This function is imported from the \code{ggplot2} package. See
+#' \code{\link[ggplot2]{unit}}.
+#' 
+#' @keywords internal
+#' @importFrom ggplot2 unit
+#' @name export_unit
+#' @aliases unit
+#' @export unit
+NULL
 
+#' \code{geom_label} function imported from \code{ggplot2}
+#'
+#' This function is imported from the \code{ggplot2} package. See
+#' \code{\link[ggplot2]{geom_label}}.
+#' 
+#' @keywords internal
+#' @importFrom ggplot2 geom_label
+#' @name export_geom_label
+#' @aliases geom_label
+#' @export geom_label
+NULL
 
 
 

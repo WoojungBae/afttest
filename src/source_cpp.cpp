@@ -6,38 +6,37 @@ using namespace Rcpp;
 //' @useDynLib afttest, .registration = TRUE
 //' @importFrom Rcpp evalCpp
 //' @exportPattern "^[[:alpha:]]+"
+
+double target_score2_mis(vec b, vec Time, vec Delta, mat Covari, vec targetvector){
  
- double target_score2_mis(vec b, vec Time, vec Delta, mat Covari, vec targetvector){
-   
-   int n = Covari.n_rows;
-   int p = Covari.n_cols;
-   
-   double sqrtn = sqrt(n);
-   
-   vec resid = log(Time) + Covari*b;
-   uvec index_resid = sort_index(resid);
-   
-   Delta = Delta(index_resid);
-   Covari = Covari.rows(index_resid);
-   resid = resid(index_resid);
-   
-   mat tempmat_np = zeros(n,p); vec tempvec_n = zeros(n); vec F_vec = zeros(p);
-   for(int it=0; it<n; it++){
-     tempmat_np = Covari.row(it) - Covari.each_row();
-     tempvec_n = sqrt(sum(tempmat_np%tempmat_np,1));
-     tempvec_n.replace(0,1);
-     
-     tempvec_n = normcdf(sqrtn*(resid-resid(it))/tempvec_n);
-     F_vec += sum(tempmat_np.each_col()%tempvec_n,0).t()*Delta(it);
-     
-   }
-   F_vec -= targetvector;
-   F_vec /= n;
-   
-   double SumOfSqure = norm(F_vec);
-   
-   return SumOfSqure;
- }
+  int n = Covari.n_rows;
+  int p = Covari.n_cols;
+  
+  double sqrtn = sqrt(n);
+  
+  vec resid = log(Time) + Covari*b;
+  uvec index_resid = sort_index(resid);
+  
+  Delta = Delta(index_resid);
+  Covari = Covari.rows(index_resid);
+  resid = resid(index_resid);
+  
+  mat tempmat_np = zeros(n,p); vec tempvec_n = zeros(n); vec F_vec = zeros(p);
+  for(int it=0; it<n; it++){
+    tempmat_np = Covari.row(it) - Covari.each_row();
+    tempvec_n = sqrt(sum(tempmat_np%tempmat_np,1));
+    tempvec_n.replace(0,1);
+    
+    tempvec_n = normcdf(sqrtn*(resid-resid(it))/tempvec_n);
+    F_vec += sum(tempmat_np.each_col()%tempvec_n,0).t()*Delta(it);
+  }
+  F_vec -= targetvector;
+  F_vec /= n;
+  
+  double SumOfSqure = norm(F_vec);
+  
+  return SumOfSqure;
+}
 
 double target_score2_mns(vec b, vec Time, vec Delta, mat Covari, vec targetvector){
   
