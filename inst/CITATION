@@ -1,0 +1,44 @@
+bibentry(
+    key = "afttest-R-package",
+    bibtype = "Manual",
+    title = "{afttest}: Model Diagnostics for Accelerated Failure Time Models",
+    author = c(
+        as.person("WooJung Bae"),
+        as.person("Dongrak Choi"),
+        as.person("Jun Yan"),
+        as.person("Sangwook Kang")
+        ),
+    year = "2023",
+    url = "https://CRAN.R-project.org/package=afttest",
+    note = "R package version 4.3.1.1"
+)
+
+bibentry(
+    key = "afttest-R-paper",
+    bibtype = "Article",
+    title = "{afttest}: Model Diagnostics for Accelerated Failure Time Models",
+    author = c(
+        as.person("WooJung Bae"),
+        as.person("Dongrak Choi"),
+        as.person("Jun Yan"),
+        as.person("Sangwook Kang")
+        ),
+    journal = "Arxiv",
+    year = "2023",
+    url = "",
+)
+
+bibentry(
+    key = "afttest-paper",
+    bibtype = "Article",
+    title = "A general model-checking procedure for semiparametric AFT models",
+    author = c(
+        as.person("Dongrak Choi"),
+        as.person("WooJung Bae"),
+        as.person("Jun Yan"),
+        as.person("Sangwook Kang")
+        ),
+    journal = "Arxiv",
+    year = "2023",
+    url = "https://arxiv.org/abs/2305.11445"
+)

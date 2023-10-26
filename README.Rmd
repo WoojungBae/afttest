@@ -1,0 +1,64 @@
+---
+title: afttest: Model Diagnostics for Accelerated Failure Time Models
+output: github_document
+---
+
+[![CRAN_Status_Badge][r-pkg-badge]][cran-url]
+[![Total_Downloads][cranlog-total]][cran-url]
+[![Downloads from the RStudio CRAN mirror][cranlog-badge]][cran-url]
+[![Build Status][gha-icon]][gha-url]
+[![codecov][codecov-main]][codecov]
+[![JDS][jds-badge]](https://doi.org/10.6339/21-JDS1020)
+
+
+The R package **afttest** is intended to be a user-friendly *supplementary*
+package to the base package **aftgee**.
+
+## Features
+
+In addition to the R interface, **afttest** provides a C++ header-only library 
+integrated with **Rcpp**, which allows the construction of spline basis 
+functions directly in C++ with the help of **Rcpp** and **RcppArmadillo**. 
+Thus, it can also be treated as one of the **Rcpp\** packages. 
+
+## Installation of CRAN Version
+
+You can install the released version from
+[CRAN](https://CRAN.R-project.org/package=afttest).
+
+``` r
+install.packages("afttest")
+```
+
+## Development
+
+The latest version of the package is under development at
+[GitHub](https://github.com/WoojungBae/afttest). If it is able to pass
+the automated package checks, one may install it by
+
+``` r
+if (!require(devtools)) install.packages("devtools")
+devtools::install_github("WoojungBae/afttest")
+```
+
+## Performance
+The implementation of the main functions has been written in C++ with the 
+help of the **Rcpp** and **RcppArmadillo** packages. The computational 
+performance has thus been boosted.
+
+## License
+
+[GNU General Public License][gpl] (≥ 3)
+
+[r-pkg-badge]: https://www.r-pkg.org/badges/version/afttest
+[cranlog-badge]: https://cranlogs.r-pkg.org/badges/afttest
+[cranlog-total]: https://cranlogs.r-pkg.org/badges/grand-total/afttest
+[cran-url]: https://CRAN.R-project.org/package=afttest
+[gha-icon]: https://github.com/WoojungBae/afttest/workflows/R-CMD-check/badge.svg
+[gha-url]: https://github.com/WoojungBae/afttest/actions
+[github-url]: https://github.com/WoojungBae/afttest
+[example-pkg]: https://github.com/WoojungBae/example-pkg-Rcpp-afttest
+[codecov]: https://app.codecov.io/gh/WoojungBae/afttest
+[codecov-main]: https://codecov.io/gh/WoojungBae/afttest/branch/main/graph/badge.svg
+[jds-badge]: https://img.shields.io/badge/JDS-10.6339%2F21--JDS1020-brightgreen
+[gpl]: https://www.gnu.org/licenses/

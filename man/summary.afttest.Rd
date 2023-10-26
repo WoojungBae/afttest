@@ -29,13 +29,14 @@ datgen <- function(n = 100) {
              z1 = z1, z2 = z2, id = 1:n)
 }
 set.seed(0)
-simdata = datgen(n = 20)
+simdata <- datgen(n = 20)
 
-X = simdata$Time
-D = simdata$status
-z1 = simdata$z1
-z2 = simdata$z2
+X <- simdata$Time
+D <- simdata$status
+z1 <- simdata$z1
+z2 <- simdata$z2
 
 result = afttest(Surv(X, D) ~ z1 + z2, testType="link", eqType="mns")
+print(result)
 summary(result)
 }

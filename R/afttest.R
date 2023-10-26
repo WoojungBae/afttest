@@ -67,42 +67,46 @@
 #'    time-transformed residual order.The observed process and the simulated processes
 #'    for checking a functional form and a link function are given by the n by 1 vector
 #'    which is a function of x in the time-transformed residual order. 
-#'    
+#' 
+#' @importFrom stats optim get_all_vars as.formula
+#' @importFrom aftgee aftsrr
+#' @importFrom survival Surv
+#' 
 #' @example inst/examples/ex_afttest.R
 #' @export
-afttest = function(formula, path = 200, testType = "omni", eqType = "mis", 
-                   optimType = "DFSANE", form = 1, pathsave = 100) {
+afttest <- function(formula, path = 200, testType = "omni", eqType = "mis", 
+                    optimType = "DFSANE", form = 1, pathsave = 100) {
   
   # Data Frame
-  DF = get_all_vars(formula)
-  varnames = noquote(all.vars(formula))
-  var.length = ncol(DF)
-  cov.length = var.length - 2
-  covnames = varnames[3:var.length]
-  colnames(DF) = c("Time", "Delta", paste0("Covari", 1:cov.length))
+  DF <- stats::get_all_vars(formula)
+  varnames <- noquote(all.vars(formula))
+  var.length <- ncol(DF)
+  cov.length <- var.length - 2
+  covnames <- varnames[3:var.length]
+  colnames(DF) <- c("Time", "Delta", paste0("Covari", 1:cov.length))
   
   # check&delete NA, -Inf, Inf, ...
-  missingmessage = NA
-  DF[DF=="-Inf" | DF=="Inf"] = NA
-  whichNA_DF = which(apply(is.na(DF), 1, sum)>0)
-  nNA_DF = length(whichNA_DF)
+  missingmessage <- NA
+  DF[DF=="-Inf" | DF=="Inf"] <- NA
+  whichNA_DF <- which(apply(is.na(DF), 1, sum)>0)
+  nNA_DF <- length(whichNA_DF)
   if (nNA_DF > 0){
-    missingmessage = paste0("(",nNA_DF, " observations deleted due to missingness out of ", nrow(DF), ")")
-    DF = DF[-whichNA_DF,]
+    missingmessage <- paste0("(",nNA_DF, " observations deleted due to missingness out of ", nrow(DF), ")")
+    DF <- DF[-whichNA_DF,]
   } else {
-    missingmessage = paste0("(No missing observed)")
+    missingmessage <- paste0("(No missing observed)")
   }
   
   # Covariate Scaling
-  Time = DF$Time
-  Delta = DF$Delta
-  Covari = scale(as.matrix(DF[, 3:var.length]))
-  DF[, 3:var.length] = Covari
+  Time <- DF$Time
+  Delta <- DF$Delta
+  Covari <- scale(as.matrix(DF[, 3:var.length]))
+  DF[, 3:var.length] <- Covari
   
-  # unique_Delta = unique(Delta)
+  # unique_Delta <- unique(Delta)
   # if (length(unique_Delta)==2){
   #   if (any(c(0,1) == sort(unique_Delta))){
-  #     Delta = ifelse(Delta == unique_Delta[1], 0, 1)
+  #     Delta <- ifelse(Delta == unique_Delta[1], 0, 1)
   #     warning(paste0(unique_Delta[1], "=0 is assumed to be observed and ", unique_Delta[2], "=1 is assumed to be censred"))
   #   }
   #  else {
@@ -113,42 +117,42 @@ afttest = function(formula, path = 200, testType = "omni", eqType = "mis",
   if (cov.length==1 && length(unique(Covari))==1) return(warning("Intercept-only model detected; The semiparametric AFT model is unable to handle an intercept-only model"))
   
   # beta coefficients from aftsrr function (aftgee package)
-  formula = as.formula(paste0("Surv(Time,Delta)~",paste(paste0("Covari", 1:cov.length), collapse="+")))
-  b = - aftsrr(formula, data = DF, eqType = eqType)$beta
+  formula <- stats::as.formula(paste0("Surv(Time,Delta)~",paste(paste0("Covari", 1:cov.length), collapse="+")))
+  b <- - aftgee::aftsrr(formula, data = DF, eqType = eqType)$beta
   
   # path
   if (!is.numeric(path)) {
-    path = 200
+    path <- 200
   } else {
-    path = max(path,10)
+    path <- max(path,10)
   }
   
   # testType
   if (!testType %in% c("omni","link","form")) {
-    testType = "omni"
+    testType <- "omni"
   } else {
-    testType = match.arg(testType, c("omni","link","form"))
+    testType <- match.arg(testType, c("omni","link","form"))
   }
   
   # eqType
   if (!eqType %in% c("mis","mns")) {
-    eqType = "mis"
+    eqType <- "mis"
   } else {
-    eqType = match.arg(eqType, c("mis","mns"))
+    eqType <- match.arg(eqType, c("mis","mns"))
   }
   
   # optimType
   if (!optimType %in% c("DFSANE","Nelder-Mead","BFGS","CG","L-BFGS-B","SANN","Brent")) {
-    optimType = "DFSANE"
+    optimType <- "DFSANE"
   } else {
-    optimType = match.arg(optimType, c("DFSANE","Nelder-Mead","BFGS","CG","L-BFGS-B","SANN","Brent"))
+    optimType <- match.arg(optimType, c("DFSANE","Nelder-Mead","BFGS","CG","L-BFGS-B","SANN","Brent"))
   }
   
   # pathsave
   if (!is.numeric(pathsave)) {
-    pathsave = 200
+    pathsave <- 200
   } else {
-    pathsave = max(path,10)
+    pathsave <- max(path,10)
   }
   
   # form
@@ -158,9 +162,9 @@ afttest = function(formula, path = 200, testType = "omni", eqType = "mis",
     } else {
       if (is.character(form)) {
         if (!form %in% covnames) {
-          form = 1
+          form <- 1
         } else {
-          form = which(form == covnames)
+          form <- which(form == covnames)
         }
       } else if (is.numeric(form)) {
         if (form > cov.length){
@@ -175,53 +179,53 @@ afttest = function(formula, path = 200, testType = "omni", eqType = "mis",
   if (optimType != "DFSANE"){
     if (eqType=="mns"){
       if (testType == "omni") {
-        out = .Call(`_afttest_omni_mns_optim`, path, b, Time, Delta, Covari, optimType, pathsave)
+        out <- .Call(`_afttest_omni_mns_optim`, path, b, Time, Delta, Covari, optimType, pathsave)
       } else if (testType == "link") {
-        out = .Call(`_afttest_link_mns_optim`, path, b, Time, Delta, Covari, optimType, pathsave)
+        out <- .Call(`_afttest_link_mns_optim`, path, b, Time, Delta, Covari, optimType, pathsave)
       } else if (testType == "form") {
-        out = .Call(`_afttest_form_mns_optim`, path, b, Time, Delta, Covari, optimType, form, pathsave)
+        out <- .Call(`_afttest_form_mns_optim`, path, b, Time, Delta, Covari, optimType, form, pathsave)
       }
     } else if (eqType=="mis"){
       if (testType == "omni") {
-        out = .Call(`_afttest_omni_mis_optim`, path, b, Time, Delta, Covari, optimType, pathsave)
+        out <- .Call(`_afttest_omni_mis_optim`, path, b, Time, Delta, Covari, optimType, pathsave)
       } else if (testType == "link") {
-        out = .Call(`_afttest_link_mis_optim`, path, b, Time, Delta, Covari, optimType, pathsave)
+        out <- .Call(`_afttest_link_mis_optim`, path, b, Time, Delta, Covari, optimType, pathsave)
       } else if (testType == "form") {
-        out = .Call(`_afttest_form_mis_optim`, path, b, Time, Delta, Covari, optimType, form, pathsave)
+        out <- .Call(`_afttest_form_mis_optim`, path, b, Time, Delta, Covari, optimType, form, pathsave)
       }
     }
   } else if (optimType == "DFSANE"){
     if (eqType=="mns"){
       if (testType == "omni") {
-        out = .Call(`_afttest_omni_mns_DFSANE`, path, b, Time, Delta, Covari, pathsave)
+        out <- .Call(`_afttest_omni_mns_DFSANE`, path, b, Time, Delta, Covari, pathsave)
       } else if (testType == "link") {
-        out = .Call(`_afttest_link_mns_DFSANE`, path, b, Time, Delta, Covari, pathsave)
+        out <- .Call(`_afttest_link_mns_DFSANE`, path, b, Time, Delta, Covari, pathsave)
       } else if (testType == "form") {
-        out = .Call(`_afttest_form_mns_DFSANE`, path, b, Time, Delta, Covari, form, pathsave)
+        out <- .Call(`_afttest_form_mns_DFSANE`, path, b, Time, Delta, Covari, form, pathsave)
       }
     } else if (eqType=="mis"){
       if (testType == "omni") {
-        out = .Call(`_afttest_omni_mis_DFSANE`, path, b, Time, Delta, Covari, pathsave)
+        out <- .Call(`_afttest_omni_mis_DFSANE`, path, b, Time, Delta, Covari, pathsave)
       } else if (testType == "link") {
-        out = .Call(`_afttest_link_mis_DFSANE`, path, b, Time, Delta, Covari, pathsave)
+        out <- .Call(`_afttest_link_mis_DFSANE`, path, b, Time, Delta, Covari, pathsave)
       } else if (testType == "form") {
-        out = .Call(`_afttest_form_mis_DFSANE`, path, b, Time, Delta, Covari, form, pathsave)
+        out <- .Call(`_afttest_form_mis_DFSANE`, path, b, Time, Delta, Covari, form, pathsave)
       }
     }
   } else {
     return(warning("Check your code"))
   }
   
-  class(out) = "afttest"
-  out$names = varnames
-  out$call = match.call()
-  out$missingmessage = missingmessage
+  class(out) <- "afttest"
+  out$names <- varnames
+  out$call <- match.call()
+  out$missingmessage <- missingmessage
   
-  out$DF = DF
-  out$path = path
-  out$eqType = eqType
-  out$testType = testType
-  out$optimType = optimType
+  out$DF <- DF
+  out$path <- path
+  out$eqType <- eqType
+  out$testType <- testType
+  out$optimType <- optimType
   
   return(out)
 }

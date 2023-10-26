@@ -38,7 +38,7 @@ The default is set to be c(0.1,0.25,0.5,0.75,0.9).}
    \item{link}{an object of the link function test is the form of n by 1 matrix}
    \item{form}{an object of the functional form test is the form of n by 1 matrix}
 }
-   See the documentation of \pkg{ggplot2} and \pkg{gridExtra} for details.
+   See the documentation of \pkg{ggplot2} and \pkg{gridExtra} for details.\
 }
 \description{
 afttestplot
@@ -55,14 +55,14 @@ datgen <- function(n = 100) {
              z1 = z1, z2 = z2, id = 1:n)
 }
 set.seed(0)
-simdata = datgen(n = 20)
+simdata <- datgen(n = 20)
 
-X = simdata$Time
-D = simdata$status
-z1 = simdata$z1
-z2 = simdata$z2
+X <- simdata$Time
+D <- simdata$status
+z1 <- simdata$z1
+z2 <- simdata$z2
 
-result = afttest(Surv(X, D) ~ z1 + z2, testType="link", eqType="mns")
+result <- afttest(Surv(X, D) ~ z1 + z2, testType="link", eqType="mns")
 afttestplot(result)
 ## Simulate data from an AFT model
 datgen <- function(n = 100) {
@@ -75,13 +75,13 @@ datgen <- function(n = 100) {
              z1 = z1, z2 = z2, id = 1:n)
 }
 set.seed(0)
-simdata = datgen(n = 20)
+simdata <- datgen(n = 20)
 
-X = simdata$Time
-D = simdata$status
-z1 = simdata$z1
-z2 = simdata$z2
+X <- simdata$Time
+D <- simdata$status
+z1 <- simdata$z1
+z2 <- simdata$z2
 
-result = afttest(Surv(X, D) ~ z1 + z2, testType="link", eqType="mns")
+result <- afttest(Surv(X, D) ~ z1 + z2, testType="link", eqType="mns")
 afttestplot(result)
 }
