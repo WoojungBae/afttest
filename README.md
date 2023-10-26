@@ -5,9 +5,7 @@ afttest: Model Diagnostics for Accelerated Failure Time Models
 [![Total_Downloads](https://cranlogs.r-pkg.org/badges/grand-total/afttest)](https://CRAN.R-project.org/package=afttest)
 [![Downloads from the RStudio CRAN
 mirror](https://cranlogs.r-pkg.org/badges/afttest)](https://CRAN.R-project.org/package=afttest)
-[![Build
-Status](https://github.com/WoojungBae/afttest/workflows/R-CMD-check/badge.svg)](https://github.com/WoojungBae/afttest/actions)
-[![codecov](https://codecov.io/gh/WoojungBae/afttest/branch/main/graph/badge.svg)](https://app.codecov.io/gh/WoojungBae/afttest)
+[![BuildStatus](https://github.com/WoojungBae/afttest/workflows/R-CMD-check/badge.svg)](https://github.com/WoojungBae/afttest/actions)
 [![JDS](https://img.shields.io/badge/JDS-10.6339%2F21--JDS1020-brightgreen)](https://doi.org/10.48550/arXiv.2305.11445)
 
 The R package **afttest** is intended to be a user-friendly *supplementary*

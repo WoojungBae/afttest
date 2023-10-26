@@ -7,9 +7,7 @@ output: github_document
 [![Total_Downloads][cranlog-total]][cran-url]
 [![Downloads from the RStudio CRAN mirror][cranlog-badge]][cran-url]
 [![Build Status][gha-icon]][gha-url]
-[![codecov][codecov-main]][codecov]
 [![JDS][jds-badge]](https://doi.org/10.6339/21-JDS1020)
-
 
 The R package **afttest** is intended to be a user-friendly *supplementary*
 package to the base package **aftgee**.
@@ -58,7 +56,5 @@ performance has thus been boosted.
 [gha-url]: https://github.com/WoojungBae/afttest/actions
 [github-url]: https://github.com/WoojungBae/afttest
 [example-pkg]: https://github.com/WoojungBae/example-pkg-Rcpp-afttest
-[codecov]: https://app.codecov.io/gh/WoojungBae/afttest
-[codecov-main]: https://codecov.io/gh/WoojungBae/afttest/branch/main/graph/badge.svg
 [jds-badge]: https://img.shields.io/badge/JDS-10.6339%2F21--JDS1020-brightgreen
 [gpl]: https://www.gnu.org/licenses/
