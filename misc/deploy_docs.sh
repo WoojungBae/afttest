@@ -2,7 +2,7 @@
 
 set -e
 
-## run on wenjie's droplets
+## run on Woojung's droplets
 pkg=$(grep "Package" DESCRIPTION | awk '{print $NF}')
 build_dir=$(pwd)
 docs_repo=$HOME/github.com/WoojungBae/afttest
@@ -11,7 +11,7 @@ target_dir=$docs_repo/static/$pkg
 ## update docs by pkgdown
 make pkgdown
 
-# go to the repository for wwenjie.org
+# go to the repository for github.com/WoojungBae/afttest
 cd $docs_repo
 git checkout -f
 git checkout main

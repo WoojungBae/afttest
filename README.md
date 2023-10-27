@@ -1,4 +1,4 @@
-afttest: Model Diagnostics for Accelerated Failure Time Models
+afttest: Model Diagnostics for AFT Models
 ================
 
 [![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/afttest)](https://CRAN.R-project.org/package=afttest)

@@ -1,5 +1,5 @@
 ---
-title: afttest: Model Diagnostics for Accelerated Failure Time Models
+title: afttest: Model Diagnostics for AFT Models
 output: github_document
 ---
 
