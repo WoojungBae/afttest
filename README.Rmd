@@ -56,5 +56,5 @@ performance has thus been boosted.
 [gha-url]: https://github.com/WoojungBae/afttest/actions
 [github-url]: https://github.com/WoojungBae/afttest
 [example-pkg]: https://github.com/WoojungBae/example-pkg-Rcpp-afttest
-[arXiv-badge]: https://img.shields.io/badge/arXiv-<INDEX>-<COLOR>.svg
+[arXiv-badge]: https://img.shields.io/badge/arXiv-<10.48550/arXiv.2305.11445>-<COLOR>.svg
 [gpl]: https://www.gnu.org/licenses/
