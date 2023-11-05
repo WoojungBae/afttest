@@ -6,7 +6,7 @@ afttest: Model Diagnostics for AFT Models
 [![Downloads from the RStudio CRAN
 mirror](https://cranlogs.r-pkg.org/badges/afttest)](https://CRAN.R-project.org/package=afttest)
 [![BuildStatus](https://github.com/WoojungBae/afttest/workflows/R-CMD-check/badge.svg)](https://github.com/WoojungBae/afttest/actions)
-[![JDS](https://img.shields.io/badge/JDS-10.6339%2F21--JDS1020-brightgreen)](https://doi.org/10.48550/arXiv.2305.11445)
+[![arXiv](https://img.shields.io/badge/arXiv-<INDEX>-<COLOR>.svg)](https://doi.org/10.48550/arXiv.2305.11445)
 
 The R package **afttest** is intended to be a user-friendly *supplementary*
 package to the base package **aftgee**.
