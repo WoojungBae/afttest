@@ -419,16 +419,15 @@ List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
   E_pi_t_z.replace(arma::datum::nan,0);
   
-  // obs_path; 1 by x vector
-  List Mhat_i_t(n); List dMhat_i_t(n); vec obs_path = zero_vec_n;
+  // obs_path; t by x vector
+  List Mhat_i_t(n); List dMhat_i_t(n); mat obs_path = zero_mat_nn;
   for(int it=0; it<n; it++){
     tempvec_n = as<vec>(N_i_t(it))-(cumsum(as<vec>(Y_i_t(it))%(dLambdahat_0_t)));
     Mhat_i_t(it) = tempvec_n;
     dMhat_i_t(it) = diff(join_cols(zero_vec_1,tempvec_n));
-    obs_path += (tempvec_n(n-1))*(as<vec>(pi_i_z(it)));
+    obs_path += tempvec_n*(as<rowvec>(pi_i_z(it)));
   }
   obs_path /= sqrtn;
-  // obs_path -= obs_path(0) * ones(n);
   
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
@@ -648,21 +647,17 @@ List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   vec dLambdahat_0_t = diff(join_cols(zero_vec_1,Lambdahat_0_t));
   
   mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
+  E_pi_t_z.replace(arma::datum::nan,0);
   
   // obs_path; t by x matrix
-  List Mhat_i_t(n); mat obs_path = zero_mat_nn;
+  List Mhat_i_t(n); List dMhat_i_t(n); mat obs_path = zero_mat_nn;
   for(int it=0; it<n; it++){
-    Mhat_i_t(it) = as<vec>(N_i_t(it))-(cumsum(as<vec>(Y_i_t(it))%(dLambdahat_0_t)));
-    obs_path += (as<vec>(Mhat_i_t(it)))*(as<rowvec>(pi_i_z(it)));
+    tempvec_n = as<vec>(N_i_t(it))-(cumsum(as<vec>(Y_i_t(it))%(dLambdahat_0_t)));
+    Mhat_i_t(it) = tempvec_n;
+    dMhat_i_t(it) = diff(join_cols(zero_vec_1,tempvec_n));
+    obs_path += tempvec_n*(as<rowvec>(pi_i_z(it)));
   }
   obs_path /= sqrtn;
-  // obs_path.each_row() -= obs_path.row(0);
-  // obs_path.each_col() -= obs_path.col(0);
-  
-  List dMhat_i_t(n);
-  for(int it=0; it<n; it++){
-    dMhat_i_t(it) = diff(join_cols(zero_vec_1,as<vec>(Mhat_i_t(it))));
-  }
   
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
@@ -695,6 +690,7 @@ List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   
   // -----------------------------f0----------------------------
   vec Fhat_0_e = 1-cumprod(1-Delta/S_0_t);
+  Fhat_0_e.replace(arma::datum::nan,0);
   vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
   
   vec Condi_Ehat = zero_vec_n;
@@ -806,11 +802,13 @@ List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
     absmax_app_path(it) = abs(tempmat_nn).max();
     
     tempmat_nn /= se_boot;
+    tempmat_nn.replace(arma::datum::nan,0);
     app_std_path(it) = tempmat_nn;
     absmax_app_std_path(it) = abs(tempmat_nn).max();
   }
   
   mat obs_std_path = obs_path/se_boot;
+  obs_std_path.replace(arma::datum::nan,0);
   double absmax_obs_path = (abs(obs_path)).max();
   double absmax_obs_std_path = (abs(obs_std_path)).max();
   

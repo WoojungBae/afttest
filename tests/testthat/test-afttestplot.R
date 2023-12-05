@@ -17,7 +17,7 @@ test_that("test afttest", {
   z1 = simdata$z1
   z2 = simdata$z2
   
-  path = 200; testType = "link"; eqType = "mns"; optimType = "DFSANE"
+  path = 200; testType = "link"; eqType = "mns"; optimType = "DFSANE"; form = "z2"
   
   result = afttest(formula = Surv(X, D) ~ z1 + z2, path = path, 
                    testType = testType, eqType = eqType, 
