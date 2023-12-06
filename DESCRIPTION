@@ -2,7 +2,7 @@ Package: afttest
 Type: Package
 Title: Model Diagnostics for Accelerated Failure Time Models
 Version: 4.3.2
-Date: 2023-12-05 EDT
+Date: 2023-12-06 EDT
 Authors@R: c(
     person(given = "WooJung", family = "Bae", 
            email = "matt.woojung@gmail.com", 
@@ -15,11 +15,6 @@ Authors@R: c(
     person(given = "Sangwook", family = "Kang", role = "aut",
            comment = c(ORCID = "0000-0003-2658-481X"))
   )
-Author: 
-    WooJung Bae [aut, cre], 
-    Dongrak Choi [aut], 
-    Jun Yan [aut], 
-    Sangwook Kang [aut]
 Maintainer: 
     WooJung Bae <matt.woojung@gmail.com>
 Description: A collection of model checking methods for semiparametric accelerated 
