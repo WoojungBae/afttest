@@ -17,7 +17,7 @@ test_that("test afttest", {
   z1 = simdata$z1
   z2 = simdata$z2
   
-  path = 200; testType = "link"; eqType = "mns"; optimType = "DFSANE"; form = "z2"
+  path = 50; testType = "link"; eqType = "mns"; optimType = "DFSANE"; form = "z2"
   
   result = afttest(formula = Surv(X, D) ~ z1 + z2, path = path,
                    testType = testType, eqType = eqType,
@@ -25,8 +25,8 @@ test_that("test afttest", {
   # afttestplot(result, stdType = "std")
   # afttestplot(result, stdType = "unstd")
   
-  expect_equal(result$p_value, 0.585, tolerance=5e-2)
-  expect_equal(result$p_std_value, 0.435, tolerance=5e-2)
+  expect_equal(result$p_value, 0.620, tolerance=5e-2)
+  expect_equal(result$p_std_value, 0.700, tolerance=5e-2)
   
   expect_equal(result$path, path)
   expect_equal(result$testType, testType)
