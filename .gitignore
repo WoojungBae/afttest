@@ -1,9 +1,11 @@
+.gitignore
+.Rbuildignore
 .Rproj.user
 .Rhistory
 .RData
 .Ruserdata
 .DS_Store
-src/*.o
-src/*.so
-src/afttest.dll
-PackageSetting.R
+
+*.o
+*.so
+*.dll
