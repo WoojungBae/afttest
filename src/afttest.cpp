@@ -157,7 +157,7 @@ List dfsane_mis(int n, vec b, vec Time, vec Delta, mat Covari, vec targetvector)
     //   sig_k = sig_k;
     // }
     
-    abssig_k = fabs(sig_k);
+    abssig_k = std::abs(sig_k);
     if ((sig_min>abssig_k) || (sig_max<abssig_k)){
       if (tol_f<1e-10){
         sig_k = 1e+5;
@@ -285,7 +285,7 @@ List dfsane_mns(int n, vec b, vec Time, vec Delta, mat Covari, vec targetvector)
     //   sig_k = sig_k;
     // }
     
-    abssig_k = fabs(sig_k);
+    abssig_k = std::abs(sig_k);
     if ((sig_min>abssig_k) || (sig_max<abssig_k)){
       if (tol_f<1e-10){
         sig_k = 1e+5;
