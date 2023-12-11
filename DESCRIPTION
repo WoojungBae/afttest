@@ -27,7 +27,6 @@ Description: A collection of model checking methods for semiparametric accelerat
     a graphical technique to compare the shape of the observed residual to a number of 
     the approximated realizations is provided.
 Imports: 
-    Rcpp, 
     survival, 
     aftgee, 
     ggplot2, 

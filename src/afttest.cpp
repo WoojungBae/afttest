@@ -4,39 +4,41 @@ using namespace Rcpp;
 
 // [[Rcpp::depends(RcppArmadillo)]]
 //' @useDynLib afttest, .registration = TRUE
-//' @importFrom Rcpp evalCpp
-//' @exportPattern "^[[:alpha:]]+"
-
-double target_score2_mis(vec b, vec Time, vec Delta, mat Covari, vec targetvector){
+ //' @importFrom Rcpp evalCpp
+ //' @exportPattern "^[[:alpha:]]+"
  
-  int n = Covari.n_rows;
-  int p = Covari.n_cols;
-  
-  double sqrtn = sqrt(n);
-  
-  vec resid = log(Time) + Covari*b;
-  uvec index_resid = sort_index(resid);
-  
-  Delta = Delta(index_resid);
-  Covari = Covari.rows(index_resid);
-  resid = resid(index_resid);
-  
-  mat tempmat_np = zeros(n,p); vec tempvec_n = zeros(n); vec F_vec = zeros(p);
-  for(int it=0; it<n; it++){
-    tempmat_np = Covari.row(it) - Covari.each_row();
-    tempvec_n = sqrt(sum(tempmat_np%tempmat_np,1));
-    tempvec_n.replace(0,1);
-    
-    tempvec_n = normcdf(sqrtn*(resid-resid(it))/tempvec_n);
-    F_vec += sum(tempmat_np.each_col()%tempvec_n,0).t()*Delta(it);
-  }
-  F_vec -= targetvector;
-  F_vec /= n;
-  
-  double SumOfSqure = norm(F_vec);
-  
-  return SumOfSqure;
-}
+ double target_score2_mis(vec b, vec Time, vec Delta, mat Covari, vec targetvector){
+   
+   int n = Covari.n_rows;
+   int p = Covari.n_cols;
+   
+   double sqrtn = sqrt(n);
+   
+   vec resid = log(Time) + Covari*b;
+   uvec index_resid = sort_index(resid);
+   
+   Delta = Delta(index_resid);
+   Covari = Covari.rows(index_resid);
+   resid = resid(index_resid);
+   
+   mat tempmat_np = zeros(n,p); vec tempvec_n = zeros(n); vec F_vec = zeros(p);
+   for(int it=0; it<n; it++){
+     if (Delta(it)==1){
+       tempmat_np = Covari.row(it) - Covari.each_row();
+       tempvec_n = sqrt(sum(tempmat_np%tempmat_np,1));
+       tempvec_n.replace(0,1);
+       
+       tempvec_n = normcdf(sqrtn*(resid-resid(it))/tempvec_n);
+       F_vec += sum(tempmat_np.each_col()%tempvec_n).t();
+     }
+   }
+   F_vec -= targetvector;
+   F_vec /= n;
+   
+   double SumOfSqure = norm(F_vec);
+   
+   return SumOfSqure;
+ }
 
 double target_score2_mns(vec b, vec Time, vec Delta, mat Covari, vec targetvector){
   
@@ -53,8 +55,10 @@ double target_score2_mns(vec b, vec Time, vec Delta, mat Covari, vec targetvecto
   
   mat tempmat_np = zeros(n,p); vec F_vec = zeros(p);
   for(int it=0; it<n; it++){
-    tempmat_np = Covari.row(it) - Covari.each_row();
-    F_vec += sum(tempmat_np.each_col()%conv_to<vec>::from((resid>=resid(it))),0).t()*Delta(it);
+    if (Delta(it)==1){
+      tempmat_np = Covari.row(it) - Covari.each_row();
+      F_vec += sum(tempmat_np.each_col()%conv_to<vec>::from((resid>=resid(it)))).t();
+    }
   }
   F_vec -= targetvector;
   F_vec /= n;
@@ -80,11 +84,13 @@ vec target_score_mis(vec b, vec Time, vec Delta, mat Covari, vec targetvector){
   
   mat tempmat_np = zeros(n,p); vec tempvec_n = zeros(n); vec F_vec = zeros(p);
   for(int it=0; it<n; it++){
-    tempmat_np = Covari.row(it) - Covari.each_row();
-    tempvec_n = sqrt(sum(tempmat_np%tempmat_np,1));
-    tempvec_n.replace(0,1);
-    tempvec_n = normcdf(sqrtn*(resid-resid(it))/tempvec_n);
-    F_vec += sum(tempmat_np.each_col()%tempvec_n,0).t()*Delta(it);
+    if (Delta(it)==1){
+      tempmat_np = Covari.row(it) - Covari.each_row();
+      tempvec_n = sqrt(sum(tempmat_np%tempmat_np,1));
+      tempvec_n = normcdf(sqrtn*(resid-resid(it))/tempvec_n);
+      tempvec_n.replace(arma::datum::nan,0);
+      F_vec += sum(tempmat_np.each_col()%tempvec_n).t();
+    }
   }
   F_vec -= targetvector;
   F_vec /= n;
@@ -107,8 +113,10 @@ vec target_score_mns(vec b, vec Time, vec Delta, mat Covari, vec targetvector){
   
   mat tempmat_np = zeros(n,p); vec F_vec = zeros(p);
   for(int it=0; it<n; it++){
-    tempmat_np = Covari.row(it) - Covari.each_row();
-    F_vec += sum(tempmat_np.each_col()%conv_to<vec>::from((resid>=resid(it))),0).t()*Delta(it);
+    if (Delta(it)==1){
+      tempmat_np = Covari.row(it) - Covari.each_row();
+      F_vec += sum(tempmat_np.each_col()%conv_to<vec>::from((resid>=resid(it)))).t();
+    }
   }
   F_vec -= targetvector;
   F_vec /= n;
@@ -511,7 +519,7 @@ List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
         tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
         tempmat_np += (as<vec>(dMhat_i_t(it))*(Covari.row(it)))*phi_i(it);
       }
-      vec U_phi_inf = sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0).t();
+      vec U_phi_inf = sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0).t()/n;
       
       List b_s_result = dfsane_mis(n, b, Time, Delta, Covari, U_phi_inf);
       b_s = as<vec>(b_s_result[1]);
@@ -741,7 +749,7 @@ List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
         tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
         tempmat_np += (as<vec>(dMhat_i_t(it))*(Covari.row(it)))*phi_i(it);
       }
-      vec U_phi_inf = sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0).t();
+      vec U_phi_inf = sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0).t()/n;
       
       List b_s_result = dfsane_mns(n, b, Time, Delta, Covari, U_phi_inf);
       b_s = as<vec>(b_s_result[1]);
@@ -970,7 +978,7 @@ List link_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
         tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
         tempmat_np += (as<vec>(dMhat_i_t(it))*(Covari.row(it)))*phi_i(it);
       }
-      vec U_phi_inf = sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0).t();
+      vec U_phi_inf = sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0).t()/n;
       
       List b_s_result = dfsane_mis(n, b, Time, Delta, Covari, U_phi_inf);
       b_s = as<vec>(b_s_result[1]);
@@ -1191,7 +1199,7 @@ List link_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
         tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
         tempmat_np += (as<vec>(dMhat_i_t(it))*(Covari.row(it)))*phi_i(it);
       }
-      vec U_phi_inf = sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0).t();
+      vec U_phi_inf = sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0).t()/n;
       
       List b_s_result = dfsane_mns(n, b, Time, Delta, Covari, U_phi_inf);
       b_s = as<vec>(b_s_result[1]);
@@ -1413,7 +1421,7 @@ List form_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
         tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
         tempmat_np += (as<vec>(dMhat_i_t(it))*(Covari.row(it)))*phi_i(it);
       }
-      vec U_phi_inf = sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0).t();
+      vec U_phi_inf = sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0).t()/n;
       
       List b_s_result = dfsane_mis(n, b, Time, Delta, Covari, U_phi_inf);
       b_s = as<vec>(b_s_result[1]);
@@ -1635,7 +1643,7 @@ List form_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
         tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
         tempmat_np += (as<vec>(dMhat_i_t(it))*(Covari.row(it)))*phi_i(it);
       }
-      vec U_phi_inf = sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0).t();
+      vec U_phi_inf = sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0).t()/n;
       
       List b_s_result = dfsane_mns(n, b, Time, Delta, Covari, U_phi_inf);
       b_s = as<vec>(b_s_result[1]);
@@ -1863,7 +1871,7 @@ List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
         tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
         tempmat_np += (as<vec>(dMhat_i_t(it))*(Covari.row(it)))*phi_i(it);
       }
-      vec U_phi_inf = sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0).t();
+      vec U_phi_inf = sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0).t()/n;
       
       Rcpp::List b_s_opt_results = optim(Rcpp::_["par"]    = b,
                                          Rcpp::_["fn"]     = Rcpp::InternalFunction(&target_score2_mis),
@@ -1874,7 +1882,7 @@ List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
                                          Rcpp::_["targetvector"] = U_phi_inf);
       
       vec b_s = as<vec>(b_s_opt_results[0]);
-      tolerance = as<double>(b_s_opt_results[1]);;
+      tolerance = as<double>(b_s_opt_results[1]);
     }
     
     tempmat_nn = zero_mat_nn;
@@ -2104,7 +2112,7 @@ List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
         tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
         tempmat_np += (as<vec>(dMhat_i_t(it))*(Covari.row(it)))*phi_i(it);
       }
-      vec U_phi_inf = sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0).t();
+      vec U_phi_inf = sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0).t()/n;
       
       Rcpp::List b_s_opt_results = optim(Rcpp::_["par"]    = b,
                                          Rcpp::_["fn"]     = Rcpp::InternalFunction(&target_score2_mns),
@@ -2115,7 +2123,7 @@ List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
                                          Rcpp::_["targetvector"] = U_phi_inf);
       
       vec b_s = as<vec>(b_s_opt_results[0]);
-      tolerance = as<double>(b_s_opt_results[1]);;
+      tolerance = as<double>(b_s_opt_results[1]);
     }
     
     tempmat_nn = zero_mat_nn;
@@ -2341,7 +2349,7 @@ List link_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
         tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
         tempmat_np += (as<vec>(dMhat_i_t(it))*(Covari.row(it)))*phi_i(it);
       }
-      vec U_phi_inf = sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0).t();
+      vec U_phi_inf = sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0).t()/n;
       
       Rcpp::List b_s_opt_results = optim(Rcpp::_["par"]    = b,
                                          Rcpp::_["fn"]     = Rcpp::InternalFunction(&target_score2_mis),
@@ -2352,7 +2360,7 @@ List link_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
                                          Rcpp::_["targetvector"] = U_phi_inf);
       
       vec b_s = as<vec>(b_s_opt_results[0]);
-      tolerance = as<double>(b_s_opt_results[1]);;
+      tolerance = as<double>(b_s_opt_results[1]);
     }
     
     tempmat_nn = zero_mat_nn;
@@ -2572,7 +2580,7 @@ List link_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
         tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
         tempmat_np += (as<vec>(dMhat_i_t(it))*(Covari.row(it)))*phi_i(it);
       }
-      vec U_phi_inf = sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0).t();
+      vec U_phi_inf = sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0).t()/n;
       
       Rcpp::List b_s_opt_results = optim(Rcpp::_["par"]    = b,
                                          Rcpp::_["fn"]     = Rcpp::InternalFunction(&target_score2_mns),
@@ -2583,7 +2591,7 @@ List link_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
                                          Rcpp::_["targetvector"] = U_phi_inf);
       
       vec b_s = as<vec>(b_s_opt_results[0]);
-      tolerance = as<double>(b_s_opt_results[1]);;
+      tolerance = as<double>(b_s_opt_results[1]);
     }
     
     tempmat_nn = zero_mat_nn;
@@ -2804,7 +2812,7 @@ List form_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
         tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
         tempmat_np += (as<vec>(dMhat_i_t(it))*(Covari.row(it)))*phi_i(it);
       }
-      vec U_phi_inf = sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0).t();
+      vec U_phi_inf = sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0).t()/n;
       
       Rcpp::List b_s_opt_results = optim(Rcpp::_["par"]    = b,
                                          Rcpp::_["fn"]     = Rcpp::InternalFunction(&target_score2_mis),
@@ -2815,7 +2823,7 @@ List form_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
                                          Rcpp::_["targetvector"] = U_phi_inf);
       
       vec b_s = as<vec>(b_s_opt_results[0]);
-      tolerance = as<double>(b_s_opt_results[1]);;
+      tolerance = as<double>(b_s_opt_results[1]);
     }
     
     tempmat_nn = zero_mat_nn;
@@ -3036,7 +3044,7 @@ List form_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
         tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
         tempmat_np += (as<vec>(dMhat_i_t(it))*(Covari.row(it)))*phi_i(it);
       }
-      vec U_phi_inf = sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0).t();
+      vec U_phi_inf = sum(((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)),0).t()/n;
       
       Rcpp::List b_s_opt_results = optim(Rcpp::_["par"]    = b,
                                          Rcpp::_["fn"]     = Rcpp::InternalFunction(&target_score2_mns),
@@ -3047,7 +3055,7 @@ List form_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
                                          Rcpp::_["targetvector"] = U_phi_inf);
       
       vec b_s = as<vec>(b_s_opt_results[0]);
-      tolerance = as<double>(b_s_opt_results[1]);;
+      tolerance = as<double>(b_s_opt_results[1]);
     }
     
     tempmat_nn = zero_mat_nn;
