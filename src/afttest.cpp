@@ -26,18 +26,16 @@ using namespace Rcpp;
      if (Delta(it)==1){
        tempmat_np = Covari.row(it) - Covari.each_row();
        tempvec_n = sqrt(sum(tempmat_np%tempmat_np,1));
-       tempvec_n.replace(0,1);
-       
        tempvec_n = normcdf(sqrtn*(resid-resid(it))/tempvec_n);
+       tempvec_n.replace(arma::datum::nan,0);
        F_vec += sum(tempmat_np.each_col()%tempvec_n).t();
      }
    }
-   F_vec -= targetvector;
-   F_vec /= n;
+   F_vec = F_vec/n - targetvector;
    
-   double SumOfSqure = norm(F_vec);
+   double F2norm = norm(F_vec);
    
-   return SumOfSqure;
+   return F2norm;
  }
 
 double target_score2_mns(vec b, vec Time, vec Delta, mat Covari, vec targetvector){
@@ -60,12 +58,11 @@ double target_score2_mns(vec b, vec Time, vec Delta, mat Covari, vec targetvecto
       F_vec += sum(tempmat_np.each_col()%conv_to<vec>::from((resid>=resid(it)))).t();
     }
   }
-  F_vec -= targetvector;
-  F_vec /= n;
+  F_vec = F_vec/n - targetvector;
   
-  double SumOfSqure = norm(F_vec);
+  double F2norm = norm(F_vec);
   
-  return SumOfSqure;
+  return F2norm;
 }
 
 vec target_score_mis(vec b, vec Time, vec Delta, mat Covari, vec targetvector){
@@ -92,8 +89,7 @@ vec target_score_mis(vec b, vec Time, vec Delta, mat Covari, vec targetvector){
       F_vec += sum(tempmat_np.each_col()%tempvec_n).t();
     }
   }
-  F_vec -= targetvector;
-  F_vec /= n;
+  F_vec = F_vec/n - targetvector;
   
   return F_vec;
 }
@@ -118,8 +114,7 @@ vec target_score_mns(vec b, vec Time, vec Delta, mat Covari, vec targetvector){
       F_vec += sum(tempmat_np.each_col()%conv_to<vec>::from((resid>=resid(it)))).t();
     }
   }
-  F_vec -= targetvector;
-  F_vec /= n;
+  F_vec = F_vec/n - targetvector;
   
   return F_vec;
 }
