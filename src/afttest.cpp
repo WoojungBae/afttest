@@ -483,7 +483,7 @@ List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
       fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_fn) * dFhat_0_e(itt);
     }
   }
-  fhat_0_t /= bw_fn;
+  fhat_0_t /= (n*bw_gn);
   
   List fhat_t_z(p);
   tempvec_n = fhat_0_t%Time;
@@ -710,7 +710,7 @@ List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
       fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_fn) * dFhat_0_e(itt);
     }
   }
-  fhat_0_t /= bw_fn;
+  fhat_0_t /= (n*bw_gn);
   
   List fhat_t_z(p);
   tempvec_n = fhat_0_t%Time;
@@ -936,7 +936,7 @@ List link_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
       fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_fn) * dFhat_0_e(itt);
     }
   }
-  fhat_0_t /= bw_fn;
+  fhat_0_t /= (n*bw_gn);
   
   List fhat_inf_z(p);
   double tempvec_1 = fhat_0_t(n-1)*Time(n-1);
@@ -1154,7 +1154,7 @@ List link_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
       fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_fn) * dFhat_0_e(itt);
     }
   }
-  fhat_0_t /= bw_fn;
+  fhat_0_t /= (n*bw_gn);
   
   List fhat_inf_z(p);
   double tempvec_1 = fhat_0_t(n-1)*Time(n-1);
@@ -1373,7 +1373,7 @@ List form_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
       fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_fn) * dFhat_0_e(itt);
     }
   }
-  fhat_0_t /= bw_fn;
+  fhat_0_t /= (n*bw_gn);
   
   List fhat_inf_z(p);
   double tempvec_1 = fhat_0_t(n-1)*Time(n-1);
@@ -1592,7 +1592,7 @@ List form_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
       fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_fn) * dFhat_0_e(itt);
     }
   }
-  fhat_0_t /= bw_fn;
+  fhat_0_t /= (n*bw_gn);
   
   List fhat_inf_z(p);
   double tempvec_1 = fhat_0_t(n-1)*Time(n-1);
@@ -1817,7 +1817,7 @@ List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
       fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_fn) * dFhat_0_e(itt);
     }
   }
-  fhat_0_t /= bw_fn;
+  fhat_0_t /= (n*bw_gn);
   
   List fhat_t_z(p);
   tempvec_n = fhat_0_t%Time;
@@ -2055,7 +2055,7 @@ List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
       fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_fn) * dFhat_0_e(itt);
     }
   }
-  fhat_0_t /= bw_fn;
+  fhat_0_t /= (n*bw_gn);
   
   List fhat_t_z(p);
   tempvec_n = fhat_0_t%Time;
@@ -2289,7 +2289,7 @@ List link_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
       fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_fn) * dFhat_0_e(itt);
     }
   }
-  fhat_0_t /= bw_fn;
+  fhat_0_t /= (n*bw_gn);
   
   List fhat_inf_z(p);
   double tempvec_1 = fhat_0_t(n-1)*Time(n-1);
@@ -2517,7 +2517,7 @@ List link_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
       fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_fn) * dFhat_0_e(itt);
     }
   }
-  fhat_0_t /= bw_fn;
+  fhat_0_t /= (n*bw_gn);
   
   List fhat_inf_z(p);
   double tempvec_1 = fhat_0_t(n-1)*Time(n-1);
@@ -2746,7 +2746,7 @@ List form_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
       fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_fn) * dFhat_0_e(itt);
     }
   }
-  fhat_0_t /= bw_fn;
+  fhat_0_t /= (n*bw_gn);
   
   List fhat_inf_z(p);
   double tempvec_1 = fhat_0_t(n-1)*Time(n-1);
@@ -2975,7 +2975,7 @@ List form_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
       fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_fn) * dFhat_0_e(itt);
     }
   }
-  fhat_0_t /= bw_fn;
+  fhat_0_t /= (n*bw_gn);
   
   List fhat_inf_z(p);
   double tempvec_1 = fhat_0_t(n-1)*Time(n-1);
