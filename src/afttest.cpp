@@ -433,6 +433,8 @@ List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
     obs_path += tempvec_n*(as<rowvec>(pi_i_z(it)));
   }
   obs_path /= sqrtn;
+  obs_path.each_row() -= 0.5*obs_path.row(0);
+  obs_path.each_col() -= 0.5*obs_path.col(0);
   
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
@@ -660,6 +662,8 @@ List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
     obs_path += tempvec_n*(as<rowvec>(pi_i_z(it)));
   }
   obs_path /= sqrtn;
+  obs_path.each_row() -= 0.5*obs_path.row(0);
+  obs_path.each_col() -= 0.5*obs_path.col(0);
   
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
@@ -886,7 +890,7 @@ List link_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
     obs_path += (tempvec_n(n-1))*(as<vec>(pi_i_z(it)));
   }
   obs_path /= sqrtn;
-  // obs_path -= obs_path(0) * ones(n);
+  obs_path -= obs_path(0) * ones(n);
   
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
@@ -1104,7 +1108,7 @@ List link_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
     obs_path += (tempvec_n(n-1))*(as<vec>(pi_i_z(it)));
   }
   obs_path /= sqrtn;
-  // obs_path -= obs_path(0) * ones(n);
+  obs_path -= obs_path(0) * ones(n);
   
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
@@ -1323,7 +1327,7 @@ List form_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
     obs_path += (tempvec_n(n-1))*(as<vec>(pi_i_z(it)));
   }
   obs_path /= sqrtn;
-  // obs_path -= obs_path(0) * ones(n);
+  obs_path -= obs_path(0) * ones(n);
   
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
@@ -1542,7 +1546,7 @@ List form_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
     obs_path += (tempvec_n(n-1))*(as<vec>(pi_i_z(it)));
   }
   obs_path /= sqrtn;
-  // obs_path -= obs_path(0) * ones(n);
+  obs_path -= obs_path(0) * ones(n);
   
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
@@ -1754,20 +1758,17 @@ List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   
   mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
   
-  // obs_path; t by x matrix
-  List Mhat_i_t(n); mat obs_path = zero_mat_nn;
+  // obs_path; t by x vector
+  List Mhat_i_t(n); List dMhat_i_t(n); mat obs_path = zero_mat_nn;
   for(int it=0; it<n; it++){
-    Mhat_i_t(it) = as<vec>(N_i_t(it))-(cumsum(as<vec>(Y_i_t(it))%(dLambdahat_0_t)));
-    obs_path += (as<vec>(Mhat_i_t(it)))*(as<rowvec>(pi_i_z(it)));
+    tempvec_n = as<vec>(N_i_t(it))-(cumsum(as<vec>(Y_i_t(it))%(dLambdahat_0_t)));
+    Mhat_i_t(it) = tempvec_n;
+    dMhat_i_t(it) = diff(join_cols(zero_vec_1,tempvec_n));
+    obs_path += tempvec_n*(as<rowvec>(pi_i_z(it)));
   }
   obs_path /= sqrtn;
-  // obs_path.each_row() -= obs_path.row(0);
-  // obs_path.each_col() -= obs_path.col(0);
-  
-  List dMhat_i_t(n);
-  for(int it=0; it<n; it++){
-    dMhat_i_t(it) = diff(join_cols(zero_vec_1,as<vec>(Mhat_i_t(it))));
-  }
+  obs_path.each_row() -= 0.5*obs_path.row(0);
+  obs_path.each_col() -= 0.5*obs_path.col(0);
   
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
@@ -1992,20 +1993,17 @@ List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   
   mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
   
-  // obs_path; t by x matrix
-  List Mhat_i_t(n); mat obs_path = zero_mat_nn;
+  // obs_path; t by x vector
+  List Mhat_i_t(n); List dMhat_i_t(n); mat obs_path = zero_mat_nn;
   for(int it=0; it<n; it++){
-    Mhat_i_t(it) = as<vec>(N_i_t(it))-(cumsum(as<vec>(Y_i_t(it))%(dLambdahat_0_t)));
-    obs_path += (as<vec>(Mhat_i_t(it)))*(as<rowvec>(pi_i_z(it)));
+    tempvec_n = as<vec>(N_i_t(it))-(cumsum(as<vec>(Y_i_t(it))%(dLambdahat_0_t)));
+    Mhat_i_t(it) = tempvec_n;
+    dMhat_i_t(it) = diff(join_cols(zero_vec_1,tempvec_n));
+    obs_path += tempvec_n*(as<rowvec>(pi_i_z(it)));
   }
   obs_path /= sqrtn;
-  // obs_path.each_row() -= obs_path.row(0);
-  // obs_path.each_col() -= obs_path.col(0);
-  
-  List dMhat_i_t(n);
-  for(int it=0; it<n; it++){
-    dMhat_i_t(it) = diff(join_cols(zero_vec_1,as<vec>(Mhat_i_t(it))));
-  }
+  obs_path.each_row() -= 0.5*obs_path.row(0);
+  obs_path.each_col() -= 0.5*obs_path.col(0);
   
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
@@ -2239,7 +2237,7 @@ List link_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     obs_path += (tempvec_n(n-1))*(as<vec>(pi_i_z(it)));
   }
   obs_path /= sqrtn;
-  // obs_path -= obs_path(0) * ones(n);
+  obs_path -= obs_path(0) * ones(n);
   
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
@@ -2467,7 +2465,7 @@ List link_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     obs_path += (tempvec_n(n-1))*(as<vec>(pi_i_z(it)));
   }
   obs_path /= sqrtn;
-  // obs_path -= obs_path(0) * ones(n);
+  obs_path -= obs_path(0) * ones(n);
   
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
@@ -2696,7 +2694,7 @@ List form_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     obs_path += (tempvec_n(n-1))*(as<vec>(pi_i_z(it)));
   }
   obs_path /= sqrtn;
-  // obs_path -= obs_path(0) * ones(n);
+  obs_path -= obs_path(0) * ones(n);
   
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
@@ -2925,7 +2923,7 @@ List form_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     obs_path += (tempvec_n(n-1))*(as<vec>(pi_i_z(it)));
   }
   obs_path /= sqrtn;
-  // obs_path -= obs_path(0) * ones(n);
+  obs_path -= obs_path(0) * ones(n);
   
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
