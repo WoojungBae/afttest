@@ -511,9 +511,16 @@ List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
     
     tempmat_nn = zero_mat_nn;
     for(int it=0; it<n; it++){
-      tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<vec>(dMhat_i_t(it))))*phi_i(it));
+      tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())
+                        %(S_0_t%as<vec>(dMhat_i_t(it))))*phi_i(it));
     }
-    mat U_pi_phi_t_z = cumsum(tempmat_nn);
+    mat U_pi_phi_t_z = cumsum(tempmat_nn)/n;
+    
+    // tempmat_nn = zero_mat_nn;
+    // for(int it=0; it<n; it++){
+    //   tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<vec>(dMhat_i_t(it))))*phi_i(it));
+    // }
+    // mat U_pi_phi_t_z = cumsum(tempmat_nn);
     
     vec resid_s = log(Time) + Covari*b_s;
     uvec index_resid_s = sort_index(resid_s);
@@ -742,9 +749,16 @@ List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
     
     tempmat_nn = zero_mat_nn;
     for(int it=0; it<n; it++){
-      tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<vec>(dMhat_i_t(it))))*phi_i(it));
+      tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())
+                        %(S_0_t%as<vec>(dMhat_i_t(it))))*phi_i(it));
     }
-    mat U_pi_phi_t_z = cumsum(tempmat_nn);
+    mat U_pi_phi_t_z = cumsum(tempmat_nn)/n;
+    
+    // tempmat_nn = zero_mat_nn;
+    // for(int it=0; it<n; it++){
+    //   tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<vec>(dMhat_i_t(it))))*phi_i(it));
+    // }
+    // mat U_pi_phi_t_z = cumsum(tempmat_nn);
     
     vec resid_s = log(Time) + Covari*b_s;
     uvec index_resid_s = sort_index(resid_s);
@@ -972,9 +986,16 @@ List link_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
     
     tempmat_nn = zero_mat_nn;
     for(int it=0; it<n; it++){
-      tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<vec>(dMhat_i_t(it))))*phi_i(it));
+      tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())
+                        %(S_0_t%as<vec>(dMhat_i_t(it))))*phi_i(it));
     }
-    mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
+    mat U_pi_phi_inf_z = (sum(tempmat_nn)).t()/n;
+    
+    // tempmat_nn = zero_mat_nn;
+    // for(int it=0; it<n; it++){
+    //   tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<vec>(dMhat_i_t(it))))*phi_i(it));
+    // }
+    // mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
     
     vec resid_s = log(Time) + Covari*b_s;
     uvec index_resid_s = sort_index(resid_s);
@@ -1201,9 +1222,16 @@ List link_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
     
     tempmat_nn = zero_mat_nn;
     for(int it=0; it<n; it++){
-      tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<vec>(dMhat_i_t(it))))*phi_i(it));
+      tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())
+                        %(S_0_t%as<vec>(dMhat_i_t(it))))*phi_i(it));
     }
-    mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
+    mat U_pi_phi_inf_z = (sum(tempmat_nn)).t()/n;
+    
+    // tempmat_nn = zero_mat_nn;
+    // for(int it=0; it<n; it++){
+    //   tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<vec>(dMhat_i_t(it))))*phi_i(it));
+    // }
+    // mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
     
     vec resid_s = log(Time) + Covari*b_s;
     uvec index_resid_s = sort_index(resid_s);
@@ -1360,7 +1388,7 @@ List form_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
       ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn);
     }
   }
-  ghat_0_t /= (n*bw_gn);
+  ghat_0_t /= n;
   
   List ghat_t_z(p);
   tempvec_n = ghat_0_t%Time;
@@ -1431,9 +1459,16 @@ List form_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
     
     tempmat_nn = zero_mat_nn;
     for(int it=0; it<n; it++){
-      tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<vec>(dMhat_i_t(it))))*phi_i(it));
+      tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())
+                        %(S_0_t%as<vec>(dMhat_i_t(it))))*phi_i(it));
     }
-    mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
+    mat U_pi_phi_inf_z = (sum(tempmat_nn)).t()/n;
+    
+    // tempmat_nn = zero_mat_nn;
+    // for(int it=0; it<n; it++){
+    //   tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<vec>(dMhat_i_t(it))))*phi_i(it));
+    // }
+    // mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
     
     vec resid_s = log(Time) + Covari*b_s;
     uvec index_resid_s = sort_index(resid_s);
@@ -1661,9 +1696,16 @@ List form_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
     
     tempmat_nn = zero_mat_nn;
     for(int it=0; it<n; it++){
-      tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<vec>(dMhat_i_t(it))))*phi_i(it));
+      tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())
+                        %(S_0_t%as<vec>(dMhat_i_t(it))))*phi_i(it));
     }
-    mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
+    mat U_pi_phi_inf_z = (sum(tempmat_nn)).t()/n;
+    
+    // tempmat_nn = zero_mat_nn;
+    // for(int it=0; it<n; it++){
+    //   tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<vec>(dMhat_i_t(it))))*phi_i(it));
+    // }
+    // mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
     
     vec resid_s = log(Time) + Covari*b_s;
     uvec index_resid_s = sort_index(resid_s);
@@ -1901,9 +1943,16 @@ List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     
     tempmat_nn = zero_mat_nn;
     for(int it=0; it<n; it++){
-      tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<vec>(dMhat_i_t(it))))*phi_i(it));
+      tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())
+                        %(S_0_t%as<vec>(dMhat_i_t(it))))*phi_i(it));
     }
-    mat U_pi_phi_t_z = cumsum(tempmat_nn);
+    mat U_pi_phi_t_z = cumsum(tempmat_nn)/n;
+    
+    // tempmat_nn = zero_mat_nn;
+    // for(int it=0; it<n; it++){
+    //   tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<vec>(dMhat_i_t(it))))*phi_i(it));
+    // }
+    // mat U_pi_phi_t_z = cumsum(tempmat_nn);
     
     vec resid_s = log(Time) + Covari*b_s;
     uvec index_resid_s = sort_index(resid_s);
@@ -2142,9 +2191,16 @@ List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     
     tempmat_nn = zero_mat_nn;
     for(int it=0; it<n; it++){
-      tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<vec>(dMhat_i_t(it))))*phi_i(it));
+      tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())
+                        %(S_0_t%as<vec>(dMhat_i_t(it))))*phi_i(it));
     }
-    mat U_pi_phi_t_z = cumsum(tempmat_nn);
+    mat U_pi_phi_t_z = cumsum(tempmat_nn)/n;
+    
+    // tempmat_nn = zero_mat_nn;
+    // for(int it=0; it<n; it++){
+    //   tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<vec>(dMhat_i_t(it))))*phi_i(it));
+    // }
+    // mat U_pi_phi_t_z = cumsum(tempmat_nn);
     
     vec resid_s = log(Time) + Covari*b_s;
     uvec index_resid_s = sort_index(resid_s);
@@ -2382,9 +2438,16 @@ List link_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     
     tempmat_nn = zero_mat_nn;
     for(int it=0; it<n; it++){
-      tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<vec>(dMhat_i_t(it))))*phi_i(it));
+      tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())
+                        %(S_0_t%as<vec>(dMhat_i_t(it))))*phi_i(it));
     }
-    mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
+    mat U_pi_phi_inf_z = (sum(tempmat_nn)).t()/n;
+    
+    // tempmat_nn = zero_mat_nn;
+    // for(int it=0; it<n; it++){
+    //   tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<vec>(dMhat_i_t(it))))*phi_i(it));
+    // }
+    // mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
     
     vec resid_s = log(Time) + Covari*b_s;
     uvec index_resid_s = sort_index(resid_s);
@@ -2621,9 +2684,16 @@ List link_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     
     tempmat_nn = zero_mat_nn;
     for(int it=0; it<n; it++){
-      tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<vec>(dMhat_i_t(it))))*phi_i(it));
+      tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())
+                        %(S_0_t%as<vec>(dMhat_i_t(it))))*phi_i(it));
     }
-    mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
+    mat U_pi_phi_inf_z = (sum(tempmat_nn)).t()/n;
+    
+    // tempmat_nn = zero_mat_nn;
+    // for(int it=0; it<n; it++){
+    //   tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<vec>(dMhat_i_t(it))))*phi_i(it));
+    // }
+    // mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
     
     vec resid_s = log(Time) + Covari*b_s;
     uvec index_resid_s = sort_index(resid_s);
@@ -2861,9 +2931,16 @@ List form_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     
     tempmat_nn = zero_mat_nn;
     for(int it=0; it<n; it++){
-      tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<vec>(dMhat_i_t(it))))*phi_i(it));
+      tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())
+                        %(S_0_t%as<vec>(dMhat_i_t(it))))*phi_i(it));
     }
-    mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
+    mat U_pi_phi_inf_z = (sum(tempmat_nn)).t()/n;
+    
+    // tempmat_nn = zero_mat_nn;
+    // for(int it=0; it<n; it++){
+    //   tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<vec>(dMhat_i_t(it))))*phi_i(it));
+    // }
+    // mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
     
     vec resid_s = log(Time) + Covari*b_s;
     uvec index_resid_s = sort_index(resid_s);
@@ -3101,9 +3178,16 @@ List form_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     
     tempmat_nn = zero_mat_nn;
     for(int it=0; it<n; it++){
-      tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<vec>(dMhat_i_t(it))))*phi_i(it));
+      tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())
+                        %(S_0_t%as<vec>(dMhat_i_t(it))))*phi_i(it));
     }
-    mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
+    mat U_pi_phi_inf_z = (sum(tempmat_nn)).t()/n;
+    
+    // tempmat_nn = zero_mat_nn;
+    // for(int it=0; it<n; it++){
+    //   tempmat_nn += ((((as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col())%(as<vec>(dMhat_i_t(it))))*phi_i(it));
+    // }
+    // mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
     
     vec resid_s = log(Time) + Covari*b_s;
     uvec index_resid_s = sort_index(resid_s);
