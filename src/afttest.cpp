@@ -421,7 +421,7 @@ List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
     obs_path += tempvec_n*(as<rowvec>(pi_i_z(it)));
   }
   obs_path /= sqrtn;
-  obs_path.each_row() -= obs_path.row(0);
+  // obs_path.each_row() -= obs_path.row(0);
   // obs_path.each_col() -= obs_path.col(0);
   
   // -----------------------------------------------------------
@@ -652,7 +652,7 @@ List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
     obs_path += tempvec_n*(as<rowvec>(pi_i_z(it)));
   }
   obs_path /= sqrtn;
-  obs_path.each_row() -= obs_path.row(0);
+  // obs_path.each_row() -= obs_path.row(0);
   // obs_path.each_col() -= obs_path.col(0);
   
   // -----------------------------------------------------------
@@ -721,7 +721,6 @@ List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   // -----------------------------------------------------------
   // ------------------------Sample Path------------------------
   // -----------------------------------------------------------
-  
   List app_path(path);
   for(int itt=0; itt<path; itt++){
     
@@ -952,7 +951,6 @@ List link_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   // -----------------------------------------------------------
   // ------------------------Sample Path------------------------
   // -----------------------------------------------------------
-  
   List app_path(path);
   for(int itt=0; itt<path; itt++){
     
@@ -1182,7 +1180,6 @@ List link_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   // -----------------------------------------------------------
   // ------------------------Sample Path------------------------
   // -----------------------------------------------------------
-  
   List app_path(path);
   for(int itt=0; itt<path; itt++){
     
@@ -1413,7 +1410,6 @@ List form_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
   // -----------------------------------------------------------
   // ------------------------Sample Path------------------------
   // -----------------------------------------------------------
-  
   List app_path(path);
   for(int itt=0; itt<path; itt++){
     
@@ -1644,7 +1640,6 @@ List form_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
   // -----------------------------------------------------------
   // ------------------------Sample Path------------------------
   // -----------------------------------------------------------
-  
   List app_path(path);
   for(int itt=0; itt<path; itt++){
     
@@ -1809,7 +1804,7 @@ List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     obs_path += tempvec_n*(as<rowvec>(pi_i_z(it)));
   }
   obs_path /= sqrtn;
-  obs_path.each_row() -= obs_path.row(0);
+  // obs_path.each_row() -= obs_path.row(0);
   // obs_path.each_col() -= obs_path.col(0);
   
   // -----------------------------------------------------------
@@ -2050,7 +2045,7 @@ List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     obs_path += tempvec_n*(as<rowvec>(pi_i_z(it)));
   }
   obs_path /= sqrtn;
-  obs_path.each_row() -= obs_path.row(0);
+  // obs_path.each_row() -= obs_path.row(0);
   // obs_path.each_col() -= obs_path.col(0);
   
   // -----------------------------------------------------------
