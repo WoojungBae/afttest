@@ -130,8 +130,8 @@ List dfsane_mis(vec b, vec Time, vec Delta, mat Covari,
   
   // Stop sqrt(tol_f)/sqrt(n) <= e_a + e_r * sqrt(tol_0)/sqrt(n)
   // Stop tol_f <= (e_a * sqrt(n) + e_r * sqrt(tol_0))^{2}
-  // double e_a = 1e-4; double e_r = 1e-3;
-  double e_a = 1e-5; double e_r = 1e-4;
+  // double e_a = 1e-5; double e_r = 1e-4;
+  double e_a = 1e-4; double e_r = 1e-3;
   double optim_tol = pow(e_a * sqrt(n) + e_r * sqrt(tol_0),2);
   
   double tolerance=tol_f+1; double tau_min=0.1; double tau_max=0.5; 
@@ -255,8 +255,8 @@ List dfsane_mns(vec b, vec Time, vec Delta, mat Covari, vec targetvector, int n,
   
   // Stop sqrt(tol_f)/sqrt(n) <= e_a + e_r * sqrt(tol_0)/sqrt(n)
   // Stop tol_f <= (e_a * sqrt(n) + e_r * tol_0)^{2}
-  // double e_a = 1e-4; double e_r = 1e-3;
-  double e_a = 1e-5; double e_r = 1e-4;
+  // double e_a = 1e-5; double e_r = 1e-4;
+  double e_a = 1e-4; double e_r = 1e-3;
   double optim_tol = pow(e_a * sqrt(n) + e_r * sqrt(tol_0),2);
   
   double tolerance=tol_f+1; double tau_min=0.1; double tau_max=0.5; 
