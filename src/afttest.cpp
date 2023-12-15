@@ -445,7 +445,7 @@ List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
       ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn);
     }
   }
-  ghat_0_t /= (n*bw_gn);
+  ghat_0_t /= n; // (n*bw_gn); // "omni"
   
   List ghat_t_z(p);
   tempvec_n = ghat_0_t % Time;
@@ -469,7 +469,7 @@ List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
       fhat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn) * dFhat_0_e(itt);
     }
   }
-  fhat_0_t /= bw_gn;
+  // fhat_0_t /= bw_gn;; // "omni"
   
   // vec Condi_Ehat = zero_vec_n;
   // for(int it=0; it<n; it++){
@@ -699,7 +699,7 @@ List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
       ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn);
     }
   }
-  ghat_0_t /= (n*bw_gn);
+  ghat_0_t /= n; // (n*bw_gn); // "omni"
   
   List ghat_t_z(p);
   tempvec_n = ghat_0_t % Time;
@@ -723,7 +723,7 @@ List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
       fhat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn) * dFhat_0_e(itt);
     }
   }
-  fhat_0_t /= bw_gn;
+  // fhat_0_t /= bw_gn;; // "omni"
   
   // vec Condi_Ehat = zero_vec_n;
   // for(int it=0; it<n; it++){
@@ -934,7 +934,7 @@ List link_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
     obs_path += (tempvec_n(n-1))*as<vec>(pi_i_z(it));
   }
   obs_path /= sqrtn;
-  // obs_path -= obs_path(0) * ones(n);
+  // obs_path -= obs_path(0) * one_vec_n;
   
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
@@ -952,7 +952,7 @@ List link_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
       ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn);
     }
   }
-  ghat_0_t /= (n*bw_gn); // n; // "link" or "form"
+  ghat_0_t /= n; // (n*bw_gn); // "link" or "form"
   
   List ghat_t_z(p);
   tempvec_n = ghat_0_t % Time;
@@ -976,7 +976,7 @@ List link_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
       fhat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn) * dFhat_0_e(itt);
     }
   }
-  fhat_0_t /= bw_gn; // "link" or "form"
+  // fhat_0_t /= bw_gn; // "link" or "form"
   
   // vec Condi_Ehat = zero_vec_n;
   // for(int it=0; it<n; it++){
@@ -1186,7 +1186,7 @@ List link_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
     obs_path += (tempvec_n(n-1))*as<vec>(pi_i_z(it));
   }
   obs_path /= sqrtn;
-  // obs_path -= obs_path(0) * ones(n);
+  // obs_path -= obs_path(0) * one_vec_n;
   
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
@@ -1204,7 +1204,7 @@ List link_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
       ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn);
     }
   }
-  ghat_0_t /= (n*bw_gn); // n; // "link" or "form"
+  ghat_0_t /= n; // (n*bw_gn); // "link" or "form"
   
   List ghat_t_z(p);
   tempvec_n = ghat_0_t % Time;
@@ -1228,7 +1228,7 @@ List link_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
       fhat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn) * dFhat_0_e(itt);
     }
   }
-  fhat_0_t /= bw_gn; // "link" or "form" 
+  // fhat_0_t /= bw_gn; // "link" or "form" 
   
   // vec Condi_Ehat = zero_vec_n;
   // for(int it=0; it<n; it++){
@@ -1439,7 +1439,7 @@ List form_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
     obs_path += (tempvec_n(n-1))*as<vec>(pi_i_z(it));
   }
   obs_path /= sqrtn;
-  // obs_path -= obs_path(0) * ones(n);
+  // obs_path -= obs_path(0) * one_vec_n;
   
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
@@ -1457,7 +1457,7 @@ List form_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
       ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn);
     }
   }
-  ghat_0_t /= (n*bw_gn); // n; // "link" or "form"
+  ghat_0_t /= n; // (n*bw_gn); // "link" or "form"
   
   List ghat_t_z(p);
   tempvec_n = ghat_0_t % Time;
@@ -1481,7 +1481,7 @@ List form_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
       fhat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn) * dFhat_0_e(itt);
     }
   }
-  fhat_0_t /= bw_gn; // "link" or "form" 
+  // fhat_0_t /= bw_gn; // "link" or "form" 
   
   // vec Condi_Ehat = zero_vec_n;
   // for(int it=0; it<n; it++){
@@ -1692,7 +1692,7 @@ List form_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
     obs_path += (tempvec_n(n-1))*as<vec>(pi_i_z(it));
   }
   obs_path /= sqrtn;
-  // obs_path -= obs_path(0) * ones(n);
+  // obs_path -= obs_path(0) * one_vec_n;
   
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
@@ -1710,7 +1710,7 @@ List form_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
       ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn);
     }
   }
-  ghat_0_t /= (n*bw_gn); // n; // "link" or "form"
+  ghat_0_t /= n; // (n*bw_gn); // "link" or "form"
   
   List ghat_t_z(p);
   tempvec_n = ghat_0_t % Time;
@@ -1734,7 +1734,7 @@ List form_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
       fhat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn) * dFhat_0_e(itt);
     }
   }
-  fhat_0_t /= bw_gn; // "link" or "form" 
+  // fhat_0_t /= bw_gn; // "link" or "form" 
   
   // vec Condi_Ehat = zero_vec_n;
   // for(int it=0; it<n; it++){
@@ -1966,7 +1966,7 @@ List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
       ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn);
     }
   }
-  ghat_0_t /= (n*bw_gn);
+  ghat_0_t /= n; // (n*bw_gn); // "omni"
   
   List ghat_t_z(p);
   tempvec_n = ghat_0_t % Time;
@@ -1990,7 +1990,7 @@ List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
       fhat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn) * dFhat_0_e(itt);
     }
   }
-  fhat_0_t /= bw_gn;
+  // fhat_0_t /= bw_gn;; // "omni"
   
   // vec Condi_Ehat = zero_vec_n;
   // for(int it=0; it<n; it++){
@@ -2229,7 +2229,7 @@ List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
       ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn);
     }
   }
-  ghat_0_t /= (n*bw_gn);
+  ghat_0_t /= n; // (n*bw_gn); // "omni"
   
   List ghat_t_z(p);
   tempvec_n = ghat_0_t % Time;
@@ -2253,7 +2253,7 @@ List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
       fhat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn) * dFhat_0_e(itt);
     }
   }
-  fhat_0_t /= bw_gn;
+  // fhat_0_t /= bw_gn;; // "omni"
   
   // vec Condi_Ehat = zero_vec_n;
   // for(int it=0; it<n; it++){
@@ -2473,7 +2473,7 @@ List link_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     obs_path += (tempvec_n(n-1))*as<vec>(pi_i_z(it));
   }
   obs_path /= sqrtn;
-  // obs_path -= obs_path(0) * ones(n);
+  // obs_path -= obs_path(0) * one_vec_n;
   
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
@@ -2491,7 +2491,7 @@ List link_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
       ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn);
     }
   }
-  ghat_0_t /= (n*bw_gn); // n; // "link" or "form"
+  ghat_0_t /= n; // (n*bw_gn); // "link" or "form"
   
   List ghat_t_z(p);
   tempvec_n = ghat_0_t % Time;
@@ -2515,7 +2515,7 @@ List link_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
       fhat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn) * dFhat_0_e(itt);
     }
   }
-  fhat_0_t /= bw_gn; // "link" or "form" 
+  // fhat_0_t /= bw_gn; // "link" or "form" 
   
   // vec Condi_Ehat = zero_vec_n;
   // for(int it=0; it<n; it++){
@@ -2734,7 +2734,7 @@ List link_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     obs_path += (tempvec_n(n-1))*as<vec>(pi_i_z(it));
   }
   obs_path /= sqrtn;
-  // obs_path -= obs_path(0) * ones(n);
+  // obs_path -= obs_path(0) * one_vec_n;
   
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
@@ -2752,7 +2752,7 @@ List link_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
       ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn);
     }
   }
-  ghat_0_t /= (n*bw_gn); // n; // "link" or "form"
+  ghat_0_t /= n; // (n*bw_gn); // "link" or "form"
   
   List ghat_t_z(p);
   tempvec_n = ghat_0_t % Time;
@@ -2776,7 +2776,7 @@ List link_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
       fhat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn) * dFhat_0_e(itt);
     }
   }
-  fhat_0_t /= bw_gn; // "link" or "form" 
+  // fhat_0_t /= bw_gn; // "link" or "form" 
   
   // vec Condi_Ehat = zero_vec_n;
   // for(int it=0; it<n; it++){
@@ -2996,7 +2996,7 @@ List form_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     obs_path += (tempvec_n(n-1))*as<vec>(pi_i_z(it));
   }
   obs_path /= sqrtn;
-  // obs_path -= obs_path(0) * ones(n);
+  // obs_path -= obs_path(0) * one_vec_n;
   
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
@@ -3014,7 +3014,7 @@ List form_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
       ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn);
     }
   }
-  ghat_0_t /= (n*bw_gn); // n; // "link" or "form"
+  ghat_0_t /= n; // (n*bw_gn); // "link" or "form"
   
   List ghat_t_z(p);
   tempvec_n = ghat_0_t % Time;
@@ -3038,7 +3038,7 @@ List form_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
       fhat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn) * dFhat_0_e(itt);
     }
   }
-  fhat_0_t /= bw_gn; // "link" or "form" 
+  // fhat_0_t /= bw_gn; // "link" or "form" 
   
   // vec Condi_Ehat = zero_vec_n;
   // for(int it=0; it<n; it++){
@@ -3258,7 +3258,7 @@ List form_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     obs_path += (tempvec_n(n-1))*as<vec>(pi_i_z(it));
   }
   obs_path /= sqrtn;
-  // obs_path -= obs_path(0) * ones(n);
+  // obs_path -= obs_path(0) * one_vec_n;
   
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
@@ -3276,7 +3276,7 @@ List form_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
       ghat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn);
     }
   }
-  ghat_0_t /= (n*bw_gn); // n; // "link" or "form"
+  ghat_0_t /= n; // (n*bw_gn); // "link" or "form"
   
   List ghat_t_z(p);
   tempvec_n = ghat_0_t % Time;
@@ -3300,7 +3300,7 @@ List form_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
       fhat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn) * dFhat_0_e(itt);
     }
   }
-  fhat_0_t /= bw_gn; // "link" or "form" 
+  // fhat_0_t /= bw_gn; // "link" or "form" 
   
   // vec Condi_Ehat = zero_vec_n;
   // for(int it=0; it<n; it++){
