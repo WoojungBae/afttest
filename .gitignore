@@ -1,11 +1,14 @@
-.gitignore
-.Rbuildignore
+.DS_Store
 .Rproj.user
 .Rhistory
-.RData
 .Ruserdata
-.DS_Store
 
+.Rbuildignore
+*.RData
+*.Rproj
 *.o
 *.so
 *.dll
+
+*.zip
+*.eps
