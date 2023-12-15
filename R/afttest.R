@@ -21,10 +21,10 @@
 #'    The readers are refered to the \pkg{aftgee} package for details.
 #'    The following are permitted:
 #'    \describe{
-#'      \item{\code{mis}}{Regression parameters are estimated by iterating 
-#'      the monotonic smoothed Gehan-based estimating equations.}
 #'      \item{\code{mns}}{Regression parameters are estimated by iterating 
 #'      the monotonic non-smoothed Gehan-based estimating equations.}
+#'      \item{\code{mis}}{Regression parameters are estimated by iterating 
+#'      the monotonic smoothed Gehan-based estimating equations.}
 #' }
 #' @param optimType A character string specifying the type of the optimization method.
 #'    The following are permitted:
@@ -42,7 +42,7 @@
 #'    The default option for \code{form} is given by "1", which represents the 
 #'    first covariate in the formula argument.
 #' @param pathsave A numeric value specifies he number of paths saved among all the paths.
-#'    The default is given by 100. Note that it requires a lot of memory if save all
+#'    The default is given by 50. Note that it requires a lot of memory if save all
 #'    sampled paths (N by N matrix for each path andso path*N*N elements)
 #' @return \code{afttest} returns an object of class \code{afttest}.
 #'    An object of class \code{afttest} is a list containing at least the following components:
@@ -74,8 +74,8 @@
 #' 
 #' @example inst/examples/ex_afttest.R
 #' @export
-afttest <- function(formula, path = 200, testType = "omni", eqType = "mis", 
-                    optimType = "DFSANE", form = 1, pathsave = 100) {
+afttest <- function(formula, path = 200, testType = "omni", eqType = "mns", 
+                    optimType = "DFSANE", form = 1, pathsave = 50) {
   
   # Data Frame
   DF <- stats::get_all_vars(formula)
@@ -124,7 +124,7 @@ afttest <- function(formula, path = 200, testType = "omni", eqType = "mis",
   if (!is.numeric(path)) {
     path <- 200
   } else {
-    path <- max(path,10)
+    path <- max(path,50)
   }
   
   # testType
@@ -135,10 +135,10 @@ afttest <- function(formula, path = 200, testType = "omni", eqType = "mis",
   }
   
   # eqType
-  if (!eqType %in% c("mis","mns")) {
-    eqType <- "mis"
+  if (!eqType %in% c("mns","mis")) {
+    eqType <- "mns"
   } else {
-    eqType <- match.arg(eqType, c("mis","mns"))
+    eqType <- match.arg(eqType, c("mns","mis"))
   }
   
   # optimType
@@ -152,7 +152,7 @@ afttest <- function(formula, path = 200, testType = "omni", eqType = "mis",
   if (!is.numeric(pathsave)) {
     pathsave <- 200
   } else {
-    pathsave <- max(path,10)
+    pathsave <- max(path,50)
   }
   
   # form
@@ -160,16 +160,16 @@ afttest <- function(formula, path = 200, testType = "omni", eqType = "mis",
     if (length(form) > 1){
       return(warning("the length if form needs to be exactly 1."))
     } else {
-      if (is.character(form)) {
+      if (is.numeric(form)) {
+        if (form > cov.length){
+          return(warning("form is greater than the lenght of covariates. form needs to be specified correctly."))
+        }
+      } else if (is.character(form)) {
         if (!form %in% covnames) {
           form <- 1
         } else {
           form <- which(form == covnames)
         }
-      } else if (is.numeric(form)) {
-        if (form > cov.length){
-          return(warning("form is greater than the lenght of covariates. form needs to be specified correctly."))
-        } 
       } else {
         return(warning("form needs to be specified correctly."))
       }
