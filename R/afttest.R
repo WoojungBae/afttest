@@ -7,7 +7,7 @@
 #' @param formula A formula expression, of the form \code{response ~ predictors}.
 #'    The \code{response} is a \code{Surv} object object with right censoring.
 #'    See the documentation of \code{lm}, \code{coxph} and \code{formula} for details.
-#' @param path A numeric value specifies the approximated processes number.
+#' @param path An integer value specifies the number of approximated processes.
 #'    The default is given by 200.
 #' @param testType A character string specifying the type of the test.
 #'    The following are permitted:
@@ -41,7 +41,7 @@
 #'    The argument form is necessary only if \code{testType} is \code{form}.
 #'    The default option for \code{form} is given by "1", which represents the 
 #'    first covariate in the formula argument.
-#' @param pathsave A numeric value specifies he number of paths saved among all the paths.
+#' @param pathsave An integer value specifies he number of paths saved among all the paths.
 #'    The default is given by 50. Note that it requires a lot of memory if save all
 #'    sampled paths (N by N matrix for each path andso path*N*N elements)
 #' @return \code{afttest} returns an object of class \code{afttest}.
@@ -121,10 +121,14 @@ afttest <- function(formula, path = 200, testType = "omni", eqType = "mns",
   b <- - aftgee::aftsrr(formula, data = DF, eqType = eqType)$beta
   
   # path
-  if (!is.numeric(path)) {
-    path <- 200
+  if (length(path) > 1){
+    return(warning("path needs to be an integer."))
   } else {
-    path <- max(path,50)
+    if (!is.numeric(path)) {
+      path <- 200
+    } else {
+      path <- max(path,50)
+    }
   }
   
   # testType
@@ -149,10 +153,12 @@ afttest <- function(formula, path = 200, testType = "omni", eqType = "mns",
   }
   
   # pathsave
-  if (!is.numeric(pathsave)) {
-    pathsave <- 200
+  if (length(pathsave) > 1){
+    return(warning("pathsave needs to be an integer."))
   } else {
-    pathsave <- max(path,50)
+    if (!is.numeric(pathsave)) {
+      pathsave <- 50
+    }
   }
   
   # form
@@ -222,10 +228,12 @@ afttest <- function(formula, path = 200, testType = "omni", eqType = "mns",
   out$missingmessage <- missingmessage
   
   out$DF <- DF
+  out$beta <- b
   out$path <- path
   out$eqType <- eqType
   out$testType <- testType
   out$optimType <- optimType
+  out$pathsave <- pathsave
   
   return(out)
 }

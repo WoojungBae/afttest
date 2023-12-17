@@ -56,6 +56,8 @@ afttestplot <- function(object, path = 50, stdType = "std", quantile = NULL){
   
   # class
   if (!inherits(object,"afttest")) return(warning("Must be afttest class"))
+  # pathsave
+  if ((object$pathsave<1)) return(warning("afttest is conduced with pathsave=0"))
   # eqType
   eqType <- object$eqType
   # testType
@@ -66,9 +68,7 @@ afttestplot <- function(object, path = 50, stdType = "std", quantile = NULL){
   }
   # path
   if (!is.numeric(path)) {
-    path <- 50
-  } else {
-    path <- max(min(path,length(object$app_std_path)),10)
+    path <- min(object$pathsave,50)
   }
   
   stdTypeQuote <- ifelse(stdType=="std","standardized","unstandardized")

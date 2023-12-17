@@ -409,10 +409,8 @@ List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
     S_pi_t_z += (as<vec>(Y_i_t(it)))*(as<rowvec>(pi_i_z(it)));
   }
   
-  vec Lambdahat_0_t = Delta/S_0_t;
-  Lambdahat_0_t.replace(datum::nan,0);
-  Lambdahat_0_t = cumsum(Lambdahat_0_t);
-  vec dLambdahat_0_t = diff(join_cols(zero_vec_1,Lambdahat_0_t));
+  vec dLambdahat_0_t = Delta/S_0_t;
+  dLambdahat_0_t.replace(datum::nan,0);
   
   mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
   E_pi_t_z.replace(datum::nan,0);
@@ -432,7 +430,7 @@ List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
-  double bw_base = pow((n*4/3),-0.2);
+  double bw_base = pow((n*3/4),-0.2);
   vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
@@ -459,7 +457,7 @@ List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   }
   
   // -----------------------------f0----------------------------
-  vec Shat_0_e = exp(- Lambdahat_0_t);
+  vec Shat_0_e = cumprod(one_vec_n - dLambdahat_0_t);
   vec Fhat_0_e = one_vec_n - Shat_0_e;
   vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
   
@@ -547,10 +545,8 @@ List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
       S_0_t_s += as<vec>(Y_i_t_s);
     }
     
-    vec Lambdahat_0_t_s = Delta_s/S_0_t_s;
-    Lambdahat_0_t_s.replace(datum::nan,0);
-    Lambdahat_0_t_s = cumsum(Lambdahat_0_t_s);
-    vec dLambdahat_0_t_s = diff(join_cols(zero_vec_1,Lambdahat_0_t_s));
+    vec dLambdahat_0_t_s = Delta_s/S_0_t_s;
+    dLambdahat_0_t_s.replace(datum::nan,0);
     
     mat term1 = U_pi_phi_t_z/sqrtn;
     mat term2 = zero_mat_nn;
@@ -575,7 +571,7 @@ List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   double censoring = 1-sum(Delta)/n;
   double kappa_min = censoring;
   double kappa_max = 1;
-  if(kappa_min<0.1){kappa_min = 0.1;}
+  if (kappa_min<0.1){kappa_min = 0.1;}
   
   vec kappa = {kappa_min, kappa_max};
   kappa = quantile(mat_se_boot, kappa);
@@ -602,16 +598,22 @@ List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   uvec ind_std = (find(absmax_app_std_path>absmax_obs_std_path));
   double p_std_value = (ind_std.size()); p_std_value = p_std_value/path;
   
-  if(path > pathsave){
+  if (pathsave<1){
+    return List::create(_["p_std_value"]=p_std_value,_["p_value"]=p_value);
+  } else if (pathsave > path) {
+    return List::create(_["SE_boot"]=se_boot,
+                        _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
+                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                        _["p_value"]=p_value,_["p_std_value"]=p_std_value);
+  } else {
     pathsave = pathsave - 1;
     app_path = app_path[Range(0,pathsave)];
     app_std_path = app_std_path[Range(0,pathsave)];
+    return List::create(_["SE_boot"]=se_boot,
+                        _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
+                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                        _["p_value"]=p_value,_["p_std_value"]=p_std_value);
   }
-  
-  return List::create(_["TestType"]="omni",_["path"]=path,_["beta"]=b,_["Time"]=Time,
-                      _["Delta"]=Delta,_["Covari"]=Covari,_["Resid"]=resid,_["SE_boot"]=se_boot,
-                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,_["p_std_value"]=p_std_value,
-                          _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
 }
 
 List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int pathsave){
@@ -663,10 +665,8 @@ List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
     S_pi_t_z += (as<vec>(Y_i_t(it)))*(as<rowvec>(pi_i_z(it)));
   }
   
-  vec Lambdahat_0_t = Delta/S_0_t;
-  Lambdahat_0_t.replace(datum::nan,0);
-  Lambdahat_0_t = cumsum(Lambdahat_0_t);
-  vec dLambdahat_0_t = diff(join_cols(zero_vec_1,Lambdahat_0_t));
+  vec dLambdahat_0_t = Delta/S_0_t;
+  dLambdahat_0_t.replace(datum::nan,0);
   
   mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
   E_pi_t_z.replace(datum::nan,0);
@@ -686,7 +686,7 @@ List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
-  double bw_base = pow((n*4/3),-0.2);
+  double bw_base = pow((n*3/4),-0.2);
   vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
@@ -713,7 +713,7 @@ List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   }
   
   // -----------------------------f0----------------------------
-  vec Shat_0_e = exp(- Lambdahat_0_t);
+  vec Shat_0_e = cumprod(one_vec_n - dLambdahat_0_t);
   vec Fhat_0_e = one_vec_n - Shat_0_e;
   vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
   
@@ -801,10 +801,8 @@ List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
       S_0_t_s += as<vec>(Y_i_t_s);
     }
     
-    vec Lambdahat_0_t_s = Delta_s/S_0_t_s;
-    Lambdahat_0_t_s.replace(datum::nan,0);
-    Lambdahat_0_t_s = cumsum(Lambdahat_0_t_s);
-    vec dLambdahat_0_t_s = diff(join_cols(zero_vec_1,Lambdahat_0_t_s));
+    vec dLambdahat_0_t_s = Delta_s/S_0_t_s;
+    dLambdahat_0_t_s.replace(datum::nan,0);
     
     mat term1 = U_pi_phi_t_z/sqrtn;
     mat term2 = zero_mat_nn;
@@ -829,7 +827,7 @@ List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   double censoring = 1-sum(Delta)/n;
   double kappa_min = censoring;
   double kappa_max = 1;
-  if(kappa_min<0.1){kappa_min = 0.1;}
+  if (kappa_min<0.1){kappa_min = 0.1;}
   
   vec kappa = {kappa_min, kappa_max};
   kappa = quantile(mat_se_boot, kappa);
@@ -856,16 +854,22 @@ List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   uvec ind_std = (find(absmax_app_std_path>absmax_obs_std_path));
   double p_std_value = (ind_std.size()); p_std_value = p_std_value/path;
   
-  if(path > pathsave){
+  if (pathsave<1){
+    return List::create(_["p_std_value"]=p_std_value,_["p_value"]=p_value);
+  } else if (pathsave > path) {
+    return List::create(_["SE_boot"]=se_boot,
+                        _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
+                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                        _["p_value"]=p_value,_["p_std_value"]=p_std_value);
+  } else {
     pathsave = pathsave - 1;
     app_path = app_path[Range(0,pathsave)];
     app_std_path = app_std_path[Range(0,pathsave)];
+    return List::create(_["SE_boot"]=se_boot,
+                        _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
+                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                        _["p_value"]=p_value,_["p_std_value"]=p_std_value);
   }
-  
-  return List::create(_["TestType"]="omni",_["path"]=path,_["beta"]=b,_["Time"]=Time,
-                      _["Delta"]=Delta,_["Covari"]=Covari,_["Resid"]=resid,_["SE_boot"]=se_boot,
-                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,_["p_std_value"]=p_std_value,
-                          _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
 }
 
 List link_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int pathsave){
@@ -917,10 +921,8 @@ List link_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
     S_pi_t_z += (as<vec>(Y_i_t(it)))*(as<rowvec>(pi_i_z(it)));
   }
   
-  vec Lambdahat_0_t = Delta/S_0_t;
-  Lambdahat_0_t.replace(datum::nan,0);
-  Lambdahat_0_t = cumsum(Lambdahat_0_t);
-  vec dLambdahat_0_t = diff(join_cols(zero_vec_1,Lambdahat_0_t));
+  vec dLambdahat_0_t = Delta/S_0_t;
+  dLambdahat_0_t.replace(datum::nan,0);
   
   mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
   E_pi_t_z.replace(datum::nan,0);
@@ -939,7 +941,7 @@ List link_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
-  double bw_base = pow((n*4/3),-0.2);
+  double bw_base = pow((n*3/4),-0.2);
   vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
@@ -966,7 +968,7 @@ List link_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   }
   
   // -----------------------------f0----------------------------
-  vec Shat_0_e = exp(- Lambdahat_0_t);
+  vec Shat_0_e = cumprod(one_vec_n - dLambdahat_0_t);
   vec Fhat_0_e = one_vec_n - Shat_0_e;
   vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
   
@@ -1054,10 +1056,8 @@ List link_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
       S_0_t_s += as<vec>(Y_i_t_s);
     }
     
-    vec Lambdahat_0_t_s = Delta_s/S_0_t_s;
-    Lambdahat_0_t_s.replace(datum::nan,0);
-    Lambdahat_0_t_s = cumsum(Lambdahat_0_t_s);
-    vec dLambdahat_0_t_s = diff(join_cols(zero_vec_1,Lambdahat_0_t_s));
+    vec dLambdahat_0_t_s = Delta_s/S_0_t_s;
+    dLambdahat_0_t_s.replace(datum::nan,0);
     
     vec term1 = U_pi_phi_inf_z/sqrtn;
     vec term2 = zero_vec_n;
@@ -1082,7 +1082,7 @@ List link_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   double censoring = 1-sum(Delta)/n;
   double kappa_min = censoring;
   double kappa_max = 1;
-  if(kappa_min<0.1){kappa_min = 0.1;}
+  if (kappa_min<0.1){kappa_min = 0.1;}
   
   vec kappa = {kappa_min, kappa_max};
   kappa = quantile(se_boot, kappa);
@@ -1108,16 +1108,22 @@ List link_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   uvec ind_std = (find(absmax_app_std_path>absmax_obs_std_path));
   double p_std_value = (ind_std.size()); p_std_value = p_std_value/path;
   
-  if(path > pathsave){
+  if (pathsave<1){
+    return List::create(_["p_std_value"]=p_std_value,_["p_value"]=p_value);
+  } else if (pathsave > path) {
+    return List::create(_["SE_boot"]=se_boot,
+                        _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
+                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                        _["p_value"]=p_value,_["p_std_value"]=p_std_value);
+  } else {
     pathsave = pathsave - 1;
     app_path = app_path[Range(0,pathsave)];
     app_std_path = app_std_path[Range(0,pathsave)];
+    return List::create(_["SE_boot"]=se_boot,
+                        _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
+                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                        _["p_value"]=p_value,_["p_std_value"]=p_std_value);
   }
-  
-  return List::create(_["TestType"]="link",_["path"]=path,_["beta"]=b,_["Time"]=Time,
-                      _["Delta"]=Delta,_["Covari"]=Covari,_["Resid"]=resid,_["SE_boot"]=se_boot,
-                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,_["p_std_value"]=p_std_value,
-                          _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
 }
 
 List link_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int pathsave){
@@ -1169,10 +1175,8 @@ List link_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
     S_pi_t_z += (as<vec>(Y_i_t(it)))*(as<rowvec>(pi_i_z(it)));
   }
   
-  vec Lambdahat_0_t = Delta/S_0_t;
-  Lambdahat_0_t.replace(datum::nan,0);
-  Lambdahat_0_t = cumsum(Lambdahat_0_t);
-  vec dLambdahat_0_t = diff(join_cols(zero_vec_1,Lambdahat_0_t));
+  vec dLambdahat_0_t = Delta/S_0_t;
+  dLambdahat_0_t.replace(datum::nan,0);
   
   mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
   E_pi_t_z.replace(datum::nan,0);
@@ -1191,7 +1195,7 @@ List link_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
-  double bw_base = pow((n*4/3),-0.2);
+  double bw_base = pow((n*3/4),-0.2);
   vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
@@ -1218,7 +1222,7 @@ List link_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   }
   
   // -----------------------------f0----------------------------
-  vec Shat_0_e = exp(- Lambdahat_0_t);
+  vec Shat_0_e = cumprod(one_vec_n - dLambdahat_0_t);
   vec Fhat_0_e = one_vec_n - Shat_0_e;
   vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
   
@@ -1306,10 +1310,8 @@ List link_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
       S_0_t_s += as<vec>(Y_i_t_s);
     }
     
-    vec Lambdahat_0_t_s = Delta_s/S_0_t_s;
-    Lambdahat_0_t_s.replace(datum::nan,0);
-    Lambdahat_0_t_s = cumsum(Lambdahat_0_t_s);
-    vec dLambdahat_0_t_s = diff(join_cols(zero_vec_1,Lambdahat_0_t_s));
+    vec dLambdahat_0_t_s = Delta_s/S_0_t_s;
+    dLambdahat_0_t_s.replace(datum::nan,0);
     
     vec term1 = U_pi_phi_inf_z/sqrtn;
     vec term2 = zero_vec_n;
@@ -1334,7 +1336,7 @@ List link_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   double censoring = 1-sum(Delta)/n;
   double kappa_min = censoring;
   double kappa_max = 1;
-  if(kappa_min<0.1){kappa_min = 0.1;}
+  if (kappa_min<0.1){kappa_min = 0.1;}
   
   vec kappa = {kappa_min, kappa_max};
   kappa = quantile(se_boot, kappa);
@@ -1360,16 +1362,22 @@ List link_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   uvec ind_std = (find(absmax_app_std_path>absmax_obs_std_path));
   double p_std_value = (ind_std.size()); p_std_value = p_std_value/path;
   
-  if(path > pathsave){
+  if (pathsave<1){
+    return List::create(_["p_std_value"]=p_std_value,_["p_value"]=p_value);
+  } else if (pathsave > path) {
+    return List::create(_["SE_boot"]=se_boot,
+                        _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
+                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                        _["p_value"]=p_value,_["p_std_value"]=p_std_value);
+  } else {
     pathsave = pathsave - 1;
     app_path = app_path[Range(0,pathsave)];
     app_std_path = app_std_path[Range(0,pathsave)];
+    return List::create(_["SE_boot"]=se_boot,
+                        _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
+                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                        _["p_value"]=p_value,_["p_std_value"]=p_std_value);
   }
-  
-  return List::create(_["TestType"]="link",_["path"]=path,_["beta"]=b,_["Time"]=Time,
-                      _["Delta"]=Delta,_["Covari"]=Covari,_["Resid"]=resid,_["SE_boot"]=se_boot,
-                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,_["p_std_value"]=p_std_value,
-                          _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
 }
 
 List form_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form, int pathsave){
@@ -1422,10 +1430,8 @@ List form_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
     S_pi_t_z += (as<vec>(Y_i_t(it)))*(as<rowvec>(pi_i_z(it)));
   }
   
-  vec Lambdahat_0_t = Delta/S_0_t;
-  Lambdahat_0_t.replace(datum::nan,0);
-  Lambdahat_0_t = cumsum(Lambdahat_0_t);
-  vec dLambdahat_0_t = diff(join_cols(zero_vec_1,Lambdahat_0_t));
+  vec dLambdahat_0_t = Delta/S_0_t;
+  dLambdahat_0_t.replace(datum::nan,0);
   
   mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
   E_pi_t_z.replace(datum::nan,0);
@@ -1444,7 +1450,7 @@ List form_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
-  double bw_base = pow((n*4/3),-0.2);
+  double bw_base = pow((n*3/4),-0.2);
   vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
@@ -1471,7 +1477,7 @@ List form_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
   }
   
   // -----------------------------f0----------------------------
-  vec Shat_0_e = exp(- Lambdahat_0_t);
+  vec Shat_0_e = cumprod(one_vec_n - dLambdahat_0_t);
   vec Fhat_0_e = one_vec_n - Shat_0_e;
   vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
   
@@ -1559,10 +1565,8 @@ List form_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
       S_0_t_s += as<vec>(Y_i_t_s);
     }
     
-    vec Lambdahat_0_t_s = Delta_s/S_0_t_s;
-    Lambdahat_0_t_s.replace(datum::nan,0);
-    Lambdahat_0_t_s = cumsum(Lambdahat_0_t_s);
-    vec dLambdahat_0_t_s = diff(join_cols(zero_vec_1,Lambdahat_0_t_s));
+    vec dLambdahat_0_t_s = Delta_s/S_0_t_s;
+    dLambdahat_0_t_s.replace(datum::nan,0);
     
     vec term1 = U_pi_phi_inf_z/sqrtn;
     vec term2 = zero_vec_n;
@@ -1587,7 +1591,7 @@ List form_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
   double censoring = 1-sum(Delta)/n;
   double kappa_min = censoring;
   double kappa_max = 1;
-  if(kappa_min<0.1){kappa_min = 0.1;}
+  if (kappa_min<0.1){kappa_min = 0.1;}
   
   vec kappa = {kappa_min, kappa_max};
   kappa = quantile(se_boot, kappa);
@@ -1613,16 +1617,22 @@ List form_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
   uvec ind_std = (find(absmax_app_std_path>absmax_obs_std_path));
   double p_std_value = (ind_std.size()); p_std_value = p_std_value/path;
   
-  if(path > pathsave){
+  if (pathsave<1){
+    return List::create(_["p_std_value"]=p_std_value,_["p_value"]=p_value);
+  } else if (pathsave > path) {
+    return List::create(_["SE_boot"]=se_boot,
+                        _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
+                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                        _["p_value"]=p_value,_["p_std_value"]=p_std_value);
+  } else {
     pathsave = pathsave - 1;
     app_path = app_path[Range(0,pathsave)];
     app_std_path = app_std_path[Range(0,pathsave)];
+    return List::create(_["SE_boot"]=se_boot,
+                        _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
+                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                        _["p_value"]=p_value,_["p_std_value"]=p_std_value);
   }
-  
-  return List::create(_["TestType"]="form",_["path"]=path,_["beta"]=b,_["Time"]=Time,
-                      _["Delta"]=Delta,_["Covari"]=Covari,_["Resid"]=resid,_["SE_boot"]=se_boot,
-                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,_["p_std_value"]=p_std_value,
-                          _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
 }
 
 List form_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form, int pathsave){
@@ -1675,10 +1685,8 @@ List form_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
     S_pi_t_z += (as<vec>(Y_i_t(it)))*(as<rowvec>(pi_i_z(it)));
   }
   
-  vec Lambdahat_0_t = Delta/S_0_t;
-  Lambdahat_0_t.replace(datum::nan,0);
-  Lambdahat_0_t = cumsum(Lambdahat_0_t);
-  vec dLambdahat_0_t = diff(join_cols(zero_vec_1,Lambdahat_0_t));
+  vec dLambdahat_0_t = Delta/S_0_t;
+  dLambdahat_0_t.replace(datum::nan,0);
   
   mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
   E_pi_t_z.replace(datum::nan,0);
@@ -1697,7 +1705,7 @@ List form_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
-  double bw_base = pow((n*4/3),-0.2);
+  double bw_base = pow((n*3/4),-0.2);
   vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
@@ -1724,7 +1732,7 @@ List form_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
   }
   
   // -----------------------------f0----------------------------
-  vec Shat_0_e = exp(- Lambdahat_0_t);
+  vec Shat_0_e = cumprod(one_vec_n - dLambdahat_0_t);
   vec Fhat_0_e = one_vec_n - Shat_0_e;
   vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
   
@@ -1812,10 +1820,8 @@ List form_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
       S_0_t_s += as<vec>(Y_i_t_s);
     }
     
-    vec Lambdahat_0_t_s = Delta_s/S_0_t_s;
-    Lambdahat_0_t_s.replace(datum::nan,0);
-    Lambdahat_0_t_s = cumsum(Lambdahat_0_t_s);
-    vec dLambdahat_0_t_s = diff(join_cols(zero_vec_1,Lambdahat_0_t_s));
+    vec dLambdahat_0_t_s = Delta_s/S_0_t_s;
+    dLambdahat_0_t_s.replace(datum::nan,0);
     
     vec term1 = U_pi_phi_inf_z/sqrtn;
     vec term2 = zero_vec_n;
@@ -1840,7 +1846,7 @@ List form_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
   double censoring = 1-sum(Delta)/n;
   double kappa_min = censoring;
   double kappa_max = 1;
-  if(kappa_min<0.1){kappa_min = 0.1;}
+  if (kappa_min<0.1){kappa_min = 0.1;}
   
   vec kappa = {kappa_min, kappa_max};
   kappa = quantile(se_boot, kappa);
@@ -1866,16 +1872,22 @@ List form_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
   uvec ind_std = (find(absmax_app_std_path>absmax_obs_std_path));
   double p_std_value = (ind_std.size()); p_std_value = p_std_value/path;
   
-  if(path > pathsave){
+  if (pathsave<1){
+    return List::create(_["p_std_value"]=p_std_value,_["p_value"]=p_value);
+  } else if (pathsave > path) {
+    return List::create(_["SE_boot"]=se_boot,
+                        _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
+                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                        _["p_value"]=p_value,_["p_std_value"]=p_std_value);
+  } else {
     pathsave = pathsave - 1;
     app_path = app_path[Range(0,pathsave)];
     app_std_path = app_std_path[Range(0,pathsave)];
+    return List::create(_["SE_boot"]=se_boot,
+                        _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
+                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                        _["p_value"]=p_value,_["p_std_value"]=p_std_value);
   }
-  
-  return List::create(_["TestType"]="form",_["path"]=path,_["beta"]=b,_["Time"]=Time,
-                      _["Delta"]=Delta,_["Covari"]=Covari,_["Resid"]=resid,_["SE_boot"]=se_boot,
-                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,_["p_std_value"]=p_std_value,
-                          _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
 }
 
 List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int pathsave){
@@ -1930,10 +1942,8 @@ List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     S_pi_t_z += (as<vec>(Y_i_t(it)))*(as<rowvec>(pi_i_z(it)));
   }
   
-  vec Lambdahat_0_t = Delta/S_0_t;
-  Lambdahat_0_t.replace(datum::nan,0);
-  Lambdahat_0_t = cumsum(Lambdahat_0_t);
-  vec dLambdahat_0_t = diff(join_cols(zero_vec_1,Lambdahat_0_t));
+  vec dLambdahat_0_t = Delta/S_0_t;
+  dLambdahat_0_t.replace(datum::nan,0);
   
   mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
   E_pi_t_z.replace(datum::nan,0);
@@ -1953,7 +1963,7 @@ List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
-  double bw_base = pow((n*4/3),-0.2);
+  double bw_base = pow((n*3/4),-0.2);
   vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
@@ -1980,7 +1990,7 @@ List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   }
   
   // -----------------------------f0----------------------------
-  vec Shat_0_e = exp(- Lambdahat_0_t);
+  vec Shat_0_e = cumprod(one_vec_n - dLambdahat_0_t);
   vec Fhat_0_e = one_vec_n - Shat_0_e;
   vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
   
@@ -2074,10 +2084,8 @@ List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
       S_0_t_s += as<vec>(Y_i_t_s);
     }
     
-    vec Lambdahat_0_t_s = Delta_s/S_0_t_s;
-    Lambdahat_0_t_s.replace(datum::nan,0);
-    Lambdahat_0_t_s = cumsum(Lambdahat_0_t_s);
-    vec dLambdahat_0_t_s = diff(join_cols(zero_vec_1,Lambdahat_0_t_s));
+    vec dLambdahat_0_t_s = Delta_s/S_0_t_s;
+    dLambdahat_0_t_s.replace(datum::nan,0);
     
     mat term1 = U_pi_phi_t_z/sqrtn;
     mat term2 = zero_mat_nn;
@@ -2102,7 +2110,7 @@ List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   double censoring = 1-sum(Delta)/n;
   double kappa_min = censoring;
   double kappa_max = 1;
-  if(kappa_min<0.1){kappa_min = 0.1;}
+  if (kappa_min<0.1){kappa_min = 0.1;}
   
   vec kappa = {kappa_min, kappa_max};
   kappa = quantile(mat_se_boot, kappa);
@@ -2129,16 +2137,22 @@ List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   uvec ind_std = (find(absmax_app_std_path>absmax_obs_std_path));
   double p_std_value = (ind_std.size()); p_std_value = p_std_value/path;
   
-  if(path > pathsave){
+  if (pathsave<1){
+    return List::create(_["p_std_value"]=p_std_value,_["p_value"]=p_value);
+  } else if (pathsave > path) {
+    return List::create(_["SE_boot"]=se_boot,
+                        _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
+                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                        _["p_value"]=p_value,_["p_std_value"]=p_std_value);
+  } else {
     pathsave = pathsave - 1;
     app_path = app_path[Range(0,pathsave)];
     app_std_path = app_std_path[Range(0,pathsave)];
+    return List::create(_["SE_boot"]=se_boot,
+                        _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
+                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                        _["p_value"]=p_value,_["p_std_value"]=p_std_value);
   }
-  
-  return List::create(_["TestType"]="omni",_["path"]=path,_["beta"]=b,_["Time"]=Time,
-                      _["Delta"]=Delta,_["Covari"]=Covari,_["Resid"]=resid,_["SE_boot"]=se_boot,
-                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,_["p_std_value"]=p_std_value,
-                          _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
 }
 
 List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int pathsave){
@@ -2193,10 +2207,8 @@ List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     S_pi_t_z += (as<vec>(Y_i_t(it)))*(as<rowvec>(pi_i_z(it)));
   }
   
-  vec Lambdahat_0_t = Delta/S_0_t;
-  Lambdahat_0_t.replace(datum::nan,0);
-  Lambdahat_0_t = cumsum(Lambdahat_0_t);
-  vec dLambdahat_0_t = diff(join_cols(zero_vec_1,Lambdahat_0_t));
+  vec dLambdahat_0_t = Delta/S_0_t;
+  dLambdahat_0_t.replace(datum::nan,0);
   
   mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
   E_pi_t_z.replace(datum::nan,0);
@@ -2216,7 +2228,7 @@ List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
-  double bw_base = pow((n*4/3),-0.2);
+  double bw_base = pow((n*3/4),-0.2);
   vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
@@ -2243,7 +2255,7 @@ List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   }
   
   // -----------------------------f0----------------------------
-  vec Shat_0_e = exp(- Lambdahat_0_t);
+  vec Shat_0_e = cumprod(one_vec_n - dLambdahat_0_t);
   vec Fhat_0_e = one_vec_n - Shat_0_e;
   vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
   
@@ -2337,10 +2349,8 @@ List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
       S_0_t_s += as<vec>(Y_i_t_s);
     }
     
-    vec Lambdahat_0_t_s = Delta_s/S_0_t_s;
-    Lambdahat_0_t_s.replace(datum::nan,0);
-    Lambdahat_0_t_s = cumsum(Lambdahat_0_t_s);
-    vec dLambdahat_0_t_s = diff(join_cols(zero_vec_1,Lambdahat_0_t_s));
+    vec dLambdahat_0_t_s = Delta_s/S_0_t_s;
+    dLambdahat_0_t_s.replace(datum::nan,0);
     
     mat term1 = U_pi_phi_t_z/sqrtn;
     mat term2 = zero_mat_nn;
@@ -2365,7 +2375,7 @@ List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   double censoring = 1-sum(Delta)/n;
   double kappa_min = censoring;
   double kappa_max = 1;
-  if(kappa_min<0.1){kappa_min = 0.1;}
+  if (kappa_min<0.1){kappa_min = 0.1;}
   
   vec kappa = {kappa_min, kappa_max};
   kappa = quantile(mat_se_boot, kappa);
@@ -2392,16 +2402,22 @@ List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   uvec ind_std = (find(absmax_app_std_path>absmax_obs_std_path));
   double p_std_value = (ind_std.size()); p_std_value = p_std_value/path;
   
-  if(path > pathsave){
+  if (pathsave<1){
+    return List::create(_["p_std_value"]=p_std_value,_["p_value"]=p_value);
+  } else if (pathsave > path) {
+    return List::create(_["SE_boot"]=se_boot,
+                        _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
+                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                        _["p_value"]=p_value,_["p_std_value"]=p_std_value);
+  } else {
     pathsave = pathsave - 1;
     app_path = app_path[Range(0,pathsave)];
     app_std_path = app_std_path[Range(0,pathsave)];
+    return List::create(_["SE_boot"]=se_boot,
+                        _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
+                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                        _["p_value"]=p_value,_["p_std_value"]=p_std_value);
   }
-  
-  return List::create(_["TestType"]="omni",_["path"]=path,_["beta"]=b,_["Time"]=Time,
-                      _["Delta"]=Delta,_["Covari"]=Covari,_["Resid"]=resid,_["SE_boot"]=se_boot,
-                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,_["p_std_value"]=p_std_value,
-                          _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
 }
 
 List link_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int pathsave){
@@ -2456,10 +2472,8 @@ List link_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     S_pi_t_z += (as<vec>(Y_i_t(it)))*(as<rowvec>(pi_i_z(it)));
   }
   
-  vec Lambdahat_0_t = Delta/S_0_t;
-  Lambdahat_0_t.replace(datum::nan,0);
-  Lambdahat_0_t = cumsum(Lambdahat_0_t);
-  vec dLambdahat_0_t = diff(join_cols(zero_vec_1,Lambdahat_0_t));
+  vec dLambdahat_0_t = Delta/S_0_t;
+  dLambdahat_0_t.replace(datum::nan,0);
   
   mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
   E_pi_t_z.replace(datum::nan,0);
@@ -2478,7 +2492,7 @@ List link_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
-  double bw_base = pow((n*4/3),-0.2);
+  double bw_base = pow((n*3/4),-0.2);
   vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
@@ -2505,7 +2519,7 @@ List link_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   }
   
   // -----------------------------f0----------------------------
-  vec Shat_0_e = exp(- Lambdahat_0_t);
+  vec Shat_0_e = cumprod(one_vec_n - dLambdahat_0_t);
   vec Fhat_0_e = one_vec_n - Shat_0_e;
   vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
   
@@ -2599,10 +2613,8 @@ List link_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
       S_0_t_s += as<vec>(Y_i_t_s);
     }
     
-    vec Lambdahat_0_t_s = Delta_s/S_0_t_s;
-    Lambdahat_0_t_s.replace(datum::nan,0);
-    Lambdahat_0_t_s = cumsum(Lambdahat_0_t_s);
-    vec dLambdahat_0_t_s = diff(join_cols(zero_vec_1,Lambdahat_0_t_s));
+    vec dLambdahat_0_t_s = Delta_s/S_0_t_s;
+    dLambdahat_0_t_s.replace(datum::nan,0);
     
     vec term1 = U_pi_phi_inf_z/sqrtn;
     vec term2 = zero_vec_n;
@@ -2627,7 +2639,7 @@ List link_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   double censoring = 1-sum(Delta)/n;
   double kappa_min = censoring;
   double kappa_max = 1;
-  if(kappa_min<0.1){kappa_min = 0.1;}
+  if (kappa_min<0.1){kappa_min = 0.1;}
   
   vec kappa = {kappa_min, kappa_max};
   kappa = quantile(se_boot, kappa);
@@ -2653,16 +2665,22 @@ List link_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   uvec ind_std = (find(absmax_app_std_path>absmax_obs_std_path));
   double p_std_value = (ind_std.size()); p_std_value = p_std_value/path;
   
-  if(path > pathsave){
+  if (pathsave<1){
+    return List::create(_["p_std_value"]=p_std_value,_["p_value"]=p_value);
+  } else if (pathsave > path) {
+    return List::create(_["SE_boot"]=se_boot,
+                        _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
+                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                        _["p_value"]=p_value,_["p_std_value"]=p_std_value);
+  } else {
     pathsave = pathsave - 1;
     app_path = app_path[Range(0,pathsave)];
     app_std_path = app_std_path[Range(0,pathsave)];
+    return List::create(_["SE_boot"]=se_boot,
+                        _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
+                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                        _["p_value"]=p_value,_["p_std_value"]=p_std_value);
   }
-  
-  return List::create(_["TestType"]="link",_["path"]=path,_["beta"]=b,_["Time"]=Time,
-                      _["Delta"]=Delta,_["Covari"]=Covari,_["Resid"]=resid,_["SE_boot"]=se_boot,
-                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,_["p_std_value"]=p_std_value,
-                          _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
 }
 
 List link_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int pathsave){
@@ -2717,10 +2735,8 @@ List link_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     S_pi_t_z += (as<vec>(Y_i_t(it)))*(as<rowvec>(pi_i_z(it)));
   }
   
-  vec Lambdahat_0_t = Delta/S_0_t;
-  Lambdahat_0_t.replace(datum::nan,0);
-  Lambdahat_0_t = cumsum(Lambdahat_0_t);
-  vec dLambdahat_0_t = diff(join_cols(zero_vec_1,Lambdahat_0_t));
+  vec dLambdahat_0_t = Delta/S_0_t;
+  dLambdahat_0_t.replace(datum::nan,0);
   
   mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
   E_pi_t_z.replace(datum::nan,0);
@@ -2739,7 +2755,7 @@ List link_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
-  double bw_base = pow((n*4/3),-0.2);
+  double bw_base = pow((n*3/4),-0.2);
   vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
@@ -2766,7 +2782,7 @@ List link_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   }
   
   // -----------------------------f0----------------------------
-  vec Shat_0_e = exp(- Lambdahat_0_t);
+  vec Shat_0_e = cumprod(one_vec_n - dLambdahat_0_t);
   vec Fhat_0_e = one_vec_n - Shat_0_e;
   vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
   
@@ -2860,10 +2876,8 @@ List link_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
       S_0_t_s += as<vec>(Y_i_t_s);
     }
     
-    vec Lambdahat_0_t_s = Delta_s/S_0_t_s;
-    Lambdahat_0_t_s.replace(datum::nan,0);
-    Lambdahat_0_t_s = cumsum(Lambdahat_0_t_s);
-    vec dLambdahat_0_t_s = diff(join_cols(zero_vec_1,Lambdahat_0_t_s));
+    vec dLambdahat_0_t_s = Delta_s/S_0_t_s;
+    dLambdahat_0_t_s.replace(datum::nan,0);
     
     vec term1 = U_pi_phi_inf_z/sqrtn;
     vec term2 = zero_vec_n;
@@ -2888,7 +2902,7 @@ List link_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   double censoring = 1-sum(Delta)/n;
   double kappa_min = censoring;
   double kappa_max = 1;
-  if(kappa_min<0.1){kappa_min = 0.1;}
+  if (kappa_min<0.1){kappa_min = 0.1;}
   
   vec kappa = {kappa_min, kappa_max};
   kappa = quantile(se_boot, kappa);
@@ -2914,16 +2928,22 @@ List link_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   uvec ind_std = (find(absmax_app_std_path>absmax_obs_std_path));
   double p_std_value = (ind_std.size()); p_std_value = p_std_value/path;
   
-  if(path > pathsave){
+  if (pathsave<1){
+    return List::create(_["p_std_value"]=p_std_value,_["p_value"]=p_value);
+  } else if (pathsave > path) {
+    return List::create(_["SE_boot"]=se_boot,
+                        _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
+                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                        _["p_value"]=p_value,_["p_std_value"]=p_std_value);
+  } else {
     pathsave = pathsave - 1;
     app_path = app_path[Range(0,pathsave)];
     app_std_path = app_std_path[Range(0,pathsave)];
+    return List::create(_["SE_boot"]=se_boot,
+                        _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
+                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                        _["p_value"]=p_value,_["p_std_value"]=p_std_value);
   }
-  
-  return List::create(_["TestType"]="link",_["path"]=path,_["beta"]=b,_["Time"]=Time,
-                      _["Delta"]=Delta,_["Covari"]=Covari,_["Resid"]=resid,_["SE_boot"]=se_boot,
-                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,_["p_std_value"]=p_std_value,
-                          _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
 }
 
 List form_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int form, int pathsave){
@@ -2979,10 +2999,8 @@ List form_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     S_pi_t_z += (as<vec>(Y_i_t(it)))*(as<rowvec>(pi_i_z(it)));
   }
   
-  vec Lambdahat_0_t = Delta/S_0_t;
-  Lambdahat_0_t.replace(datum::nan,0);
-  Lambdahat_0_t = cumsum(Lambdahat_0_t);
-  vec dLambdahat_0_t = diff(join_cols(zero_vec_1,Lambdahat_0_t));
+  vec dLambdahat_0_t = Delta/S_0_t;
+  dLambdahat_0_t.replace(datum::nan,0);
   
   mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
   E_pi_t_z.replace(datum::nan,0);
@@ -3001,7 +3019,7 @@ List form_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
-  double bw_base = pow((n*4/3),-0.2);
+  double bw_base = pow((n*3/4),-0.2);
   vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
@@ -3028,7 +3046,7 @@ List form_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   }
   
   // -----------------------------f0----------------------------
-  vec Shat_0_e = exp(- Lambdahat_0_t);
+  vec Shat_0_e = cumprod(one_vec_n - dLambdahat_0_t);
   vec Fhat_0_e = one_vec_n - Shat_0_e;
   vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
   
@@ -3122,10 +3140,8 @@ List form_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
       S_0_t_s += as<vec>(Y_i_t_s);
     }
     
-    vec Lambdahat_0_t_s = Delta_s/S_0_t_s;
-    Lambdahat_0_t_s.replace(datum::nan,0);
-    Lambdahat_0_t_s = cumsum(Lambdahat_0_t_s);
-    vec dLambdahat_0_t_s = diff(join_cols(zero_vec_1,Lambdahat_0_t_s));
+    vec dLambdahat_0_t_s = Delta_s/S_0_t_s;
+    dLambdahat_0_t_s.replace(datum::nan,0);
     
     vec term1 = U_pi_phi_inf_z/sqrtn;
     vec term2 = zero_vec_n;
@@ -3150,7 +3166,7 @@ List form_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   double censoring = 1-sum(Delta)/n;
   double kappa_min = censoring;
   double kappa_max = 1;
-  if(kappa_min<0.1){kappa_min = 0.1;}
+  if (kappa_min<0.1){kappa_min = 0.1;}
   
   vec kappa = {kappa_min, kappa_max};
   kappa = quantile(se_boot, kappa);
@@ -3176,16 +3192,22 @@ List form_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   uvec ind_std = (find(absmax_app_std_path>absmax_obs_std_path));
   double p_std_value = (ind_std.size()); p_std_value = p_std_value/path;
   
-  if(path > pathsave){
+  if (pathsave<1){
+    return List::create(_["p_std_value"]=p_std_value,_["p_value"]=p_value);
+  } else if (pathsave > path) {
+    return List::create(_["SE_boot"]=se_boot,
+                        _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
+                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                        _["p_value"]=p_value,_["p_std_value"]=p_std_value);
+  } else {
     pathsave = pathsave - 1;
     app_path = app_path[Range(0,pathsave)];
     app_std_path = app_std_path[Range(0,pathsave)];
+    return List::create(_["SE_boot"]=se_boot,
+                        _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
+                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                        _["p_value"]=p_value,_["p_std_value"]=p_std_value);
   }
-  
-  return List::create(_["TestType"]="form",_["path"]=path,_["beta"]=b,_["Time"]=Time,
-                      _["Delta"]=Delta,_["Covari"]=Covari,_["Resid"]=resid,_["SE_boot"]=se_boot,
-                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,_["p_std_value"]=p_std_value,
-                          _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
 }
 
 List form_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int form, int pathsave){
@@ -3241,10 +3263,8 @@ List form_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
     S_pi_t_z += (as<vec>(Y_i_t(it)))*(as<rowvec>(pi_i_z(it)));
   }
   
-  vec Lambdahat_0_t = Delta/S_0_t;
-  Lambdahat_0_t.replace(datum::nan,0);
-  Lambdahat_0_t = cumsum(Lambdahat_0_t);
-  vec dLambdahat_0_t = diff(join_cols(zero_vec_1,Lambdahat_0_t));
+  vec dLambdahat_0_t = Delta/S_0_t;
+  dLambdahat_0_t.replace(datum::nan,0);
   
   mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
   E_pi_t_z.replace(datum::nan,0);
@@ -3263,7 +3283,7 @@ List form_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   // -----------------------------------------------------------
   // ----------------------Kernel Smoothing---------------------
   // -----------------------------------------------------------
-  double bw_base = pow((n*4/3),-0.2);
+  double bw_base = pow((n*3/4),-0.2);
   vec pred_data = exp(resid);
   
   // -----------------------------g0----------------------------
@@ -3290,7 +3310,7 @@ List form_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   }
   
   // -----------------------------f0----------------------------
-  vec Shat_0_e = exp(- Lambdahat_0_t);
+  vec Shat_0_e = cumprod(one_vec_n - dLambdahat_0_t);
   vec Fhat_0_e = one_vec_n - Shat_0_e;
   vec dFhat_0_e = diff(join_cols(zero_vec_1,Fhat_0_e));
   
@@ -3384,10 +3404,8 @@ List form_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
       S_0_t_s += as<vec>(Y_i_t_s);
     }
     
-    vec Lambdahat_0_t_s = Delta_s/S_0_t_s;
-    Lambdahat_0_t_s.replace(datum::nan,0);
-    Lambdahat_0_t_s = cumsum(Lambdahat_0_t_s);
-    vec dLambdahat_0_t_s = diff(join_cols(zero_vec_1,Lambdahat_0_t_s));
+    vec dLambdahat_0_t_s = Delta_s/S_0_t_s;
+    dLambdahat_0_t_s.replace(datum::nan,0);
     
     vec term1 = U_pi_phi_inf_z/sqrtn;
     vec term2 = zero_vec_n;
@@ -3412,7 +3430,7 @@ List form_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   double censoring = 1-sum(Delta)/n;
   double kappa_min = censoring;
   double kappa_max = 1;
-  if(kappa_min<0.1){kappa_min = 0.1;}
+  if (kappa_min<0.1){kappa_min = 0.1;}
   
   vec kappa = {kappa_min, kappa_max};
   kappa = quantile(se_boot, kappa);
@@ -3438,16 +3456,22 @@ List form_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   uvec ind_std = (find(absmax_app_std_path>absmax_obs_std_path));
   double p_std_value = (ind_std.size()); p_std_value = p_std_value/path;
   
-  if(path > pathsave){
+  if (pathsave<1){
+    return List::create(_["p_std_value"]=p_std_value,_["p_value"]=p_value);
+  } else if (pathsave > path) {
+    return List::create(_["SE_boot"]=se_boot,
+                        _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
+                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                        _["p_value"]=p_value,_["p_std_value"]=p_std_value);
+  } else {
     pathsave = pathsave - 1;
     app_path = app_path[Range(0,pathsave)];
     app_std_path = app_std_path[Range(0,pathsave)];
+    return List::create(_["SE_boot"]=se_boot,
+                        _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
+                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                        _["p_value"]=p_value,_["p_std_value"]=p_std_value);
   }
-  
-  return List::create(_["TestType"]="form",_["path"]=path,_["beta"]=b,_["Time"]=Time,
-                      _["Delta"]=Delta,_["Covari"]=Covari,_["Resid"]=resid,_["SE_boot"]=se_boot,
-                        _["app_path"]=app_path,_["app_std_path"]=app_std_path,_["p_std_value"]=p_std_value,
-                          _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,_["p_value"]=p_value);
 }
 
 // omni_mis_DFSANE
