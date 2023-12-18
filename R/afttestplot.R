@@ -67,8 +67,14 @@ afttestplot <- function(object, path = 50, stdType = "std", quantile = NULL){
     stdType <- "std"
   }
   # path
-  if (!is.numeric(path)) {
-    path <- min(object$pathsave,50)
+  if (length(path) > 1){
+    return(warning("path needs to be an integer."))
+  } else {
+    if (!is.numeric(path)) {
+      path <- 50
+    } else {
+      path <- min(path,object$pathsave)
+    }
   }
   
   stdTypeQuote <- ifelse(stdType=="std","standardized","unstandardized")
