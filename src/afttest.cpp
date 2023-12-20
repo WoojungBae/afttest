@@ -559,12 +559,13 @@ List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   // too low values which are 0 or computationally 0 of se_boot makes a problem,
   // so we adjust them to have kappa = quantile of mat_se_boot
   // e.g., kappa_min = censoring; quantile(mat_se_boot) = {censoring, 1};
-  double censoring = 1-sum(Delta)/n;
-  double kappa_min = censoring;
-  double kappa_max = 1;
-  if (kappa_min<0.1){kappa_min = 0.1;}
+  // double censoring = 1-sum(Delta)/n;
+  // double kappa_min = censoring;
+  // double kappa_max = 1;
+  // if (kappa_min<0.1){kappa_min = 0.1;}
+  // vec kappa = {kappa_min, kappa_max};
   
-  vec kappa = {kappa_min, kappa_max};
+  vec kappa = {0.5, 1};
   kappa = quantile(mat_se_boot, kappa);
   mat_se_boot.clamp(kappa(0),kappa(1));
   mat se_boot = reshape(mat_se_boot,n,n);
@@ -806,12 +807,13 @@ List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   // too low values which are 0 or computationally 0 of se_boot makes a problem,
   // so we adjust them to have kappa = quantile of mat_se_boot
   // e.g., kappa_min = censoring; quantile(mat_se_boot) = {censoring, 1};
-  double censoring = 1-sum(Delta)/n;
-  double kappa_min = censoring;
-  double kappa_max = 1;
-  if (kappa_min<0.1){kappa_min = 0.1;}
+  // double censoring = 1-sum(Delta)/n;
+  // double kappa_min = censoring;
+  // double kappa_max = 1;
+  // if (kappa_min<0.1){kappa_min = 0.1;}
+  // vec kappa = {kappa_min, kappa_max};
   
-  vec kappa = {kappa_min, kappa_max};
+  vec kappa = {0.5, 1};
   kappa = quantile(mat_se_boot, kappa);
   mat_se_boot.clamp(kappa(0),kappa(1));
   mat se_boot = reshape(mat_se_boot,n,n);
@@ -1053,12 +1055,13 @@ List link_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   // too low values which are 0 or computationally 0 of se_boot makes a problem,
   // so we adjust them to have kappa = quantile of mat_se_boot
   // e.g., kappa_min = censoring; quantile(mat_se_boot) = {censoring, 1};
-  double censoring = 1-sum(Delta)/n;
-  double kappa_min = censoring;
-  double kappa_max = 1;
-  if (kappa_min<0.1){kappa_min = 0.1;}
+  // double censoring = 1-sum(Delta)/n;
+  // double kappa_min = censoring;
+  // double kappa_max = 1;
+  // if (kappa_min<0.1){kappa_min = 0.1;}
+  // vec kappa = {kappa_min, kappa_max};
   
-  vec kappa = {kappa_min, kappa_max};
+  vec kappa = {0.25, 1};
   kappa = quantile(se_boot, kappa);
   se_boot.clamp(kappa(0),kappa(1));
   
@@ -1299,12 +1302,13 @@ List link_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int paths
   // too low values which are 0 or computationally 0 of se_boot makes a problem,
   // so we adjust them to have kappa = quantile of mat_se_boot
   // e.g., kappa_min = censoring; quantile(mat_se_boot) = {censoring, 1};
-  double censoring = 1-sum(Delta)/n;
-  double kappa_min = censoring;
-  double kappa_max = 1;
-  if (kappa_min<0.1){kappa_min = 0.1;}
+  // double censoring = 1-sum(Delta)/n;
+  // double kappa_min = censoring;
+  // double kappa_max = 1;
+  // if (kappa_min<0.1){kappa_min = 0.1;}
+  // vec kappa = {kappa_min, kappa_max};
   
-  vec kappa = {kappa_min, kappa_max};
+  vec kappa = {0.25, 1};
   kappa = quantile(se_boot, kappa);
   se_boot.clamp(kappa(0),kappa(1));
   
@@ -1546,12 +1550,13 @@ List form_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
   // too low values which are 0 or computationally 0 of se_boot makes a problem,
   // so we adjust them to have kappa = quantile of mat_se_boot
   // e.g., kappa_min = censoring; quantile(mat_se_boot) = {censoring, 1};
-  double censoring = 1-sum(Delta)/n;
-  double kappa_min = censoring;
-  double kappa_max = 1;
-  if (kappa_min<0.1){kappa_min = 0.1;}
+  // double censoring = 1-sum(Delta)/n;
+  // double kappa_min = censoring;
+  // double kappa_max = 1;
+  // if (kappa_min<0.1){kappa_min = 0.1;}
+  // vec kappa = {kappa_min, kappa_max};
   
-  vec kappa = {kappa_min, kappa_max};
+  vec kappa = {0.25, 1};
   kappa = quantile(se_boot, kappa);
   se_boot.clamp(kappa(0),kappa(1));
   
@@ -1793,12 +1798,13 @@ List form_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form,
   // too low values which are 0 or computationally 0 of se_boot makes a problem,
   // so we adjust them to have kappa = quantile of mat_se_boot
   // e.g., kappa_min = censoring; quantile(mat_se_boot) = {censoring, 1};
-  double censoring = 1-sum(Delta)/n;
-  double kappa_min = censoring;
-  double kappa_max = 1;
-  if (kappa_min<0.1){kappa_min = 0.1;}
+  // double censoring = 1-sum(Delta)/n;
+  // double kappa_min = censoring;
+  // double kappa_max = 1;
+  // if (kappa_min<0.1){kappa_min = 0.1;}
+  // vec kappa = {kappa_min, kappa_max};
   
-  vec kappa = {kappa_min, kappa_max};
+  vec kappa = {0.25, 1};
   kappa = quantile(se_boot, kappa);
   se_boot.clamp(kappa(0),kappa(1));
   
@@ -2048,12 +2054,13 @@ List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   // too low values which are 0 or computationally 0 of se_boot makes a problem,
   // so we adjust them to have kappa = quantile of mat_se_boot
   // e.g., kappa_min = censoring; quantile(mat_se_boot) = {censoring, 1};
-  double censoring = 1-sum(Delta)/n;
-  double kappa_min = censoring;
-  double kappa_max = 1;
-  if (kappa_min<0.1){kappa_min = 0.1;}
+  // double censoring = 1-sum(Delta)/n;
+  // double kappa_min = censoring;
+  // double kappa_max = 1;
+  // if (kappa_min<0.1){kappa_min = 0.1;}
+  // vec kappa = {kappa_min, kappa_max};
   
-  vec kappa = {kappa_min, kappa_max};
+  vec kappa = {0.5, 1};
   kappa = quantile(mat_se_boot, kappa);
   mat_se_boot.clamp(kappa(0),kappa(1));
   mat se_boot = reshape(mat_se_boot,n,n);
@@ -2304,12 +2311,13 @@ List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   // too low values which are 0 or computationally 0 of se_boot makes a problem,
   // so we adjust them to have kappa = quantile of mat_se_boot
   // e.g., kappa_min = censoring; quantile(mat_se_boot) = {censoring, 1};
-  double censoring = 1-sum(Delta)/n;
-  double kappa_min = censoring;
-  double kappa_max = 1;
-  if (kappa_min<0.1){kappa_min = 0.1;}
+  // double censoring = 1-sum(Delta)/n;
+  // double kappa_min = censoring;
+  // double kappa_max = 1;
+  // if (kappa_min<0.1){kappa_min = 0.1;}
+  // vec kappa = {kappa_min, kappa_max};
   
-  vec kappa = {kappa_min, kappa_max};
+  vec kappa = {0.5, 1};
   kappa = quantile(mat_se_boot, kappa);
   mat_se_boot.clamp(kappa(0),kappa(1));
   mat se_boot = reshape(mat_se_boot,n,n);
@@ -2560,12 +2568,13 @@ List link_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   // too low values which are 0 or computationally 0 of se_boot makes a problem,
   // so we adjust them to have kappa = quantile of mat_se_boot
   // e.g., kappa_min = censoring; quantile(mat_se_boot) = {censoring, 1};
-  double censoring = 1-sum(Delta)/n;
-  double kappa_min = censoring;
-  double kappa_max = 1;
-  if (kappa_min<0.1){kappa_min = 0.1;}
+  // double censoring = 1-sum(Delta)/n;
+  // double kappa_min = censoring;
+  // double kappa_max = 1;
+  // if (kappa_min<0.1){kappa_min = 0.1;}
+  // vec kappa = {kappa_min, kappa_max};
   
-  vec kappa = {kappa_min, kappa_max};
+  vec kappa = {0.25, 1};
   kappa = quantile(se_boot, kappa);
   se_boot.clamp(kappa(0),kappa(1));
   
@@ -2815,12 +2824,13 @@ List link_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   // too low values which are 0 or computationally 0 of se_boot makes a problem,
   // so we adjust them to have kappa = quantile of mat_se_boot
   // e.g., kappa_min = censoring; quantile(mat_se_boot) = {censoring, 1};
-  double censoring = 1-sum(Delta)/n;
-  double kappa_min = censoring;
-  double kappa_max = 1;
-  if (kappa_min<0.1){kappa_min = 0.1;}
+  // double censoring = 1-sum(Delta)/n;
+  // double kappa_min = censoring;
+  // double kappa_max = 1;
+  // if (kappa_min<0.1){kappa_min = 0.1;}
+  // vec kappa = {kappa_min, kappa_max};
   
-  vec kappa = {kappa_min, kappa_max};
+  vec kappa = {0.25, 1};
   kappa = quantile(se_boot, kappa);
   se_boot.clamp(kappa(0),kappa(1));
   
@@ -3071,12 +3081,13 @@ List form_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   // too low values which are 0 or computationally 0 of se_boot makes a problem,
   // so we adjust them to have kappa = quantile of mat_se_boot
   // e.g., kappa_min = censoring; quantile(mat_se_boot) = {censoring, 1};
-  double censoring = 1-sum(Delta)/n;
-  double kappa_min = censoring;
-  double kappa_max = 1;
-  if (kappa_min<0.1){kappa_min = 0.1;}
+  // double censoring = 1-sum(Delta)/n;
+  // double kappa_min = censoring;
+  // double kappa_max = 1;
+  // if (kappa_min<0.1){kappa_min = 0.1;}
+  // vec kappa = {kappa_min, kappa_max};
   
-  vec kappa = {kappa_min, kappa_max};
+  vec kappa = {0.25, 1};
   kappa = quantile(se_boot, kappa);
   se_boot.clamp(kappa(0),kappa(1));
   
@@ -3327,12 +3338,13 @@ List form_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String opt
   // too low values which are 0 or computationally 0 of se_boot makes a problem,
   // so we adjust them to have kappa = quantile of mat_se_boot
   // e.g., kappa_min = censoring; quantile(mat_se_boot) = {censoring, 1};
-  double censoring = 1-sum(Delta)/n;
-  double kappa_min = censoring;
-  double kappa_max = 1;
-  if (kappa_min<0.1){kappa_min = 0.1;}
+  // double censoring = 1-sum(Delta)/n;
+  // double kappa_min = censoring;
+  // double kappa_max = 1;
+  // if (kappa_min<0.1){kappa_min = 0.1;}
+  // vec kappa = {kappa_min, kappa_max};
   
-  vec kappa = {kappa_min, kappa_max};
+  vec kappa = {0.25, 1};
   kappa = quantile(se_boot, kappa);
   se_boot.clamp(kappa(0),kappa(1));
   
