@@ -167,8 +167,8 @@ afttest <- function(formula, path = 200, testType = "omni", eqType = "mns",
       return(warning("the length if form needs to be exactly 1."))
     } else {
       if (is.numeric(form)) {
-        if (form > cov.length){
-          return(warning("form is greater than the lenght of covariates. form needs to be specified correctly."))
+        if (form%%1 != 0 || form > cov.length) {
+          return(warning("form needs to be postivie integer and less than the lenght of covariates."))
         }
       } else if (is.character(form)) {
         if (!form %in% covnames) {
