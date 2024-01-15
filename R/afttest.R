@@ -266,6 +266,7 @@ afttest <- function(formula, data, path = 200, testType = "omni", eqType = "mns"
   out$testType <- testType
   out$optimType <- optimType
   out$pathsave <- pathsave
+  if (testType == "form") {out$form <- form}
   
   return(out)
 }
