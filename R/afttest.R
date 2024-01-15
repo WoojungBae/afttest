@@ -7,6 +7,8 @@
 #' @param formula A formula expression, of the form \code{response ~ predictors}.
 #'    The \code{response} is a \code{Surv} object object with right censoring.
 #'    See the documentation of \code{lm}, \code{coxph} and \code{formula} for details.
+#' @param data An optional data frame in which to interpret the variables occurring 
+#'    in the formula.
 #' @param path An integer value specifies the number of approximated processes.
 #'    The default is given by 200.
 #' @param testType A character string specifying the type of the test.
@@ -68,21 +70,47 @@
 #'    for checking a functional form and a link function are given by the n by 1 vector
 #'    which is a function of x in the time-transformed residual order. 
 #' 
-#' @importFrom stats optim get_all_vars as.formula
+#' @importFrom stats optim get_all_vars as.formula model.matrix
 #' @importFrom aftgee aftsrr
 #' @importFrom survival Surv
 #' 
 #' @example inst/examples/ex_afttest.R
 #' @export
-afttest <- function(formula, path = 200, testType = "omni", eqType = "mns", 
+afttest <- function(formula, data, path = 200, testType = "omni", eqType = "mns", 
                     optimType = "DFSANE", form = 1, pathsave = 50) {
   
   # Data Frame
-  DF <- stats::get_all_vars(formula)
+  # DF <- stats::get_all_vars(formula)
+  # varnames <- noquote(all.vars(formula))
+  # var.length <- length(DF)
+  # cov.length <- var.length - 2
+  # covnames <- varnames[3:var.length]
+  # colnames(DF) <- c("Time", "Delta", paste0("Covari", 1:cov.length))
+  
   varnames <- noquote(all.vars(formula))
-  var.length <- ncol(DF)
-  cov.length <- var.length - 2
+  var.length <- length(varnames)
   covnames <- varnames[3:var.length]
+  cov.length <- length(covnames)
+  
+  scall <- match.call()
+  mnames <- c("", "formula", "data")
+  cnames <- names(scall)
+  cnames <- cnames[match(mnames, cnames, 0)]
+  mcall <- scall[cnames]
+  mcall[[1]] <- as.name("model.frame")
+  m <- eval(mcall, parent.frame())
+  mterms <- attr(m, "terms")
+  obj <- unclass(m[, 1])
+  formula[[2]] <- NULL
+  if (formula == ~1) {
+    DF <- cbind(obj, zero = 0)
+  } else {
+    DF <- cbind(obj, model.matrix(mterms, m))
+    if (sum(colnames(DF) == "(Intercept)") > 0) {
+      DF <- DF[, -which(colnames(DF) == "(Intercept)")]
+    }
+  }
+  DF <- as.data.frame(DF)
   colnames(DF) <- c("Time", "Delta", paste0("Covari", 1:cov.length))
   
   # check&delete NA, -Inf, Inf, ...
@@ -95,6 +123,13 @@ afttest <- function(formula, path = 200, testType = "omni", eqType = "mns",
     DF <- DF[-whichNA_DF,]
   } else {
     missingmessage <- paste0("(No missing observed)")
+  }
+  
+  if (any(DF$Time <= 0)) {
+    return(warning("Time must be positive number"))
+  }
+  if (cov.length==1 && length(unique(Covari))==1) {
+    return(warning("Intercept-only model detected; The semiparametric AFT model is unable to handle an intercept-only model"))
   }
   
   # Covariate Scaling
@@ -112,9 +147,6 @@ afttest <- function(formula, path = 200, testType = "omni", eqType = "mns",
   #  else {
   #   return(warning("Delta must have 2 statuses (0=observed and 1=censored)"))
   # }
-  
-  if (any(Time <= 0)) return(warning("Time must be positive number"))
-  if (cov.length==1 && length(unique(Covari))==1) return(warning("Intercept-only model detected; The semiparametric AFT model is unable to handle an intercept-only model"))
   
   # beta coefficients from aftsrr function (aftgee package)
   formula <- stats::as.formula(paste0("Surv(Time,Delta)~",paste(paste0("Covari", 1:cov.length), collapse="+")))
@@ -172,7 +204,7 @@ afttest <- function(formula, path = 200, testType = "omni", eqType = "mns",
         }
       } else if (is.character(form)) {
         if (!form %in% covnames) {
-          form <- 1
+          return(warning("form needs to specified the one of the covariates in the formula."))
         } else {
           form <- which(form == covnames)
         }

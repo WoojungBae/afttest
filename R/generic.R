@@ -13,9 +13,21 @@
 print.afttest <- function(x, ...) {
   if (!inherits(x,"afttest")) stop("Must be afttest class")
   
-  print.default(x)
-  invisible(x)
+  cat("\n Call: \n")
+  print(x$call)
+  
+  cat("\n p.value: \n")
+  p.valueTAB <- data.frame(t(c(x$p_value, x$p_std_value)))
+  rownames(p.valueTAB) <- ""
+  colnames(p.valueTAB) <- c("p.value", "std.p.value")
+  print(p.valueTAB)
 }
+# print.afttest <- function(x, ...) {
+#   if (!inherits(x,"afttest")) stop("Must be afttest class")
+#   
+#   print.default(x)
+#   invisible(x)
+# }
 
 ##############################################################################
 ## summary
@@ -31,20 +43,38 @@ print.afttest <- function(x, ...) {
 #' @export
 summary.afttest <- function(object, ...) {
   if (!inherits(object,"afttest")) stop("Must be afttest class")
-
-  out <- list(call = object$call,
-             path = object$path,
-             eqType = object$eqType,
-             testType = object$testType,
-             optimType = object$optimType,
-             coefficients = object$beta,
-             p_value = object$p_value,
-             p_std_value = object$p_std_value,
-             missingmessage = object$missingmessage)
-
-  class(out) <- "summary.afttest"
-  out
+  
+  cat("\n Call: \n")
+  print(object$call)
+  
+  cat("\n p.value: \n")
+  p.valueTAB <- data.frame(t(c(object$p_value, object$p_std_value)))
+  rownames(p.valueTAB) <- ""
+  colnames(p.valueTAB) <- c("p.value", "std.p.value")
+  print(p.valueTAB)
+  
+  cat("\n Coefficients (estimated by aftgee::aftsrr): \n")
+  coefTAB <- data.frame(t(object$beta))
+  rownames(coefTAB) <- ""
+  colnames(coefTAB) <- object$names[-c(1:2)]
+  print(coefTAB)
 }
+# summary.afttest <- function(object, ...) {
+#   if (!inherits(object,"afttest")) stop("Must be afttest class")
+#   
+#   out <- list(call = object$call,
+#              path = object$path,
+#              eqType = object$eqType,
+#              testType = object$testType,
+#              optimType = object$optimType,
+#              coefficients = object$beta,
+#              p_value = object$p_value,
+#              p_std_value = object$p_std_value,
+#              missingmessage = object$missingmessage)
+# 
+#   class(out) <- "summary.afttest"
+#   out
+# }
 
 #' ##############################################################################
 #' ## plot

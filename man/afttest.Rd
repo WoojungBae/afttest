@@ -6,6 +6,7 @@
 \usage{
 afttest(
   formula,
+  data,
   path = 200,
   testType = "omni",
   eqType = "mns",
@@ -18,6 +19,9 @@ afttest(
 \item{formula}{A formula expression, of the form \code{response ~ predictors}.
 The \code{response} is a \code{Surv} object object with right censoring.
 See the documentation of \code{lm}, \code{coxph} and \code{formula} for details.}
+
+\item{data}{An optional data frame in which to interpret the variables occurring 
+in the formula.}
 
 \item{path}{An integer value specifies the number of approximated processes.
 The default is given by 200.}
@@ -92,6 +96,8 @@ afttest
 }
 \examples{
 ## Simulate data from an AFT model
+library(afttest)
+library(survival)
 datgen <- function(n = 100) {
   z1 <- rbinom(n, 1, 0.5)
   z2 <- rnorm(n)
@@ -103,13 +109,7 @@ datgen <- function(n = 100) {
 }
 set.seed(0)
 simdata <- datgen(n = 20)
-
-X <- simdata$Time
-D <- simdata$status
-z1 <- simdata$z1
-z2 <- simdata$z2
-
-result = afttest(Surv(X, D) ~ z1 + z2, testType="link", eqType="mns")
-print(result)
+result <- afttest(Surv(Time, status) ~ z1 + z2, 
+                  data = simdata, testType="link", eqType="mns")
 summary(result)
 }
