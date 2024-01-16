@@ -48,7 +48,8 @@ datgen <- function(n = 100) {
 }
 set.seed(0)
 simdata <- datgen(n = 20)
-result <- afttest(Surv(Time, status) ~ z1 + z2, 
+result <- afttest(Surv(Time, status) ~ z1 + z2, optimType = "DFSANE",
                   data = simdata, testType="link", eqType="mns")
+# summary(result)
 afttestplot(result)
 }
