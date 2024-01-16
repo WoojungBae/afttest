@@ -150,7 +150,7 @@ afttest <- function(formula, data, path = 200, testType = "omni", eqType = "mns"
   
   # beta coefficients from aftsrr function (aftgee package)
   formula <- stats::as.formula(paste0("Surv(Time,Delta)~",paste(paste0("Covari", 1:cov.length), collapse="+")))
-  b <- - aftgee::aftsrr(formula, data = DF, eqType = eqType)$beta
+  b <- - aftgee::aftsrr(formula, data = DF, eqType = eqType, rankWeights = "gehan")$beta
   
   # path
   if (length(path) > 1){
@@ -164,24 +164,30 @@ afttest <- function(formula, data, path = 200, testType = "omni", eqType = "mns"
   }
   
   # testType
-  if (!testType %in% c("omni","link","form")) {
-    testType <- "omni"
+  if (length(testType) > 1){
+    return(warning("testType needs to be one of 'omni', 'link', or 'form'"))
   } else {
-    testType <- match.arg(testType, c("omni","link","form"))
+    if (!testType %in% c("omni","link","form")) {
+      testType <- "omni"
+    }
   }
   
   # eqType
-  if (!eqType %in% c("mns","mis")) {
-    eqType <- "mns"
+  if (length(eqType) > 1){
+    return(warning("testType needs to be one of 'mns' and 'mis'"))
   } else {
-    eqType <- match.arg(eqType, c("mns","mis"))
+    if (!eqType %in% c("mns","mis")) {
+      eqType <- "mns"
+    }
   }
   
   # optimType
-  if (!optimType %in% c("DFSANE","Nelder-Mead","BFGS","CG","L-BFGS-B","SANN","Brent")) {
-    optimType <- "DFSANE"
+  if (length(optimType) > 1){
+    return(warning("optimType needs to be one of 'DFSANE', 'Nelder-Mead', 'BFGS', 'CG', 'L-BFGS-B', 'SANN', 'Brent'"))
   } else {
-    optimType <- match.arg(optimType, c("DFSANE","Nelder-Mead","BFGS","CG","L-BFGS-B","SANN","Brent"))
+    if (!optimType %in% c("DFSANE","Nelder-Mead","BFGS","CG","L-BFGS-B","SANN","Brent")) {
+      optimType <- "DFSANE"
+    }
   }
   
   # pathsave
