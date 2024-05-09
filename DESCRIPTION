@@ -1,8 +1,8 @@
 Package: afttest
 Type: Package
-Title: Model Diagnostics for Accelerated Failure Time Models
+Title: Model diagnostics for accelerated failure time models
 Version: 4.3.3
-Date: 2024-05-08 EDT
+Date: 2024-05-09 EDT
 Authors@R: c(
     person(given = "Woojung", family = "Bae", 
            email = "matt.woojung@gmail.com", 
@@ -47,4 +47,4 @@ URL: https://github.com/WooJungBae/afttest
 BugReports: https://github.com/WooJungBae/afttest/issues
 Encoding: UTF-8
 Language: en-US
-RoxygenNote: 7.3.0
+RoxygenNote: 7.3.1

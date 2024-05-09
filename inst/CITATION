@@ -1,5 +1,5 @@
 bibentry(
-    key = "afttest-R-package",
+    key = "bae2022afttest",
     bibtype = "Manual",
     title = "{afttest}: Model diagnostics for accelerated failure time models",
     author = c(
@@ -14,7 +14,7 @@ bibentry(
 )
 
 bibentry(
-    key = "afttest-R-paper",
+    key = "bae2024afttest",
     bibtype = "Article",
     title = "{afttest}: Model diagnostics for accelerated failure time models",
     author = c(
@@ -29,7 +29,7 @@ bibentry(
 )
 
 bibentry(
-    key = "afttest-paper",
+    key = "choi2024general",
     bibtype = "Article",
     title = "A general model-checking procedure for semiparametric accelerated failure time models",
     author = c(
@@ -40,6 +40,7 @@ bibentry(
         ),
     journal = "Statistics and Computing",
     volume = "34",
+    issue= "3",
     pages= "117",
     year = "2024",
     doi = "10.1007/s11222-024-10431-7",

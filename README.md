@@ -41,7 +41,7 @@ performance has thus been boosted.
 
 ## Reference 
 Choi, D., Bae, W., Yan, J., and Kang, S. (2024). A general model-checking procedure for semiparametric accelerated failure time models. 
-*Statistics and Computing*, **34**(117)
+*Statistics and Computing*, **34**(3) 117
 
-## License
-[GNU General Public License](https://www.gnu.org/licenses/) (≥ 3)
+Chiou, S., Kang, S., and Yan, J. (2014).  Fitting accelerated failure time model in routine survival analysis with R package aftgee. 
+*Journal of Statistical Software*, **61**(11): 1--23. 
