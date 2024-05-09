@@ -42,7 +42,7 @@ bibentry(
     volume = "34",
     pages= "117",
     year = "2024",
-    doi = "http://doi.org/10.1007/s11222-024-10431-7",
+    doi = "10.1007/s11222-024-10431-7",
     url = "http://doi.org/10.1007/s11222-024-10431-7",
     publisher = "Springer"
 )
