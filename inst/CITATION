@@ -1,22 +1,22 @@
 bibentry(
     key = "afttest-R-package",
     bibtype = "Manual",
-    title = "{afttest}: Model Diagnostics for Accelerated Failure Time Models",
+    title = "{afttest}: Model diagnostics for accelerated failure time models",
     author = c(
         as.person("WooJung Bae"),
         as.person("Dongrak Choi"),
         as.person("Jun Yan"),
         as.person("Sangwook Kang")
         ),
-    year = "2023",
+    year = "2022",
     url = "https://CRAN.R-project.org/package=afttest",
-    note = "R package version 4.3.1.1"
+    note = "R package version 4.3.3"
 )
 
 bibentry(
     key = "afttest-R-paper",
     bibtype = "Article",
-    title = "{afttest}: Model Diagnostics for Accelerated Failure Time Models",
+    title = "{afttest}: Model diagnostics for accelerated failure time models",
     author = c(
         as.person("WooJung Bae"),
         as.person("Dongrak Choi"),
@@ -24,21 +24,25 @@ bibentry(
         as.person("Sangwook Kang")
         ),
     journal = "Arxiv",
-    year = "2023",
+    year = "2024+",
     url = "",
 )
 
 bibentry(
     key = "afttest-paper",
     bibtype = "Article",
-    title = "A general model-checking procedure for semiparametric AFT models",
+    title = "A general model-checking procedure for semiparametric accelerated failure time models",
     author = c(
         as.person("Dongrak Choi"),
         as.person("WooJung Bae"),
         as.person("Jun Yan"),
         as.person("Sangwook Kang")
         ),
-    journal = "Arxiv",
-    year = "2023",
-    url = "https://arxiv.org/abs/2305.11445"
+    journal = "Statistics and Computing",
+    volume = "34",
+    pages= "117",
+    year = "2024",
+    doi = "http://doi.org/10.1007/s11222-024-10431-7",
+    url = "http://doi.org/10.1007/s11222-024-10431-7",
+    publisher = "Springer"
 )
