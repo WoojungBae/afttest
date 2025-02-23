@@ -40,8 +40,17 @@ help of the **Rcpp** and **RcppArmadillo** packages. The computational
 performance has thus been boosted.
 
 ## Reference 
-Choi, D., Bae, W., Yan, J., and Kang, S. (2024). A general model-checking procedure for semiparametric accelerated failure time models. 
+Bae, W., Choi, D., Yan, J., Kang, S. (2025). afttest: model diagnostics for 
+semiparametric accelerated failure time models in R. *arXiv*, 
+**will be updated soon**.
+
+Choi, D., Bae, W., Yan, J., and Kang, S. (2024). A general model-checking 
+procedure for semiparametric accelerated failure time models. 
 *Statistics and Computing*, **34**(3) 117
 
-Chiou, S., Kang, S., and Yan, J. (2014).  Fitting accelerated failure time model in routine survival analysis with R package aftgee. 
+Bae, W., Choi, D., Yan, J., Kang, S. (2022). afttest: Model Diagnostics for 
+Accelerated Failure Time Models. *CRAN*, **https://CRAN.R-project.org/package=afttest**.
+
+Chiou, S., Kang, S., and Yan, J. (2014).  Fitting accelerated failure time model 
+in routine survival analysis with R package aftgee. 
 *Journal of Statistical Software*, **61**(11): 1--23. 

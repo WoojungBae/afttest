@@ -1,6 +1,6 @@
 bibentry(
-    key = "bae2022afttest",
-    bibtype = "manual",
+    key = "bae2025afttest",
+    bibtype = "article",
     title = "{afttest}: Model diagnostics for accelerated failure time models",
     author = c(
         as.person("WooJung Bae"),
@@ -8,9 +8,8 @@ bibentry(
         as.person("Jun Yan"),
         as.person("Sangwook Kang")
         ),
-    year = "2022",
-    url = "https://CRAN.R-project.org/package=afttest",
-    note = "R package version 4.4.2"
+    journal = "arXiv",
+    year = "2025+"
 )
 
 bibentry(
@@ -33,8 +32,8 @@ bibentry(
 )
 
 bibentry(
-    key = "bae2025afttest",
-    bibtype = "article",
+    key = "bae2022afttest",
+    bibtype = "manual",
     title = "{afttest}: Model diagnostics for accelerated failure time models",
     author = c(
         as.person("WooJung Bae"),
@@ -42,6 +41,7 @@ bibentry(
         as.person("Jun Yan"),
         as.person("Sangwook Kang")
         ),
-    journal = "arXiv",
-    year = "2025+"
+    year = "2022",
+    url = "https://CRAN.R-project.org/package=afttest",
+    note = "R package version 4.4.2"
 )
