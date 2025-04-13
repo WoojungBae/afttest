@@ -4,12 +4,12 @@
 \alias{plot.afttest}
 \title{plot.afttest}
 \usage{
-\method{plot}{afttest}(x, path = 50, stdType = "std", quantile = NULL, ...)
+\method{plot}{afttest}(x, npath = 50, stdType = "std", quantile = NULL, ...)
 }
 \arguments{
 \item{x}{is a \code{afttest} fit}
 
-\item{path}{A numeric value specifies the number of approximated processes plotted
+\item{npath}{A numeric value specifies the number of approximated processes plotted
 The default is set to be 100.}
 
 \item{stdType}{A character string specifying if the graph is based on the 
@@ -50,8 +50,9 @@ datgen <- function(n = 100) {
 }
 set.seed(0)
 simdata <- datgen(n = 20)
-result <- afttest(Surv(Time, status) ~ z1 + z2, optimType = "DFSANE",
-                  data = simdata, testType="link", eqType="mns")
+result <- afttest(Surv(Time, status) ~ z1 + z2, data = simdata, npath = 200, 
+                  testType="link", eqType="mns", optimType = "DFSANE",
+                  npathsave = 50)
 # summary(result)
 plot(result)
 }

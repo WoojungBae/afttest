@@ -9,7 +9,8 @@ bibentry(
         as.person("Sangwook Kang")
         ),
     journal = "arXiv",
-    year = "2025+"
+    year = "2025+",
+    doi = "10.32614/CRAN.package.afttest"
 )
 
 bibentry(
@@ -42,6 +43,26 @@ bibentry(
         as.person("Sangwook Kang")
         ),
     year = "2022",
+    note = "R package version 4.4.3",
     url = "https://CRAN.R-project.org/package=afttest",
-    note = "R package version 4.4.2"
+    doi = "10.32614/CRAN.package.afttest"
+)
+
+bibentry(
+    key = "chiou2014fitting",
+    bibtype = "article",
+    title = "Fitting Accelerated Failure Time Models in Routine Survival Analysis with R Package aftgee",
+    author = c(
+        as.person("WooJung Bae"),
+        as.person("Dongrak Choi"),
+        as.person("Jun Yan"),
+        as.person("Sangwook Kang")
+        ),
+    journal = "Journal of Statistical Software",
+    volume = "61",
+    issue= "11",
+    pages= "1-23",
+    year = "2014",
+    doi = "https://doi.org/10.18637/jss.v061.i11",
+    publisher = "Foundation for Open Access Statistics"
 )

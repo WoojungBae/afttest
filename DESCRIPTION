@@ -1,8 +1,8 @@
 Package: afttest
 Type: Package
 Title: Model Diagnostics for Accelerated Failure Time Models
-Version: 4.4.2
-Date: 2025-02-23 EDT
+Version: 4.5.0
+Date: 2025-04-13 EDT
 Authors@R: c(
     person(given = "Woojung", family = "Bae", 
            email = "matt.woojung@gmail.com", 
@@ -17,15 +17,18 @@ Authors@R: c(
   )
 Maintainer: 
     Woojung Bae <matt.woojung@gmail.com>
-Description: A collection of model checking methods for semiparametric accelerated 
-    failure time (AFT) models under the rank-based approach. For the (computational)
-    efficiency, Gehan's weight is used. It provides functions to verify whether the 
-    observed data fit the specific model assumptions such as a functional form of 
-    each covariate, a link function, and an omnibus test. The p-value offered in this 
-    package is based on the Kolmogorov-type supremum test and the variance of the 
-    proposed test statistics is estimated through the re-sampling method. Furthermore, 
-    a graphical technique to compare the shape of the observed residual to a number of 
-    the approximated realizations is provided.
+Description: A collection of model checking methods for semiparametric 
+    accelerated failure time (AFT) models under the rank-based approach. For the 
+    (computational) efficiency, Gehan's weight is used. It provides functions to 
+    verify whether the observed data fit the specific model assumptions such as 
+    a functional form of each covariate, a link function, and an omnibus test. 
+    The p-value offered in this package is based on the Kolmogorov-type supremum 
+    test and the variance of the proposed test statistics is estimated through 
+    the re-sampling method. Furthermore, a graphical technique to compare the 
+    shape of the observed residual to a number of the approximated realizations 
+    is provided. See the follwing references; A general model-checking procedure 
+    for semiparametric accelerated failure time models, Statistics and 
+    Computing, 34 (3), 117; Package paper (arXiv) will be added soon.
 Imports: 
     survival, 
     aftgee, 

@@ -365,7 +365,7 @@ using namespace Rcpp;
    return List::create(tol_f,b_new);
  }
  
- List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int pathsave){
+ List omni_mis_DFSANE(int npath, vec b, vec Time, vec Delta, mat Covari, int npathsave){
    
    int n = Covari.n_rows;
    int p = Covari.n_cols;
@@ -420,15 +420,15 @@ using namespace Rcpp;
    mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
    E_pi_t_z.replace(datum::nan,0);
    
-   // obs_path; t by x vector
-   List Mhat_i_t(n); List dMhat_i_t(n); mat obs_path = zero_mat_nn;
+   // obs_npath; t by x vector
+   List Mhat_i_t(n); List dMhat_i_t(n); mat obs_npath = zero_mat_nn;
    for(int it=0; it<n; it++){
      tempvec_n = as<vec>(N_i_t(it))-(cumsum(as<vec>(Y_i_t(it))%(dLambdahat_0_t)));
      Mhat_i_t(it) = tempvec_n;
      dMhat_i_t(it) = diff(join_cols(zero_vec_1,tempvec_n));
-     obs_path += tempvec_n*(as<rowvec>(pi_i_z(it)));
+     obs_npath += tempvec_n*(as<rowvec>(pi_i_z(it)));
    }
-   obs_path /= sqrtn;
+   obs_npath /= sqrtn;
    
    // -----------------------------------------------------------
    // ----------------------Kernel Smoothing---------------------
@@ -504,8 +504,8 @@ using namespace Rcpp;
    // -----------------------------------------------------------
    // ------------------------Sample Path------------------------
    // -----------------------------------------------------------
-   List app_path(path);
-   for(int itt=0; itt<path; itt++){
+   List app_npath(npath);
+   for(int itt=0; itt<npath; itt++){
      
      vec phi_i(n); vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
      while(tolerance>tol){
@@ -553,14 +553,14 @@ using namespace Rcpp;
      mat term3 = cumsum((S_pi_t_z.each_col())%(dLambdahat_0_t - dLambdahat_0_t_s))/sqrtn;
      
      tempmat_nn = term1 - term2 - term3;
-     app_path(itt) = tempmat_nn;
+     app_npath(itt) = tempmat_nn;
    }
    
-   NumericMatrix tempmat_n2path(pow(n,2),path);
-   for(int it=0; it<path; it++){
-     tempmat_n2path(_,it) = (as<NumericVector>(app_path(it)));
+   NumericMatrix tempmat_n2npath(pow(n,2),npath);
+   for(int it=0; it<npath; it++){
+     tempmat_n2npath(_,it) = (as<NumericVector>(app_npath(it)));
    }
-   vec mat_se_boot = stddev(as<mat>(tempmat_n2path),0,1);
+   vec mat_se_boot = stddev(as<mat>(tempmat_n2npath),0,1);
    // too low values which are 0 or computationally 0 of se_boot makes a problem,
    // so we adjust them to have kappa = quantile of mat_se_boot
    // e.g., kappa_min = censoring; quantile(mat_se_boot) = {censoring, 1};
@@ -575,45 +575,45 @@ using namespace Rcpp;
    mat_se_boot.clamp(kappa(0),kappa(1));
    mat se_boot = reshape(mat_se_boot,n,n);
    
-   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
-   for(int it=0; it<path; it++){
-     tempmat_nn = as<mat>(app_path(it));
-     absmax_app_path(it) = abs(tempmat_nn).max();
+   List app_std_npath(npath); vec absmax_app_npath(npath); vec absmax_app_std_npath(npath);
+   for(int it=0; it<npath; it++){
+     tempmat_nn = as<mat>(app_npath(it));
+     absmax_app_npath(it) = abs(tempmat_nn).max();
      
      tempmat_nn /= se_boot;
-     app_std_path(it) = tempmat_nn;
-     absmax_app_std_path(it) = abs(tempmat_nn).max();
+     app_std_npath(it) = tempmat_nn;
+     absmax_app_std_npath(it) = abs(tempmat_nn).max();
    }
    
-   mat obs_std_path = obs_path/se_boot;
-   double absmax_obs_path = (abs(obs_path)).max();
-   double absmax_obs_std_path = (abs(obs_std_path)).max();
+   mat obs_std_npath = obs_npath/se_boot;
+   double absmax_obs_npath = (abs(obs_npath)).max();
+   double absmax_obs_std_npath = (abs(obs_std_npath)).max();
    
-   uvec ind_unstd = (find(absmax_app_path>absmax_obs_path));
-   double p_value = (ind_unstd.size()); p_value = p_value/path;
+   uvec ind_unstd = (find(absmax_app_npath>absmax_obs_npath));
+   double p_value = (ind_unstd.size()); p_value = p_value/npath;
    
-   uvec ind_std = (find(absmax_app_std_path>absmax_obs_std_path));
-   double p_std_value = (ind_std.size()); p_std_value = p_std_value/path;
+   uvec ind_std = (find(absmax_app_std_npath>absmax_obs_std_npath));
+   double p_std_value = (ind_std.size()); p_std_value = p_std_value/npath;
    
-   if (pathsave<1){
+   if (npathsave<1){
      return List::create(_["p_std_value"]=p_std_value,_["p_value"]=p_value);
-   } else if (pathsave > path) {
+   } else if (npathsave > npath) {
      return List::create(_["SE_boot"]=se_boot,
-                         _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
-                         _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                         _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
+                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    } else {
-     pathsave = pathsave - 1;
-     app_path = app_path[Range(0,pathsave)];
-     app_std_path = app_std_path[Range(0,pathsave)];
+     npathsave = npathsave - 1;
+     app_npath = app_npath[Range(0,npathsave)];
+     app_std_npath = app_std_npath[Range(0,npathsave)];
      return List::create(_["SE_boot"]=se_boot,
-                         _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
-                         _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                         _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
+                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    }
  }
  
- List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int pathsave){
+ List omni_mns_DFSANE(int npath, vec b, vec Time, vec Delta, mat Covari, int npathsave){
    
    int n = Covari.n_rows;
    int p = Covari.n_cols;
@@ -668,15 +668,15 @@ using namespace Rcpp;
    mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
    E_pi_t_z.replace(datum::nan,0);
    
-   // obs_path; t by x vector
-   List Mhat_i_t(n); List dMhat_i_t(n); mat obs_path = zero_mat_nn;
+   // obs_npath; t by x vector
+   List Mhat_i_t(n); List dMhat_i_t(n); mat obs_npath = zero_mat_nn;
    for(int it=0; it<n; it++){
      tempvec_n = as<vec>(N_i_t(it))-(cumsum(as<vec>(Y_i_t(it))%(dLambdahat_0_t)));
      Mhat_i_t(it) = tempvec_n;
      dMhat_i_t(it) = diff(join_cols(zero_vec_1,tempvec_n));
-     obs_path += tempvec_n*(as<rowvec>(pi_i_z(it)));
+     obs_npath += tempvec_n*(as<rowvec>(pi_i_z(it)));
    }
-   obs_path /= sqrtn;
+   obs_npath /= sqrtn;
    
    // -----------------------------------------------------------
    // ----------------------Kernel Smoothing---------------------
@@ -752,8 +752,8 @@ using namespace Rcpp;
    // -----------------------------------------------------------
    // ------------------------Sample Path------------------------
    // -----------------------------------------------------------
-   List app_path(path);
-   for(int itt=0; itt<path; itt++){
+   List app_npath(npath);
+   for(int itt=0; itt<npath; itt++){
      
      vec phi_i(n); vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
      while(tolerance>tol){
@@ -801,14 +801,14 @@ using namespace Rcpp;
      mat term3 = cumsum((S_pi_t_z.each_col())%(dLambdahat_0_t - dLambdahat_0_t_s))/sqrtn;
      
      tempmat_nn = term1 - term2 - term3;
-     app_path(itt) = tempmat_nn;
+     app_npath(itt) = tempmat_nn;
    }
    
-   NumericMatrix tempmat_n2path(pow(n,2),path);
-   for(int it=0; it<path; it++){
-     tempmat_n2path(_,it) = (as<NumericVector>(app_path(it)));
+   NumericMatrix tempmat_n2npath(pow(n,2),npath);
+   for(int it=0; it<npath; it++){
+     tempmat_n2npath(_,it) = (as<NumericVector>(app_npath(it)));
    }
-   vec mat_se_boot = stddev(as<mat>(tempmat_n2path),0,1);
+   vec mat_se_boot = stddev(as<mat>(tempmat_n2npath),0,1);
    // too low values which are 0 or computationally 0 of se_boot makes a problem,
    // so we adjust them to have kappa = quantile of mat_se_boot
    // e.g., kappa_min = censoring; quantile(mat_se_boot) = {censoring, 1};
@@ -823,45 +823,45 @@ using namespace Rcpp;
    mat_se_boot.clamp(kappa(0),kappa(1));
    mat se_boot = reshape(mat_se_boot,n,n);
    
-   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
-   for(int it=0; it<path; it++){
-     tempmat_nn = as<mat>(app_path(it));
-     absmax_app_path(it) = abs(tempmat_nn).max();
+   List app_std_npath(npath); vec absmax_app_npath(npath); vec absmax_app_std_npath(npath);
+   for(int it=0; it<npath; it++){
+     tempmat_nn = as<mat>(app_npath(it));
+     absmax_app_npath(it) = abs(tempmat_nn).max();
      
      tempmat_nn /= se_boot;
-     app_std_path(it) = tempmat_nn;
-     absmax_app_std_path(it) = abs(tempmat_nn).max();
+     app_std_npath(it) = tempmat_nn;
+     absmax_app_std_npath(it) = abs(tempmat_nn).max();
    }
    
-   mat obs_std_path = obs_path/se_boot;
-   double absmax_obs_path = (abs(obs_path)).max();
-   double absmax_obs_std_path = (abs(obs_std_path)).max();
+   mat obs_std_npath = obs_npath/se_boot;
+   double absmax_obs_npath = (abs(obs_npath)).max();
+   double absmax_obs_std_npath = (abs(obs_std_npath)).max();
    
-   uvec ind_unstd = (find(absmax_app_path>absmax_obs_path));
-   double p_value = (ind_unstd.size()); p_value = p_value/path;
+   uvec ind_unstd = (find(absmax_app_npath>absmax_obs_npath));
+   double p_value = (ind_unstd.size()); p_value = p_value/npath;
    
-   uvec ind_std = (find(absmax_app_std_path>absmax_obs_std_path));
-   double p_std_value = (ind_std.size()); p_std_value = p_std_value/path;
+   uvec ind_std = (find(absmax_app_std_npath>absmax_obs_std_npath));
+   double p_std_value = (ind_std.size()); p_std_value = p_std_value/npath;
    
-   if (pathsave<1){
+   if (npathsave<1){
      return List::create(_["p_std_value"]=p_std_value,_["p_value"]=p_value);
-   } else if (pathsave > path) {
+   } else if (npathsave > npath) {
      return List::create(_["SE_boot"]=se_boot,
-                         _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
-                         _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                         _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
+                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    } else {
-     pathsave = pathsave - 1;
-     app_path = app_path[Range(0,pathsave)];
-     app_std_path = app_std_path[Range(0,pathsave)];
+     npathsave = npathsave - 1;
+     app_npath = app_npath[Range(0,npathsave)];
+     app_std_npath = app_std_npath[Range(0,npathsave)];
      return List::create(_["SE_boot"]=se_boot,
-                         _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
-                         _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                         _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
+                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    }
  }
  
- List link_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int pathsave){
+ List link_mis_DFSANE(int npath, vec b, vec Time, vec Delta, mat Covari, int npathsave){
    
    int n = Covari.n_rows;
    int p = Covari.n_cols;
@@ -916,15 +916,15 @@ using namespace Rcpp;
    mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
    E_pi_t_z.replace(datum::nan,0);
    
-   // obs_path; 1 by x vector
-   List Mhat_i_t(n); List dMhat_i_t(n); vec obs_path = zero_vec_n;
+   // obs_npath; 1 by x vector
+   List Mhat_i_t(n); List dMhat_i_t(n); vec obs_npath = zero_vec_n;
    for(int it=0; it<n; it++){
      tempvec_n = as<vec>(N_i_t(it))-(cumsum(as<vec>(Y_i_t(it))%(dLambdahat_0_t)));
      Mhat_i_t(it) = tempvec_n;
      dMhat_i_t(it) = diff(join_cols(zero_vec_1,tempvec_n));
-     obs_path += (tempvec_n(n-1))*as<vec>(pi_i_z(it));
+     obs_npath += (tempvec_n(n-1))*as<vec>(pi_i_z(it));
    }
-   obs_path /= sqrtn;
+   obs_npath /= sqrtn;
    
    // -----------------------------------------------------------
    // ----------------------Kernel Smoothing---------------------
@@ -1000,8 +1000,8 @@ using namespace Rcpp;
    // -----------------------------------------------------------
    // ------------------------Sample Path------------------------
    // -----------------------------------------------------------
-   List app_path(path);
-   for(int itt=0; itt<path; itt++){
+   List app_npath(npath);
+   for(int itt=0; itt<npath; itt++){
      
      vec phi_i(n); vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
      while(tolerance>tol){
@@ -1049,14 +1049,14 @@ using namespace Rcpp;
      vec term3 = (sum((S_pi_t_z.each_col())%(dLambdahat_0_t - dLambdahat_0_t_s))).t()/sqrtn;
      
      tempvec_n = term1 - term2 - term3;
-     app_path(itt) = tempvec_n;
+     app_npath(itt) = tempvec_n;
    }
    
-   NumericMatrix tempmat_npath(n,path);
-   for(int it=0; it<path; it++){
-     tempmat_npath(_,it) = (as<NumericVector>(app_path(it)));
+   NumericMatrix tempmat_nnpath(n,npath);
+   for(int it=0; it<npath; it++){
+     tempmat_nnpath(_,it) = (as<NumericVector>(app_npath(it)));
    }
-   vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
+   vec se_boot = stddev(as<mat>(tempmat_nnpath),0,1);
    // too low values which are 0 or computationally 0 of se_boot makes a problem,
    // so we adjust them to have kappa = quantile of mat_se_boot
    // e.g., kappa_min = censoring; quantile(mat_se_boot) = {censoring, 1};
@@ -1070,45 +1070,45 @@ using namespace Rcpp;
    kappa = quantile(se_boot, kappa);
    se_boot.clamp(kappa(0),kappa(1));
    
-   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
-   for(int it=0; it<path; it++){
-     tempvec_n = as<vec>(app_path(it));
-     absmax_app_path(it) = abs(tempvec_n).max();
+   List app_std_npath(npath); vec absmax_app_npath(npath); vec absmax_app_std_npath(npath);
+   for(int it=0; it<npath; it++){
+     tempvec_n = as<vec>(app_npath(it));
+     absmax_app_npath(it) = abs(tempvec_n).max();
      
      tempvec_n /= se_boot;
-     app_std_path(it) = tempvec_n;
-     absmax_app_std_path(it) = abs(tempvec_n).max();
+     app_std_npath(it) = tempvec_n;
+     absmax_app_std_npath(it) = abs(tempvec_n).max();
    }
    
-   vec obs_std_path = obs_path/se_boot;
-   double absmax_obs_path = (abs(obs_path)).max();
-   double absmax_obs_std_path = (abs(obs_std_path)).max();
+   vec obs_std_npath = obs_npath/se_boot;
+   double absmax_obs_npath = (abs(obs_npath)).max();
+   double absmax_obs_std_npath = (abs(obs_std_npath)).max();
    
-   uvec ind_unstd = (find(absmax_app_path>absmax_obs_path));
-   double p_value = (ind_unstd.size()); p_value = p_value/path;
+   uvec ind_unstd = (find(absmax_app_npath>absmax_obs_npath));
+   double p_value = (ind_unstd.size()); p_value = p_value/npath;
    
-   uvec ind_std = (find(absmax_app_std_path>absmax_obs_std_path));
-   double p_std_value = (ind_std.size()); p_std_value = p_std_value/path;
+   uvec ind_std = (find(absmax_app_std_npath>absmax_obs_std_npath));
+   double p_std_value = (ind_std.size()); p_std_value = p_std_value/npath;
    
-   if (pathsave<1){
+   if (npathsave<1){
      return List::create(_["p_std_value"]=p_std_value,_["p_value"]=p_value);
-   } else if (pathsave > path) {
+   } else if (npathsave > npath) {
      return List::create(_["SE_boot"]=se_boot,
-                         _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
-                         _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                         _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
+                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    } else {
-     pathsave = pathsave - 1;
-     app_path = app_path[Range(0,pathsave)];
-     app_std_path = app_std_path[Range(0,pathsave)];
+     npathsave = npathsave - 1;
+     app_npath = app_npath[Range(0,npathsave)];
+     app_std_npath = app_std_npath[Range(0,npathsave)];
      return List::create(_["SE_boot"]=se_boot,
-                         _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
-                         _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                         _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
+                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    }
  }
  
- List link_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int pathsave){
+ List link_mns_DFSANE(int npath, vec b, vec Time, vec Delta, mat Covari, int npathsave){
    
    int n = Covari.n_rows;
    int p = Covari.n_cols;
@@ -1163,15 +1163,15 @@ using namespace Rcpp;
    mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
    E_pi_t_z.replace(datum::nan,0);
    
-   // obs_path; 1 by x vector
-   List Mhat_i_t(n); List dMhat_i_t(n); vec obs_path = zero_vec_n;
+   // obs_npath; 1 by x vector
+   List Mhat_i_t(n); List dMhat_i_t(n); vec obs_npath = zero_vec_n;
    for(int it=0; it<n; it++){
      tempvec_n = as<vec>(N_i_t(it))-(cumsum(as<vec>(Y_i_t(it))%(dLambdahat_0_t)));
      Mhat_i_t(it) = tempvec_n;
      dMhat_i_t(it) = diff(join_cols(zero_vec_1,tempvec_n));
-     obs_path += (tempvec_n(n-1))*as<vec>(pi_i_z(it));
+     obs_npath += (tempvec_n(n-1))*as<vec>(pi_i_z(it));
    }
-   obs_path /= sqrtn;
+   obs_npath /= sqrtn;
    
    // -----------------------------------------------------------
    // ----------------------Kernel Smoothing---------------------
@@ -1247,8 +1247,8 @@ using namespace Rcpp;
    // -----------------------------------------------------------
    // ------------------------Sample Path------------------------
    // -----------------------------------------------------------
-   List app_path(path);
-   for(int itt=0; itt<path; itt++){
+   List app_npath(npath);
+   for(int itt=0; itt<npath; itt++){
      
      vec phi_i(n); vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
      while(tolerance>tol){
@@ -1296,14 +1296,14 @@ using namespace Rcpp;
      vec term3 = (sum((S_pi_t_z.each_col())%(dLambdahat_0_t - dLambdahat_0_t_s))).t()/sqrtn;
      
      tempvec_n = term1 - term2 - term3;
-     app_path(itt) = tempvec_n;
+     app_npath(itt) = tempvec_n;
    }
    
-   NumericMatrix tempmat_npath(n,path);
-   for(int it=0; it<path; it++){
-     tempmat_npath(_,it) = (as<NumericVector>(app_path(it)));
+   NumericMatrix tempmat_nnpath(n,npath);
+   for(int it=0; it<npath; it++){
+     tempmat_nnpath(_,it) = (as<NumericVector>(app_npath(it)));
    }
-   vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
+   vec se_boot = stddev(as<mat>(tempmat_nnpath),0,1);
    // too low values which are 0 or computationally 0 of se_boot makes a problem,
    // so we adjust them to have kappa = quantile of mat_se_boot
    // e.g., kappa_min = censoring; quantile(mat_se_boot) = {censoring, 1};
@@ -1317,45 +1317,45 @@ using namespace Rcpp;
    kappa = quantile(se_boot, kappa);
    se_boot.clamp(kappa(0),kappa(1));
    
-   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
-   for(int it=0; it<path; it++){
-     tempvec_n = as<vec>(app_path(it));
-     absmax_app_path(it) = abs(tempvec_n).max();
+   List app_std_npath(npath); vec absmax_app_npath(npath); vec absmax_app_std_npath(npath);
+   for(int it=0; it<npath; it++){
+     tempvec_n = as<vec>(app_npath(it));
+     absmax_app_npath(it) = abs(tempvec_n).max();
      
      tempvec_n /= se_boot;
-     app_std_path(it) = tempvec_n;
-     absmax_app_std_path(it) = abs(tempvec_n).max();
+     app_std_npath(it) = tempvec_n;
+     absmax_app_std_npath(it) = abs(tempvec_n).max();
    }
    
-   vec obs_std_path = obs_path/se_boot;
-   double absmax_obs_path = (abs(obs_path)).max();
-   double absmax_obs_std_path = (abs(obs_std_path)).max();
+   vec obs_std_npath = obs_npath/se_boot;
+   double absmax_obs_npath = (abs(obs_npath)).max();
+   double absmax_obs_std_npath = (abs(obs_std_npath)).max();
    
-   uvec ind_unstd = (find(absmax_app_path>absmax_obs_path));
-   double p_value = (ind_unstd.size()); p_value = p_value/path;
+   uvec ind_unstd = (find(absmax_app_npath>absmax_obs_npath));
+   double p_value = (ind_unstd.size()); p_value = p_value/npath;
    
-   uvec ind_std = (find(absmax_app_std_path>absmax_obs_std_path));
-   double p_std_value = (ind_std.size()); p_std_value = p_std_value/path;
+   uvec ind_std = (find(absmax_app_std_npath>absmax_obs_std_npath));
+   double p_std_value = (ind_std.size()); p_std_value = p_std_value/npath;
    
-   if (pathsave<1){
+   if (npathsave<1){
      return List::create(_["p_std_value"]=p_std_value,_["p_value"]=p_value);
-   } else if (pathsave > path) {
+   } else if (npathsave > npath) {
      return List::create(_["SE_boot"]=se_boot,
-                         _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
-                         _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                         _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
+                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    } else {
-     pathsave = pathsave - 1;
-     app_path = app_path[Range(0,pathsave)];
-     app_std_path = app_std_path[Range(0,pathsave)];
+     npathsave = npathsave - 1;
+     app_npath = app_npath[Range(0,npathsave)];
+     app_std_npath = app_std_npath[Range(0,npathsave)];
      return List::create(_["SE_boot"]=se_boot,
-                         _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
-                         _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                         _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
+                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    }
  }
  
- List form_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form, int pathsave){
+ List form_mis_DFSANE(int npath, vec b, vec Time, vec Delta, mat Covari, int form, int npathsave){
    
    int n = Covari.n_rows;
    int p = Covari.n_cols;
@@ -1411,15 +1411,15 @@ using namespace Rcpp;
    mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
    E_pi_t_z.replace(datum::nan,0);
    
-   // obs_path; 1 by x vector
-   List Mhat_i_t(n); List dMhat_i_t(n); vec obs_path = zero_vec_n;
+   // obs_npath; 1 by x vector
+   List Mhat_i_t(n); List dMhat_i_t(n); vec obs_npath = zero_vec_n;
    for(int it=0; it<n; it++){
      tempvec_n = as<vec>(N_i_t(it))-(cumsum(as<vec>(Y_i_t(it))%(dLambdahat_0_t)));
      Mhat_i_t(it) = tempvec_n;
      dMhat_i_t(it) = diff(join_cols(zero_vec_1,tempvec_n));
-     obs_path += (tempvec_n(n-1))*as<vec>(pi_i_z(it));
+     obs_npath += (tempvec_n(n-1))*as<vec>(pi_i_z(it));
    }
-   obs_path /= sqrtn;
+   obs_npath /= sqrtn;
    
    // -----------------------------------------------------------
    // ----------------------Kernel Smoothing---------------------
@@ -1495,8 +1495,8 @@ using namespace Rcpp;
    // -----------------------------------------------------------
    // ------------------------Sample Path------------------------
    // -----------------------------------------------------------
-   List app_path(path);
-   for(int itt=0; itt<path; itt++){
+   List app_npath(npath);
+   for(int itt=0; itt<npath; itt++){
      
      vec phi_i(n); vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
      while(tolerance>tol){
@@ -1544,14 +1544,14 @@ using namespace Rcpp;
      vec term3 = (sum((S_pi_t_z.each_col())%(dLambdahat_0_t - dLambdahat_0_t_s))).t()/sqrtn;
      
      tempvec_n = term1 - term2 - term3;
-     app_path(itt) = tempvec_n;
+     app_npath(itt) = tempvec_n;
    }
    
-   NumericMatrix tempmat_npath(n,path);
-   for(int it=0; it<path; it++){
-     tempmat_npath(_,it) = (as<NumericVector>(app_path(it)));
+   NumericMatrix tempmat_nnpath(n,npath);
+   for(int it=0; it<npath; it++){
+     tempmat_nnpath(_,it) = (as<NumericVector>(app_npath(it)));
    }
-   vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
+   vec se_boot = stddev(as<mat>(tempmat_nnpath),0,1);
    // too low values which are 0 or computationally 0 of se_boot makes a problem,
    // so we adjust them to have kappa = quantile of mat_se_boot
    // e.g., kappa_min = censoring; quantile(mat_se_boot) = {censoring, 1};
@@ -1565,45 +1565,45 @@ using namespace Rcpp;
    kappa = quantile(se_boot, kappa);
    se_boot.clamp(kappa(0),kappa(1));
    
-   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
-   for(int it=0; it<path; it++){
-     tempvec_n = as<vec>(app_path(it));
-     absmax_app_path(it) = abs(tempvec_n).max();
+   List app_std_npath(npath); vec absmax_app_npath(npath); vec absmax_app_std_npath(npath);
+   for(int it=0; it<npath; it++){
+     tempvec_n = as<vec>(app_npath(it));
+     absmax_app_npath(it) = abs(tempvec_n).max();
      
      tempvec_n /= se_boot;
-     app_std_path(it) = tempvec_n;
-     absmax_app_std_path(it) = abs(tempvec_n).max();
+     app_std_npath(it) = tempvec_n;
+     absmax_app_std_npath(it) = abs(tempvec_n).max();
    }
    
-   vec obs_std_path = obs_path/se_boot;
-   double absmax_obs_path = (abs(obs_path)).max();
-   double absmax_obs_std_path = (abs(obs_std_path)).max();
+   vec obs_std_npath = obs_npath/se_boot;
+   double absmax_obs_npath = (abs(obs_npath)).max();
+   double absmax_obs_std_npath = (abs(obs_std_npath)).max();
    
-   uvec ind_unstd = (find(absmax_app_path>absmax_obs_path));
-   double p_value = (ind_unstd.size()); p_value = p_value/path;
+   uvec ind_unstd = (find(absmax_app_npath>absmax_obs_npath));
+   double p_value = (ind_unstd.size()); p_value = p_value/npath;
    
-   uvec ind_std = (find(absmax_app_std_path>absmax_obs_std_path));
-   double p_std_value = (ind_std.size()); p_std_value = p_std_value/path;
+   uvec ind_std = (find(absmax_app_std_npath>absmax_obs_std_npath));
+   double p_std_value = (ind_std.size()); p_std_value = p_std_value/npath;
    
-   if (pathsave<1){
+   if (npathsave<1){
      return List::create(_["p_std_value"]=p_std_value,_["p_value"]=p_value);
-   } else if (pathsave > path) {
+   } else if (npathsave > npath) {
      return List::create(_["SE_boot"]=se_boot,
-                         _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
-                         _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                         _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
+                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    } else {
-     pathsave = pathsave - 1;
-     app_path = app_path[Range(0,pathsave)];
-     app_std_path = app_std_path[Range(0,pathsave)];
+     npathsave = npathsave - 1;
+     app_npath = app_npath[Range(0,npathsave)];
+     app_std_npath = app_std_npath[Range(0,npathsave)];
      return List::create(_["SE_boot"]=se_boot,
-                         _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
-                         _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                         _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
+                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    }
  }
  
- List form_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form, int pathsave){
+ List form_mns_DFSANE(int npath, vec b, vec Time, vec Delta, mat Covari, int form, int npathsave){
    
    int n = Covari.n_rows;
    int p = Covari.n_cols;
@@ -1659,15 +1659,15 @@ using namespace Rcpp;
    mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
    E_pi_t_z.replace(datum::nan,0);
    
-   // obs_path; 1 by x vector
-   List Mhat_i_t(n); List dMhat_i_t(n); vec obs_path = zero_vec_n;
+   // obs_npath; 1 by x vector
+   List Mhat_i_t(n); List dMhat_i_t(n); vec obs_npath = zero_vec_n;
    for(int it=0; it<n; it++){
      tempvec_n = as<vec>(N_i_t(it))-(cumsum(as<vec>(Y_i_t(it))%(dLambdahat_0_t)));
      Mhat_i_t(it) = tempvec_n;
      dMhat_i_t(it) = diff(join_cols(zero_vec_1,tempvec_n));
-     obs_path += (tempvec_n(n-1))*as<vec>(pi_i_z(it));
+     obs_npath += (tempvec_n(n-1))*as<vec>(pi_i_z(it));
    }
-   obs_path /= sqrtn;
+   obs_npath /= sqrtn;
    
    // -----------------------------------------------------------
    // ----------------------Kernel Smoothing---------------------
@@ -1743,8 +1743,8 @@ using namespace Rcpp;
    // -----------------------------------------------------------
    // ------------------------Sample Path------------------------
    // -----------------------------------------------------------
-   List app_path(path);
-   for(int itt=0; itt<path; itt++){
+   List app_npath(npath);
+   for(int itt=0; itt<npath; itt++){
      
      vec phi_i(n); vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
      while(tolerance>tol){
@@ -1792,14 +1792,14 @@ using namespace Rcpp;
      vec term3 = (sum((S_pi_t_z.each_col())%(dLambdahat_0_t - dLambdahat_0_t_s))).t()/sqrtn;
      
      tempvec_n = term1 - term2 - term3;
-     app_path(itt) = tempvec_n;
+     app_npath(itt) = tempvec_n;
    }
    
-   NumericMatrix tempmat_npath(n,path);
-   for(int it=0; it<path; it++){
-     tempmat_npath(_,it) = (as<NumericVector>(app_path(it)));
+   NumericMatrix tempmat_nnpath(n,npath);
+   for(int it=0; it<npath; it++){
+     tempmat_nnpath(_,it) = (as<NumericVector>(app_npath(it)));
    }
-   vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
+   vec se_boot = stddev(as<mat>(tempmat_nnpath),0,1);
    // too low values which are 0 or computationally 0 of se_boot makes a problem,
    // so we adjust them to have kappa = quantile of mat_se_boot
    // e.g., kappa_min = censoring; quantile(mat_se_boot) = {censoring, 1};
@@ -1813,45 +1813,45 @@ using namespace Rcpp;
    kappa = quantile(se_boot, kappa);
    se_boot.clamp(kappa(0),kappa(1));
    
-   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
-   for(int it=0; it<path; it++){
-     tempvec_n = as<vec>(app_path(it));
-     absmax_app_path(it) = abs(tempvec_n).max();
+   List app_std_npath(npath); vec absmax_app_npath(npath); vec absmax_app_std_npath(npath);
+   for(int it=0; it<npath; it++){
+     tempvec_n = as<vec>(app_npath(it));
+     absmax_app_npath(it) = abs(tempvec_n).max();
      
      tempvec_n /= se_boot;
-     app_std_path(it) = tempvec_n;
-     absmax_app_std_path(it) = abs(tempvec_n).max();
+     app_std_npath(it) = tempvec_n;
+     absmax_app_std_npath(it) = abs(tempvec_n).max();
    }
    
-   vec obs_std_path = obs_path/se_boot;
-   double absmax_obs_path = (abs(obs_path)).max();
-   double absmax_obs_std_path = (abs(obs_std_path)).max();
+   vec obs_std_npath = obs_npath/se_boot;
+   double absmax_obs_npath = (abs(obs_npath)).max();
+   double absmax_obs_std_npath = (abs(obs_std_npath)).max();
    
-   uvec ind_unstd = (find(absmax_app_path>absmax_obs_path));
-   double p_value = (ind_unstd.size()); p_value = p_value/path;
+   uvec ind_unstd = (find(absmax_app_npath>absmax_obs_npath));
+   double p_value = (ind_unstd.size()); p_value = p_value/npath;
    
-   uvec ind_std = (find(absmax_app_std_path>absmax_obs_std_path));
-   double p_std_value = (ind_std.size()); p_std_value = p_std_value/path;
+   uvec ind_std = (find(absmax_app_std_npath>absmax_obs_std_npath));
+   double p_std_value = (ind_std.size()); p_std_value = p_std_value/npath;
    
-   if (pathsave<1){
+   if (npathsave<1){
      return List::create(_["p_std_value"]=p_std_value,_["p_value"]=p_value);
-   } else if (pathsave > path) {
+   } else if (npathsave > npath) {
      return List::create(_["SE_boot"]=se_boot,
-                         _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
-                         _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                         _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
+                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    } else {
-     pathsave = pathsave - 1;
-     app_path = app_path[Range(0,pathsave)];
-     app_std_path = app_std_path[Range(0,pathsave)];
+     npathsave = npathsave - 1;
+     app_npath = app_npath[Range(0,npathsave)];
+     app_std_npath = app_std_npath[Range(0,npathsave)];
      return List::create(_["SE_boot"]=se_boot,
-                         _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
-                         _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                         _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
+                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    }
  }
  
- List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int pathsave){
+ List omni_mis_optim(int npath, vec b, vec Time, vec Delta, mat Covari, String optimType, int npathsave){
    
    Rcpp::Environment stats("package:stats"); 
    Rcpp::Function optim = stats["optim"];
@@ -1909,15 +1909,15 @@ using namespace Rcpp;
    mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
    E_pi_t_z.replace(datum::nan,0);
    
-   // obs_path; t by x vector
-   List Mhat_i_t(n); List dMhat_i_t(n); mat obs_path = zero_mat_nn;
+   // obs_npath; t by x vector
+   List Mhat_i_t(n); List dMhat_i_t(n); mat obs_npath = zero_mat_nn;
    for(int it=0; it<n; it++){
      tempvec_n = as<vec>(N_i_t(it))-(cumsum(as<vec>(Y_i_t(it))%(dLambdahat_0_t)));
      Mhat_i_t(it) = tempvec_n;
      dMhat_i_t(it) = diff(join_cols(zero_vec_1,tempvec_n));
-     obs_path += tempvec_n*(as<rowvec>(pi_i_z(it)));
+     obs_npath += tempvec_n*(as<rowvec>(pi_i_z(it)));
    }
-   obs_path /= sqrtn;
+   obs_npath /= sqrtn;
    
    // -----------------------------------------------------------
    // ----------------------Kernel Smoothing---------------------
@@ -1993,8 +1993,8 @@ using namespace Rcpp;
    // -----------------------------------------------------------
    // ------------------------Sample Path------------------------
    // -----------------------------------------------------------
-   List app_path(path);
-   for(int itt=0; itt<path; itt++){
+   List app_npath(npath);
+   for(int itt=0; itt<npath; itt++){
      
      vec phi_i(n); vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
      while(tolerance>tol){
@@ -2051,14 +2051,14 @@ using namespace Rcpp;
      mat term3 = cumsum((S_pi_t_z.each_col())%(dLambdahat_0_t - dLambdahat_0_t_s))/sqrtn;
      
      tempmat_nn = term1 - term2 - term3;
-     app_path(itt) = tempmat_nn;
+     app_npath(itt) = tempmat_nn;
    }
    
-   NumericMatrix tempmat_n2path(pow(n,2),path);
-   for(int it=0; it<path; it++){
-     tempmat_n2path(_,it) = (as<NumericVector>(app_path(it)));
+   NumericMatrix tempmat_n2npath(pow(n,2),npath);
+   for(int it=0; it<npath; it++){
+     tempmat_n2npath(_,it) = (as<NumericVector>(app_npath(it)));
    }
-   vec mat_se_boot = stddev(as<mat>(tempmat_n2path),0,1);
+   vec mat_se_boot = stddev(as<mat>(tempmat_n2npath),0,1);
    // too low values which are 0 or computationally 0 of se_boot makes a problem,
    // so we adjust them to have kappa = quantile of mat_se_boot
    // e.g., kappa_min = censoring; quantile(mat_se_boot) = {censoring, 1};
@@ -2073,45 +2073,45 @@ using namespace Rcpp;
    mat_se_boot.clamp(kappa(0),kappa(1));
    mat se_boot = reshape(mat_se_boot,n,n);
    
-   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
-   for(int it=0; it<path; it++){
-     tempmat_nn = as<mat>(app_path(it));
-     absmax_app_path(it) = abs(tempmat_nn).max();
+   List app_std_npath(npath); vec absmax_app_npath(npath); vec absmax_app_std_npath(npath);
+   for(int it=0; it<npath; it++){
+     tempmat_nn = as<mat>(app_npath(it));
+     absmax_app_npath(it) = abs(tempmat_nn).max();
      
      tempmat_nn /= se_boot;
-     app_std_path(it) = tempmat_nn;
-     absmax_app_std_path(it) = abs(tempmat_nn).max();
+     app_std_npath(it) = tempmat_nn;
+     absmax_app_std_npath(it) = abs(tempmat_nn).max();
    }
    
-   mat obs_std_path = obs_path/se_boot;
-   double absmax_obs_path = (abs(obs_path)).max();
-   double absmax_obs_std_path = (abs(obs_std_path)).max();
+   mat obs_std_npath = obs_npath/se_boot;
+   double absmax_obs_npath = (abs(obs_npath)).max();
+   double absmax_obs_std_npath = (abs(obs_std_npath)).max();
    
-   uvec ind_unstd = (find(absmax_app_path>absmax_obs_path));
-   double p_value = (ind_unstd.size()); p_value = p_value/path;
+   uvec ind_unstd = (find(absmax_app_npath>absmax_obs_npath));
+   double p_value = (ind_unstd.size()); p_value = p_value/npath;
    
-   uvec ind_std = (find(absmax_app_std_path>absmax_obs_std_path));
-   double p_std_value = (ind_std.size()); p_std_value = p_std_value/path;
+   uvec ind_std = (find(absmax_app_std_npath>absmax_obs_std_npath));
+   double p_std_value = (ind_std.size()); p_std_value = p_std_value/npath;
    
-   if (pathsave<1){
+   if (npathsave<1){
      return List::create(_["p_std_value"]=p_std_value,_["p_value"]=p_value);
-   } else if (pathsave > path) {
+   } else if (npathsave > npath) {
      return List::create(_["SE_boot"]=se_boot,
-                         _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
-                         _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                         _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
+                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    } else {
-     pathsave = pathsave - 1;
-     app_path = app_path[Range(0,pathsave)];
-     app_std_path = app_std_path[Range(0,pathsave)];
+     npathsave = npathsave - 1;
+     app_npath = app_npath[Range(0,npathsave)];
+     app_std_npath = app_std_npath[Range(0,npathsave)];
      return List::create(_["SE_boot"]=se_boot,
-                         _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
-                         _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                         _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
+                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    }
  }
  
- List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int pathsave){
+ List omni_mns_optim(int npath, vec b, vec Time, vec Delta, mat Covari, String optimType, int npathsave){
    
    Rcpp::Environment stats("package:stats"); 
    Rcpp::Function optim = stats["optim"];
@@ -2169,15 +2169,15 @@ using namespace Rcpp;
    mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
    E_pi_t_z.replace(datum::nan,0);
    
-   // obs_path; t by x vector
-   List Mhat_i_t(n); List dMhat_i_t(n); mat obs_path = zero_mat_nn;
+   // obs_npath; t by x vector
+   List Mhat_i_t(n); List dMhat_i_t(n); mat obs_npath = zero_mat_nn;
    for(int it=0; it<n; it++){
      tempvec_n = as<vec>(N_i_t(it))-(cumsum(as<vec>(Y_i_t(it))%(dLambdahat_0_t)));
      Mhat_i_t(it) = tempvec_n;
      dMhat_i_t(it) = diff(join_cols(zero_vec_1,tempvec_n));
-     obs_path += tempvec_n*(as<rowvec>(pi_i_z(it)));
+     obs_npath += tempvec_n*(as<rowvec>(pi_i_z(it)));
    }
-   obs_path /= sqrtn;
+   obs_npath /= sqrtn;
    
    // -----------------------------------------------------------
    // ----------------------Kernel Smoothing---------------------
@@ -2253,8 +2253,8 @@ using namespace Rcpp;
    // -----------------------------------------------------------
    // ------------------------Sample Path------------------------
    // -----------------------------------------------------------
-   List app_path(path);
-   for(int itt=0; itt<path; itt++){
+   List app_npath(npath);
+   for(int itt=0; itt<npath; itt++){
      
      vec phi_i(n); vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
      while(tolerance>tol){
@@ -2310,14 +2310,14 @@ using namespace Rcpp;
      mat term3 = cumsum((S_pi_t_z.each_col())%(dLambdahat_0_t - dLambdahat_0_t_s))/sqrtn;
      
      tempmat_nn = term1 - term2 - term3;
-     app_path(itt) = tempmat_nn;
+     app_npath(itt) = tempmat_nn;
    }
    
-   NumericMatrix tempmat_n2path(pow(n,2),path);
-   for(int it=0; it<path; it++){
-     tempmat_n2path(_,it) = (as<NumericVector>(app_path(it)));
+   NumericMatrix tempmat_n2npath(pow(n,2),npath);
+   for(int it=0; it<npath; it++){
+     tempmat_n2npath(_,it) = (as<NumericVector>(app_npath(it)));
    }
-   vec mat_se_boot = stddev(as<mat>(tempmat_n2path),0,1);
+   vec mat_se_boot = stddev(as<mat>(tempmat_n2npath),0,1);
    // too low values which are 0 or computationally 0 of se_boot makes a problem,
    // so we adjust them to have kappa = quantile of mat_se_boot
    // e.g., kappa_min = censoring; quantile(mat_se_boot) = {censoring, 1};
@@ -2332,45 +2332,45 @@ using namespace Rcpp;
    mat_se_boot.clamp(kappa(0),kappa(1));
    mat se_boot = reshape(mat_se_boot,n,n);
    
-   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
-   for(int it=0; it<path; it++){
-     tempmat_nn = as<mat>(app_path(it));
-     absmax_app_path(it) = abs(tempmat_nn).max();
+   List app_std_npath(npath); vec absmax_app_npath(npath); vec absmax_app_std_npath(npath);
+   for(int it=0; it<npath; it++){
+     tempmat_nn = as<mat>(app_npath(it));
+     absmax_app_npath(it) = abs(tempmat_nn).max();
      
      tempmat_nn /= se_boot;
-     app_std_path(it) = tempmat_nn;
-     absmax_app_std_path(it) = abs(tempmat_nn).max();
+     app_std_npath(it) = tempmat_nn;
+     absmax_app_std_npath(it) = abs(tempmat_nn).max();
    }
    
-   mat obs_std_path = obs_path/se_boot;
-   double absmax_obs_path = (abs(obs_path)).max();
-   double absmax_obs_std_path = (abs(obs_std_path)).max();
+   mat obs_std_npath = obs_npath/se_boot;
+   double absmax_obs_npath = (abs(obs_npath)).max();
+   double absmax_obs_std_npath = (abs(obs_std_npath)).max();
    
-   uvec ind_unstd = (find(absmax_app_path>absmax_obs_path));
-   double p_value = (ind_unstd.size()); p_value = p_value/path;
+   uvec ind_unstd = (find(absmax_app_npath>absmax_obs_npath));
+   double p_value = (ind_unstd.size()); p_value = p_value/npath;
    
-   uvec ind_std = (find(absmax_app_std_path>absmax_obs_std_path));
-   double p_std_value = (ind_std.size()); p_std_value = p_std_value/path;
+   uvec ind_std = (find(absmax_app_std_npath>absmax_obs_std_npath));
+   double p_std_value = (ind_std.size()); p_std_value = p_std_value/npath;
    
-   if (pathsave<1){
+   if (npathsave<1){
      return List::create(_["p_std_value"]=p_std_value,_["p_value"]=p_value);
-   } else if (pathsave > path) {
+   } else if (npathsave > npath) {
      return List::create(_["SE_boot"]=se_boot,
-                         _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
-                         _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                         _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
+                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    } else {
-     pathsave = pathsave - 1;
-     app_path = app_path[Range(0,pathsave)];
-     app_std_path = app_std_path[Range(0,pathsave)];
+     npathsave = npathsave - 1;
+     app_npath = app_npath[Range(0,npathsave)];
+     app_std_npath = app_std_npath[Range(0,npathsave)];
      return List::create(_["SE_boot"]=se_boot,
-                         _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
-                         _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                         _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
+                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    }
  }
  
- List link_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int pathsave){
+ List link_mis_optim(int npath, vec b, vec Time, vec Delta, mat Covari, String optimType, int npathsave){
    
    Rcpp::Environment stats("package:stats"); 
    Rcpp::Function optim = stats["optim"];
@@ -2428,15 +2428,15 @@ using namespace Rcpp;
    mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
    E_pi_t_z.replace(datum::nan,0);
    
-   // obs_path; 1 by x vector
-   List Mhat_i_t(n); List dMhat_i_t(n); vec obs_path = zero_vec_n;
+   // obs_npath; 1 by x vector
+   List Mhat_i_t(n); List dMhat_i_t(n); vec obs_npath = zero_vec_n;
    for(int it=0; it<n; it++){
      tempvec_n = as<vec>(N_i_t(it))-(cumsum(as<vec>(Y_i_t(it))%(dLambdahat_0_t)));
      Mhat_i_t(it) = tempvec_n;
      dMhat_i_t(it) = diff(join_cols(zero_vec_1,tempvec_n));
-     obs_path += (tempvec_n(n-1))*as<vec>(pi_i_z(it));
+     obs_npath += (tempvec_n(n-1))*as<vec>(pi_i_z(it));
    }
-   obs_path /= sqrtn;
+   obs_npath /= sqrtn;
    
    // -----------------------------------------------------------
    // ----------------------Kernel Smoothing---------------------
@@ -2512,8 +2512,8 @@ using namespace Rcpp;
    // -----------------------------------------------------------
    // ------------------------Sample Path------------------------
    // -----------------------------------------------------------
-   List app_path(path);
-   for(int itt=0; itt<path; itt++){
+   List app_npath(npath);
+   for(int itt=0; itt<npath; itt++){
      
      vec phi_i(n); vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
      while(tolerance>tol){
@@ -2570,14 +2570,14 @@ using namespace Rcpp;
      vec term3 = (sum((S_pi_t_z.each_col())%(dLambdahat_0_t - dLambdahat_0_t_s))).t()/sqrtn;
      
      tempvec_n = term1 - term2 - term3;
-     app_path(itt) = tempvec_n;
+     app_npath(itt) = tempvec_n;
    }
    
-   NumericMatrix tempmat_npath(n,path);
-   for(int it=0; it<path; it++){
-     tempmat_npath(_,it) = (as<NumericVector>(app_path(it)));
+   NumericMatrix tempmat_nnpath(n,npath);
+   for(int it=0; it<npath; it++){
+     tempmat_nnpath(_,it) = (as<NumericVector>(app_npath(it)));
    }
-   vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
+   vec se_boot = stddev(as<mat>(tempmat_nnpath),0,1);
    // too low values which are 0 or computationally 0 of se_boot makes a problem,
    // so we adjust them to have kappa = quantile of mat_se_boot
    // e.g., kappa_min = censoring; quantile(mat_se_boot) = {censoring, 1};
@@ -2591,45 +2591,45 @@ using namespace Rcpp;
    kappa = quantile(se_boot, kappa);
    se_boot.clamp(kappa(0),kappa(1));
    
-   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
-   for(int it=0; it<path; it++){
-     tempvec_n = as<vec>(app_path(it));
-     absmax_app_path(it) = abs(tempvec_n).max();
+   List app_std_npath(npath); vec absmax_app_npath(npath); vec absmax_app_std_npath(npath);
+   for(int it=0; it<npath; it++){
+     tempvec_n = as<vec>(app_npath(it));
+     absmax_app_npath(it) = abs(tempvec_n).max();
      
      tempvec_n /= se_boot;
-     app_std_path(it) = tempvec_n;
-     absmax_app_std_path(it) = abs(tempvec_n).max();
+     app_std_npath(it) = tempvec_n;
+     absmax_app_std_npath(it) = abs(tempvec_n).max();
    }
    
-   vec obs_std_path = obs_path/se_boot;
-   double absmax_obs_path = (abs(obs_path)).max();
-   double absmax_obs_std_path = (abs(obs_std_path)).max();
+   vec obs_std_npath = obs_npath/se_boot;
+   double absmax_obs_npath = (abs(obs_npath)).max();
+   double absmax_obs_std_npath = (abs(obs_std_npath)).max();
    
-   uvec ind_unstd = (find(absmax_app_path>absmax_obs_path));
-   double p_value = (ind_unstd.size()); p_value = p_value/path;
+   uvec ind_unstd = (find(absmax_app_npath>absmax_obs_npath));
+   double p_value = (ind_unstd.size()); p_value = p_value/npath;
    
-   uvec ind_std = (find(absmax_app_std_path>absmax_obs_std_path));
-   double p_std_value = (ind_std.size()); p_std_value = p_std_value/path;
+   uvec ind_std = (find(absmax_app_std_npath>absmax_obs_std_npath));
+   double p_std_value = (ind_std.size()); p_std_value = p_std_value/npath;
    
-   if (pathsave<1){
+   if (npathsave<1){
      return List::create(_["p_std_value"]=p_std_value,_["p_value"]=p_value);
-   } else if (pathsave > path) {
+   } else if (npathsave > npath) {
      return List::create(_["SE_boot"]=se_boot,
-                         _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
-                         _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                         _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
+                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    } else {
-     pathsave = pathsave - 1;
-     app_path = app_path[Range(0,pathsave)];
-     app_std_path = app_std_path[Range(0,pathsave)];
+     npathsave = npathsave - 1;
+     app_npath = app_npath[Range(0,npathsave)];
+     app_std_npath = app_std_npath[Range(0,npathsave)];
      return List::create(_["SE_boot"]=se_boot,
-                         _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
-                         _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                         _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
+                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    }
  }
  
- List link_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int pathsave){
+ List link_mns_optim(int npath, vec b, vec Time, vec Delta, mat Covari, String optimType, int npathsave){
    
    Rcpp::Environment stats("package:stats"); 
    Rcpp::Function optim = stats["optim"];
@@ -2687,15 +2687,15 @@ using namespace Rcpp;
    mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
    E_pi_t_z.replace(datum::nan,0);
    
-   // obs_path; 1 by x vector
-   List Mhat_i_t(n); List dMhat_i_t(n); vec obs_path = zero_vec_n;
+   // obs_npath; 1 by x vector
+   List Mhat_i_t(n); List dMhat_i_t(n); vec obs_npath = zero_vec_n;
    for(int it=0; it<n; it++){
      tempvec_n = as<vec>(N_i_t(it))-(cumsum(as<vec>(Y_i_t(it))%(dLambdahat_0_t)));
      Mhat_i_t(it) = tempvec_n;
      dMhat_i_t(it) = diff(join_cols(zero_vec_1,tempvec_n));
-     obs_path += (tempvec_n(n-1))*as<vec>(pi_i_z(it));
+     obs_npath += (tempvec_n(n-1))*as<vec>(pi_i_z(it));
    }
-   obs_path /= sqrtn;
+   obs_npath /= sqrtn;
    
    // -----------------------------------------------------------
    // ----------------------Kernel Smoothing---------------------
@@ -2771,8 +2771,8 @@ using namespace Rcpp;
    // -----------------------------------------------------------
    // ------------------------Sample Path------------------------
    // -----------------------------------------------------------
-   List app_path(path);
-   for(int itt=0; itt<path; itt++){
+   List app_npath(npath);
+   for(int itt=0; itt<npath; itt++){
      
      vec phi_i(n); vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
      while(tolerance>tol){
@@ -2828,14 +2828,14 @@ using namespace Rcpp;
      vec term3 = (sum((S_pi_t_z.each_col())%(dLambdahat_0_t - dLambdahat_0_t_s))).t()/sqrtn;
      
      tempvec_n = term1 - term2 - term3;
-     app_path(itt) = tempvec_n;
+     app_npath(itt) = tempvec_n;
    }
    
-   NumericMatrix tempmat_npath(n,path);
-   for(int it=0; it<path; it++){
-     tempmat_npath(_,it) = (as<NumericVector>(app_path(it)));
+   NumericMatrix tempmat_nnpath(n,npath);
+   for(int it=0; it<npath; it++){
+     tempmat_nnpath(_,it) = (as<NumericVector>(app_npath(it)));
    }
-   vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
+   vec se_boot = stddev(as<mat>(tempmat_nnpath),0,1);
    // too low values which are 0 or computationally 0 of se_boot makes a problem,
    // so we adjust them to have kappa = quantile of mat_se_boot
    // e.g., kappa_min = censoring; quantile(mat_se_boot) = {censoring, 1};
@@ -2849,45 +2849,45 @@ using namespace Rcpp;
    kappa = quantile(se_boot, kappa);
    se_boot.clamp(kappa(0),kappa(1));
    
-   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
-   for(int it=0; it<path; it++){
-     tempvec_n = as<vec>(app_path(it));
-     absmax_app_path(it) = abs(tempvec_n).max();
+   List app_std_npath(npath); vec absmax_app_npath(npath); vec absmax_app_std_npath(npath);
+   for(int it=0; it<npath; it++){
+     tempvec_n = as<vec>(app_npath(it));
+     absmax_app_npath(it) = abs(tempvec_n).max();
      
      tempvec_n /= se_boot;
-     app_std_path(it) = tempvec_n;
-     absmax_app_std_path(it) = abs(tempvec_n).max();
+     app_std_npath(it) = tempvec_n;
+     absmax_app_std_npath(it) = abs(tempvec_n).max();
    }
    
-   vec obs_std_path = obs_path/se_boot;
-   double absmax_obs_path = (abs(obs_path)).max();
-   double absmax_obs_std_path = (abs(obs_std_path)).max();
+   vec obs_std_npath = obs_npath/se_boot;
+   double absmax_obs_npath = (abs(obs_npath)).max();
+   double absmax_obs_std_npath = (abs(obs_std_npath)).max();
    
-   uvec ind_unstd = (find(absmax_app_path>absmax_obs_path));
-   double p_value = (ind_unstd.size()); p_value = p_value/path;
+   uvec ind_unstd = (find(absmax_app_npath>absmax_obs_npath));
+   double p_value = (ind_unstd.size()); p_value = p_value/npath;
    
-   uvec ind_std = (find(absmax_app_std_path>absmax_obs_std_path));
-   double p_std_value = (ind_std.size()); p_std_value = p_std_value/path;
+   uvec ind_std = (find(absmax_app_std_npath>absmax_obs_std_npath));
+   double p_std_value = (ind_std.size()); p_std_value = p_std_value/npath;
    
-   if (pathsave<1){
+   if (npathsave<1){
      return List::create(_["p_std_value"]=p_std_value,_["p_value"]=p_value);
-   } else if (pathsave > path) {
+   } else if (npathsave > npath) {
      return List::create(_["SE_boot"]=se_boot,
-                         _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
-                         _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                         _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
+                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    } else {
-     pathsave = pathsave - 1;
-     app_path = app_path[Range(0,pathsave)];
-     app_std_path = app_std_path[Range(0,pathsave)];
+     npathsave = npathsave - 1;
+     app_npath = app_npath[Range(0,npathsave)];
+     app_std_npath = app_std_npath[Range(0,npathsave)];
      return List::create(_["SE_boot"]=se_boot,
-                         _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
-                         _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                         _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
+                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    }
  }
  
- List form_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int form, int pathsave){
+ List form_mis_optim(int npath, vec b, vec Time, vec Delta, mat Covari, String optimType, int form, int npathsave){
    
    Rcpp::Environment stats("package:stats"); 
    Rcpp::Function optim = stats["optim"];
@@ -2946,15 +2946,15 @@ using namespace Rcpp;
    mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
    E_pi_t_z.replace(datum::nan,0);
    
-   // obs_path; 1 by x vector
-   List Mhat_i_t(n); List dMhat_i_t(n); vec obs_path = zero_vec_n;
+   // obs_npath; 1 by x vector
+   List Mhat_i_t(n); List dMhat_i_t(n); vec obs_npath = zero_vec_n;
    for(int it=0; it<n; it++){
      tempvec_n = as<vec>(N_i_t(it))-(cumsum(as<vec>(Y_i_t(it))%(dLambdahat_0_t)));
      Mhat_i_t(it) = tempvec_n;
      dMhat_i_t(it) = diff(join_cols(zero_vec_1,tempvec_n));
-     obs_path += (tempvec_n(n-1))*as<vec>(pi_i_z(it));
+     obs_npath += (tempvec_n(n-1))*as<vec>(pi_i_z(it));
    }
-   obs_path /= sqrtn;
+   obs_npath /= sqrtn;
    
    // -----------------------------------------------------------
    // ----------------------Kernel Smoothing---------------------
@@ -3030,8 +3030,8 @@ using namespace Rcpp;
    // -----------------------------------------------------------
    // ------------------------Sample Path------------------------
    // -----------------------------------------------------------
-   List app_path(path);
-   for(int itt=0; itt<path; itt++){
+   List app_npath(npath);
+   for(int itt=0; itt<npath; itt++){
      
      vec phi_i(n); vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
      while(tolerance>tol){
@@ -3088,14 +3088,14 @@ using namespace Rcpp;
      vec term3 = (sum((S_pi_t_z.each_col())%(dLambdahat_0_t - dLambdahat_0_t_s))).t()/sqrtn;
      
      tempvec_n = term1 - term2 - term3;
-     app_path(itt) = tempvec_n;
+     app_npath(itt) = tempvec_n;
    }
    
-   NumericMatrix tempmat_npath(n,path);
-   for(int it=0; it<path; it++){
-     tempmat_npath(_,it) = (as<NumericVector>(app_path(it)));
+   NumericMatrix tempmat_nnpath(n,npath);
+   for(int it=0; it<npath; it++){
+     tempmat_nnpath(_,it) = (as<NumericVector>(app_npath(it)));
    }
-   vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
+   vec se_boot = stddev(as<mat>(tempmat_nnpath),0,1);
    // too low values which are 0 or computationally 0 of se_boot makes a problem,
    // so we adjust them to have kappa = quantile of mat_se_boot
    // e.g., kappa_min = censoring; quantile(mat_se_boot) = {censoring, 1};
@@ -3109,45 +3109,45 @@ using namespace Rcpp;
    kappa = quantile(se_boot, kappa);
    se_boot.clamp(kappa(0),kappa(1));
    
-   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
-   for(int it=0; it<path; it++){
-     tempvec_n = as<vec>(app_path(it));
-     absmax_app_path(it) = abs(tempvec_n).max();
+   List app_std_npath(npath); vec absmax_app_npath(npath); vec absmax_app_std_npath(npath);
+   for(int it=0; it<npath; it++){
+     tempvec_n = as<vec>(app_npath(it));
+     absmax_app_npath(it) = abs(tempvec_n).max();
      
      tempvec_n /= se_boot;
-     app_std_path(it) = tempvec_n;
-     absmax_app_std_path(it) = abs(tempvec_n).max();
+     app_std_npath(it) = tempvec_n;
+     absmax_app_std_npath(it) = abs(tempvec_n).max();
    }
    
-   vec obs_std_path = obs_path/se_boot;
-   double absmax_obs_path = (abs(obs_path)).max();
-   double absmax_obs_std_path = (abs(obs_std_path)).max();
+   vec obs_std_npath = obs_npath/se_boot;
+   double absmax_obs_npath = (abs(obs_npath)).max();
+   double absmax_obs_std_npath = (abs(obs_std_npath)).max();
    
-   uvec ind_unstd = (find(absmax_app_path>absmax_obs_path));
-   double p_value = (ind_unstd.size()); p_value = p_value/path;
+   uvec ind_unstd = (find(absmax_app_npath>absmax_obs_npath));
+   double p_value = (ind_unstd.size()); p_value = p_value/npath;
    
-   uvec ind_std = (find(absmax_app_std_path>absmax_obs_std_path));
-   double p_std_value = (ind_std.size()); p_std_value = p_std_value/path;
+   uvec ind_std = (find(absmax_app_std_npath>absmax_obs_std_npath));
+   double p_std_value = (ind_std.size()); p_std_value = p_std_value/npath;
    
-   if (pathsave<1){
+   if (npathsave<1){
      return List::create(_["p_std_value"]=p_std_value,_["p_value"]=p_value);
-   } else if (pathsave > path) {
+   } else if (npathsave > npath) {
      return List::create(_["SE_boot"]=se_boot,
-                         _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
-                         _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                         _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
+                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    } else {
-     pathsave = pathsave - 1;
-     app_path = app_path[Range(0,pathsave)];
-     app_std_path = app_std_path[Range(0,pathsave)];
+     npathsave = npathsave - 1;
+     app_npath = app_npath[Range(0,npathsave)];
+     app_std_npath = app_std_npath[Range(0,npathsave)];
      return List::create(_["SE_boot"]=se_boot,
-                         _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
-                         _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                         _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
+                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    }
  }
  
- List form_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int form, int pathsave){
+ List form_mns_optim(int npath, vec b, vec Time, vec Delta, mat Covari, String optimType, int form, int npathsave){
    
    Rcpp::Environment stats("package:stats"); 
    Rcpp::Function optim = stats["optim"];
@@ -3206,15 +3206,15 @@ using namespace Rcpp;
    mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
    E_pi_t_z.replace(datum::nan,0);
    
-   // obs_path; 1 by x vector
-   List Mhat_i_t(n); List dMhat_i_t(n); vec obs_path = zero_vec_n;
+   // obs_npath; 1 by x vector
+   List Mhat_i_t(n); List dMhat_i_t(n); vec obs_npath = zero_vec_n;
    for(int it=0; it<n; it++){
      tempvec_n = as<vec>(N_i_t(it))-(cumsum(as<vec>(Y_i_t(it))%(dLambdahat_0_t)));
      Mhat_i_t(it) = tempvec_n;
      dMhat_i_t(it) = diff(join_cols(zero_vec_1,tempvec_n));
-     obs_path += (tempvec_n(n-1))*as<vec>(pi_i_z(it));
+     obs_npath += (tempvec_n(n-1))*as<vec>(pi_i_z(it));
    }
-   obs_path /= sqrtn;
+   obs_npath /= sqrtn;
    
    // -----------------------------------------------------------
    // ----------------------Kernel Smoothing---------------------
@@ -3290,8 +3290,8 @@ using namespace Rcpp;
    // -----------------------------------------------------------
    // ------------------------Sample Path------------------------
    // -----------------------------------------------------------
-   List app_path(path);
-   for(int itt=0; itt<path; itt++){
+   List app_npath(npath);
+   for(int itt=0; itt<npath; itt++){
      
      vec phi_i(n); vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
      while(tolerance>tol){
@@ -3347,14 +3347,14 @@ using namespace Rcpp;
      vec term3 = (sum((S_pi_t_z.each_col())%(dLambdahat_0_t - dLambdahat_0_t_s))).t()/sqrtn;
      
      tempvec_n = term1 - term2 - term3;
-     app_path(itt) = tempvec_n;
+     app_npath(itt) = tempvec_n;
    }
    
-   NumericMatrix tempmat_npath(n,path);
-   for(int it=0; it<path; it++){
-     tempmat_npath(_,it) = (as<NumericVector>(app_path(it)));
+   NumericMatrix tempmat_nnpath(n,npath);
+   for(int it=0; it<npath; it++){
+     tempmat_nnpath(_,it) = (as<NumericVector>(app_npath(it)));
    }
-   vec se_boot = stddev(as<mat>(tempmat_npath),0,1);
+   vec se_boot = stddev(as<mat>(tempmat_nnpath),0,1);
    // too low values which are 0 or computationally 0 of se_boot makes a problem,
    // so we adjust them to have kappa = quantile of mat_se_boot
    // e.g., kappa_min = censoring; quantile(mat_se_boot) = {censoring, 1};
@@ -3368,243 +3368,243 @@ using namespace Rcpp;
    kappa = quantile(se_boot, kappa);
    se_boot.clamp(kappa(0),kappa(1));
    
-   List app_std_path(path); vec absmax_app_path(path); vec absmax_app_std_path(path);
-   for(int it=0; it<path; it++){
-     tempvec_n = as<vec>(app_path(it));
-     absmax_app_path(it) = abs(tempvec_n).max();
+   List app_std_npath(npath); vec absmax_app_npath(npath); vec absmax_app_std_npath(npath);
+   for(int it=0; it<npath; it++){
+     tempvec_n = as<vec>(app_npath(it));
+     absmax_app_npath(it) = abs(tempvec_n).max();
      
      tempvec_n /= se_boot;
-     app_std_path(it) = tempvec_n;
-     absmax_app_std_path(it) = abs(tempvec_n).max();
+     app_std_npath(it) = tempvec_n;
+     absmax_app_std_npath(it) = abs(tempvec_n).max();
    }
    
-   vec obs_std_path = obs_path/se_boot;
-   double absmax_obs_path = (abs(obs_path)).max();
-   double absmax_obs_std_path = (abs(obs_std_path)).max();
+   vec obs_std_npath = obs_npath/se_boot;
+   double absmax_obs_npath = (abs(obs_npath)).max();
+   double absmax_obs_std_npath = (abs(obs_std_npath)).max();
    
-   uvec ind_unstd = (find(absmax_app_path>absmax_obs_path));
-   double p_value = (ind_unstd.size()); p_value = p_value/path;
+   uvec ind_unstd = (find(absmax_app_npath>absmax_obs_npath));
+   double p_value = (ind_unstd.size()); p_value = p_value/npath;
    
-   uvec ind_std = (find(absmax_app_std_path>absmax_obs_std_path));
-   double p_std_value = (ind_std.size()); p_std_value = p_std_value/path;
+   uvec ind_std = (find(absmax_app_std_npath>absmax_obs_std_npath));
+   double p_std_value = (ind_std.size()); p_std_value = p_std_value/npath;
    
-   if (pathsave<1){
+   if (npathsave<1){
      return List::create(_["p_std_value"]=p_std_value,_["p_value"]=p_value);
-   } else if (pathsave > path) {
+   } else if (npathsave > npath) {
      return List::create(_["SE_boot"]=se_boot,
-                         _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
-                         _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                         _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
+                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    } else {
-     pathsave = pathsave - 1;
-     app_path = app_path[Range(0,pathsave)];
-     app_std_path = app_std_path[Range(0,pathsave)];
+     npathsave = npathsave - 1;
+     app_npath = app_npath[Range(0,npathsave)];
+     app_std_npath = app_std_npath[Range(0,npathsave)];
      return List::create(_["SE_boot"]=se_boot,
-                         _["obs_path"]=obs_path,_["obs_std_path"]=obs_std_path,
-                         _["app_path"]=app_path,_["app_std_path"]=app_std_path,
+                         _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
+                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    }
  }
  
  // omni_mis_DFSANE
- List omni_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int pathsave);
- RcppExport SEXP _afttest_omni_mis_DFSANE(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP pathsaveSEXP) {
+ List omni_mis_DFSANE(int npath, vec b, vec Time, vec Delta, mat Covari, int npathsave);
+ RcppExport SEXP _afttest_omni_mis_DFSANE(SEXP npathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP npathsaveSEXP) {
    BEGIN_RCPP
    Rcpp::RObject rcpp_result_gen;
    Rcpp::RNGScope rcpp_rngScope_gen;
-   Rcpp::traits::input_parameter< int >::type path(pathSEXP);
+   Rcpp::traits::input_parameter< int >::type npath(npathSEXP);
    Rcpp::traits::input_parameter< vec >::type b(bSEXP);
    Rcpp::traits::input_parameter< vec >::type Time(TimeSEXP);
    Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
    Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
-   Rcpp::traits::input_parameter< int >::type pathsave(pathsaveSEXP);
-   rcpp_result_gen = Rcpp::wrap(omni_mis_DFSANE(path, b, Time, Delta, Covari, pathsave));
+   Rcpp::traits::input_parameter< int >::type npathsave(npathsaveSEXP);
+   rcpp_result_gen = Rcpp::wrap(omni_mis_DFSANE(npath, b, Time, Delta, Covari, npathsave));
    return rcpp_result_gen;
    END_RCPP
  }
  // omni_mns_DFSANE
- List omni_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int pathsave);
- RcppExport SEXP _afttest_omni_mns_DFSANE(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP pathsaveSEXP) {
+ List omni_mns_DFSANE(int npath, vec b, vec Time, vec Delta, mat Covari, int npathsave);
+ RcppExport SEXP _afttest_omni_mns_DFSANE(SEXP npathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP npathsaveSEXP) {
    BEGIN_RCPP
    Rcpp::RObject rcpp_result_gen;
    Rcpp::RNGScope rcpp_rngScope_gen;
-   Rcpp::traits::input_parameter< int >::type path(pathSEXP);
+   Rcpp::traits::input_parameter< int >::type npath(npathSEXP);
    Rcpp::traits::input_parameter< vec >::type b(bSEXP);
    Rcpp::traits::input_parameter< vec >::type Time(TimeSEXP);
    Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
    Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
-   Rcpp::traits::input_parameter< int >::type pathsave(pathsaveSEXP);
-   rcpp_result_gen = Rcpp::wrap(omni_mns_DFSANE(path, b, Time, Delta, Covari, pathsave));
+   Rcpp::traits::input_parameter< int >::type npathsave(npathsaveSEXP);
+   rcpp_result_gen = Rcpp::wrap(omni_mns_DFSANE(npath, b, Time, Delta, Covari, npathsave));
    return rcpp_result_gen;
    END_RCPP
  }
  // link_mis_DFSANE
- List link_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int pathsave);
- RcppExport SEXP _afttest_link_mis_DFSANE(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP pathsaveSEXP) {
+ List link_mis_DFSANE(int npath, vec b, vec Time, vec Delta, mat Covari, int npathsave);
+ RcppExport SEXP _afttest_link_mis_DFSANE(SEXP npathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP npathsaveSEXP) {
    BEGIN_RCPP
    Rcpp::RObject rcpp_result_gen;
    Rcpp::RNGScope rcpp_rngScope_gen;
-   Rcpp::traits::input_parameter< int >::type path(pathSEXP);
+   Rcpp::traits::input_parameter< int >::type npath(npathSEXP);
    Rcpp::traits::input_parameter< vec >::type b(bSEXP);
    Rcpp::traits::input_parameter< vec >::type Time(TimeSEXP);
    Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
    Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
-   Rcpp::traits::input_parameter< int >::type pathsave(pathsaveSEXP);
-   rcpp_result_gen = Rcpp::wrap(link_mis_DFSANE(path, b, Time, Delta, Covari, pathsave));
+   Rcpp::traits::input_parameter< int >::type npathsave(npathsaveSEXP);
+   rcpp_result_gen = Rcpp::wrap(link_mis_DFSANE(npath, b, Time, Delta, Covari, npathsave));
    return rcpp_result_gen;
    END_RCPP
  }
  // link_mns_DFSANE
- List link_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int pathsave);
- RcppExport SEXP _afttest_link_mns_DFSANE(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP pathsaveSEXP) {
+ List link_mns_DFSANE(int npath, vec b, vec Time, vec Delta, mat Covari, int npathsave);
+ RcppExport SEXP _afttest_link_mns_DFSANE(SEXP npathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP npathsaveSEXP) {
    BEGIN_RCPP
    Rcpp::RObject rcpp_result_gen;
    Rcpp::RNGScope rcpp_rngScope_gen;
-   Rcpp::traits::input_parameter< int >::type path(pathSEXP);
+   Rcpp::traits::input_parameter< int >::type npath(npathSEXP);
    Rcpp::traits::input_parameter< vec >::type b(bSEXP);
    Rcpp::traits::input_parameter< vec >::type Time(TimeSEXP);
    Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
    Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
-   Rcpp::traits::input_parameter< int >::type pathsave(pathsaveSEXP);
-   rcpp_result_gen = Rcpp::wrap(link_mns_DFSANE(path, b, Time, Delta, Covari, pathsave));
+   Rcpp::traits::input_parameter< int >::type npathsave(npathsaveSEXP);
+   rcpp_result_gen = Rcpp::wrap(link_mns_DFSANE(npath, b, Time, Delta, Covari, npathsave));
    return rcpp_result_gen;
    END_RCPP
  }
  // form_mis_DFSANE
- List form_mis_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form, int pathsave);
- RcppExport SEXP _afttest_form_mis_DFSANE(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP formSEXP, SEXP pathsaveSEXP) {
+ List form_mis_DFSANE(int npath, vec b, vec Time, vec Delta, mat Covari, int form, int npathsave);
+ RcppExport SEXP _afttest_form_mis_DFSANE(SEXP npathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP formSEXP, SEXP npathsaveSEXP) {
    BEGIN_RCPP
    Rcpp::RObject rcpp_result_gen;
    Rcpp::RNGScope rcpp_rngScope_gen;
-   Rcpp::traits::input_parameter< int >::type path(pathSEXP);
+   Rcpp::traits::input_parameter< int >::type npath(npathSEXP);
    Rcpp::traits::input_parameter< vec >::type b(bSEXP);
    Rcpp::traits::input_parameter< vec >::type Time(TimeSEXP);
    Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
    Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
    Rcpp::traits::input_parameter< int >::type form(formSEXP);
-   Rcpp::traits::input_parameter< int >::type pathsave(pathsaveSEXP);
-   rcpp_result_gen = Rcpp::wrap(form_mis_DFSANE(path, b, Time, Delta, Covari, form, pathsave));
+   Rcpp::traits::input_parameter< int >::type npathsave(npathsaveSEXP);
+   rcpp_result_gen = Rcpp::wrap(form_mis_DFSANE(npath, b, Time, Delta, Covari, form, npathsave));
    return rcpp_result_gen;
    END_RCPP
  }
  // form_mns_DFSANE
- List form_mns_DFSANE(int path, vec b, vec Time, vec Delta, mat Covari, int form, int pathsave);
- RcppExport SEXP _afttest_form_mns_DFSANE(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP formSEXP, SEXP pathsaveSEXP) {
+ List form_mns_DFSANE(int npath, vec b, vec Time, vec Delta, mat Covari, int form, int npathsave);
+ RcppExport SEXP _afttest_form_mns_DFSANE(SEXP npathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP formSEXP, SEXP npathsaveSEXP) {
    BEGIN_RCPP
    Rcpp::RObject rcpp_result_gen;
    Rcpp::RNGScope rcpp_rngScope_gen;
-   Rcpp::traits::input_parameter< int >::type path(pathSEXP);
+   Rcpp::traits::input_parameter< int >::type npath(npathSEXP);
    Rcpp::traits::input_parameter< vec >::type b(bSEXP);
    Rcpp::traits::input_parameter< vec >::type Time(TimeSEXP);
    Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
    Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
    Rcpp::traits::input_parameter< int >::type form(formSEXP);
-   Rcpp::traits::input_parameter< int >::type pathsave(pathsaveSEXP);
-   rcpp_result_gen = Rcpp::wrap(form_mns_DFSANE(path, b, Time, Delta, Covari, form, pathsave));
+   Rcpp::traits::input_parameter< int >::type npathsave(npathsaveSEXP);
+   rcpp_result_gen = Rcpp::wrap(form_mns_DFSANE(npath, b, Time, Delta, Covari, form, npathsave));
    return rcpp_result_gen;
    END_RCPP
  }
  // omni_mis_optim
- List omni_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int pathsave);
- RcppExport SEXP _afttest_omni_mis_optim(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP optimTypeSEXP, SEXP pathsaveSEXP) {
+ List omni_mis_optim(int npath, vec b, vec Time, vec Delta, mat Covari, String optimType, int npathsave);
+ RcppExport SEXP _afttest_omni_mis_optim(SEXP npathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP optimTypeSEXP, SEXP npathsaveSEXP) {
    BEGIN_RCPP
    Rcpp::RObject rcpp_result_gen;
    Rcpp::RNGScope rcpp_rngScope_gen;
-   Rcpp::traits::input_parameter< int >::type path(pathSEXP);
+   Rcpp::traits::input_parameter< int >::type npath(npathSEXP);
    Rcpp::traits::input_parameter< vec >::type b(bSEXP);
    Rcpp::traits::input_parameter< vec >::type Time(TimeSEXP);
    Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
    Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
    Rcpp::traits::input_parameter< String >::type optimType(optimTypeSEXP);
-   Rcpp::traits::input_parameter< int >::type pathsave(pathsaveSEXP);
-   rcpp_result_gen = Rcpp::wrap(omni_mis_optim(path, b, Time, Delta, Covari, optimType, pathsave));
+   Rcpp::traits::input_parameter< int >::type npathsave(npathsaveSEXP);
+   rcpp_result_gen = Rcpp::wrap(omni_mis_optim(npath, b, Time, Delta, Covari, optimType, npathsave));
    return rcpp_result_gen;
    END_RCPP
  }
  // omni_mns_optim
- List omni_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int pathsave);
- RcppExport SEXP _afttest_omni_mns_optim(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP optimTypeSEXP, SEXP pathsaveSEXP) {
+ List omni_mns_optim(int npath, vec b, vec Time, vec Delta, mat Covari, String optimType, int npathsave);
+ RcppExport SEXP _afttest_omni_mns_optim(SEXP npathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP optimTypeSEXP, SEXP npathsaveSEXP) {
    BEGIN_RCPP
    Rcpp::RObject rcpp_result_gen;
    Rcpp::RNGScope rcpp_rngScope_gen;
-   Rcpp::traits::input_parameter< int >::type path(pathSEXP);
+   Rcpp::traits::input_parameter< int >::type npath(npathSEXP);
    Rcpp::traits::input_parameter< vec >::type b(bSEXP);
    Rcpp::traits::input_parameter< vec >::type Time(TimeSEXP);
    Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
    Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
    Rcpp::traits::input_parameter< String >::type optimType(optimTypeSEXP);
-   Rcpp::traits::input_parameter< int >::type pathsave(pathsaveSEXP);
-   rcpp_result_gen = Rcpp::wrap(omni_mns_optim(path, b, Time, Delta, Covari, optimType, pathsave));
+   Rcpp::traits::input_parameter< int >::type npathsave(npathsaveSEXP);
+   rcpp_result_gen = Rcpp::wrap(omni_mns_optim(npath, b, Time, Delta, Covari, optimType, npathsave));
    return rcpp_result_gen;
    END_RCPP
  }
  // link_mis_optim
- List link_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int pathsave);
- RcppExport SEXP _afttest_link_mis_optim(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP optimTypeSEXP, SEXP pathsaveSEXP) {
+ List link_mis_optim(int npath, vec b, vec Time, vec Delta, mat Covari, String optimType, int npathsave);
+ RcppExport SEXP _afttest_link_mis_optim(SEXP npathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP optimTypeSEXP, SEXP npathsaveSEXP) {
    BEGIN_RCPP
    Rcpp::RObject rcpp_result_gen;
    Rcpp::RNGScope rcpp_rngScope_gen;
-   Rcpp::traits::input_parameter< int >::type path(pathSEXP);
+   Rcpp::traits::input_parameter< int >::type npath(npathSEXP);
    Rcpp::traits::input_parameter< vec >::type b(bSEXP);
    Rcpp::traits::input_parameter< vec >::type Time(TimeSEXP);
    Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
    Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
    Rcpp::traits::input_parameter< String >::type optimType(optimTypeSEXP);
-   Rcpp::traits::input_parameter< int >::type pathsave(pathsaveSEXP);
-   rcpp_result_gen = Rcpp::wrap(link_mis_optim(path, b, Time, Delta, Covari, optimType, pathsave));
+   Rcpp::traits::input_parameter< int >::type npathsave(npathsaveSEXP);
+   rcpp_result_gen = Rcpp::wrap(link_mis_optim(npath, b, Time, Delta, Covari, optimType, npathsave));
    return rcpp_result_gen;
    END_RCPP
  }
  // link_mns_optim
- List link_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int pathsave);
- RcppExport SEXP _afttest_link_mns_optim(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP optimTypeSEXP, SEXP pathsaveSEXP) {
+ List link_mns_optim(int npath, vec b, vec Time, vec Delta, mat Covari, String optimType, int npathsave);
+ RcppExport SEXP _afttest_link_mns_optim(SEXP npathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP optimTypeSEXP, SEXP npathsaveSEXP) {
    BEGIN_RCPP
    Rcpp::RObject rcpp_result_gen;
    Rcpp::RNGScope rcpp_rngScope_gen;
-   Rcpp::traits::input_parameter< int >::type path(pathSEXP);
+   Rcpp::traits::input_parameter< int >::type npath(npathSEXP);
    Rcpp::traits::input_parameter< vec >::type b(bSEXP);
    Rcpp::traits::input_parameter< vec >::type Time(TimeSEXP);
    Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
    Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
    Rcpp::traits::input_parameter< String >::type optimType(optimTypeSEXP);
-   Rcpp::traits::input_parameter< int >::type pathsave(pathsaveSEXP);
-   rcpp_result_gen = Rcpp::wrap(link_mns_optim(path, b, Time, Delta, Covari, optimType, pathsave));
+   Rcpp::traits::input_parameter< int >::type npathsave(npathsaveSEXP);
+   rcpp_result_gen = Rcpp::wrap(link_mns_optim(npath, b, Time, Delta, Covari, optimType, npathsave));
    return rcpp_result_gen;
    END_RCPP
  }
  // form_mis_optim
- List form_mis_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int form, int pathsave);
- RcppExport SEXP _afttest_form_mis_optim(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP optimTypeSEXP, SEXP formSEXP, SEXP pathsaveSEXP) {
+ List form_mis_optim(int npath, vec b, vec Time, vec Delta, mat Covari, String optimType, int form, int npathsave);
+ RcppExport SEXP _afttest_form_mis_optim(SEXP npathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP optimTypeSEXP, SEXP formSEXP, SEXP npathsaveSEXP) {
    BEGIN_RCPP
    Rcpp::RObject rcpp_result_gen;
    Rcpp::RNGScope rcpp_rngScope_gen;
-   Rcpp::traits::input_parameter< int >::type path(pathSEXP);
+   Rcpp::traits::input_parameter< int >::type npath(npathSEXP);
    Rcpp::traits::input_parameter< vec >::type b(bSEXP);
    Rcpp::traits::input_parameter< vec >::type Time(TimeSEXP);
    Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
    Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
    Rcpp::traits::input_parameter< String >::type optimType(optimTypeSEXP);
    Rcpp::traits::input_parameter< int >::type form(formSEXP);
-   Rcpp::traits::input_parameter< int >::type pathsave(pathsaveSEXP);
-   rcpp_result_gen = Rcpp::wrap(form_mis_optim(path, b, Time, Delta, Covari, optimType, form, pathsave));
+   Rcpp::traits::input_parameter< int >::type npathsave(npathsaveSEXP);
+   rcpp_result_gen = Rcpp::wrap(form_mis_optim(npath, b, Time, Delta, Covari, optimType, form, npathsave));
    return rcpp_result_gen;
    END_RCPP
  }
  // form_mns_optim
- List form_mns_optim(int path, vec b, vec Time, vec Delta, mat Covari, String optimType, int form, int pathsave);
- RcppExport SEXP _afttest_form_mns_optim(SEXP pathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP optimTypeSEXP, SEXP formSEXP, SEXP pathsaveSEXP) {
+ List form_mns_optim(int npath, vec b, vec Time, vec Delta, mat Covari, String optimType, int form, int npathsave);
+ RcppExport SEXP _afttest_form_mns_optim(SEXP npathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP optimTypeSEXP, SEXP formSEXP, SEXP npathsaveSEXP) {
    BEGIN_RCPP
    Rcpp::RObject rcpp_result_gen;
    Rcpp::RNGScope rcpp_rngScope_gen;
-   Rcpp::traits::input_parameter< int >::type path(pathSEXP);
+   Rcpp::traits::input_parameter< int >::type npath(npathSEXP);
    Rcpp::traits::input_parameter< vec >::type b(bSEXP);
    Rcpp::traits::input_parameter< vec >::type Time(TimeSEXP);
    Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
    Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
    Rcpp::traits::input_parameter< String >::type optimType(optimTypeSEXP);
    Rcpp::traits::input_parameter< int >::type form(formSEXP);
-   Rcpp::traits::input_parameter< int >::type pathsave(pathsaveSEXP);
-   rcpp_result_gen = Rcpp::wrap(form_mns_optim(path, b, Time, Delta, Covari, optimType, form, pathsave));
+   Rcpp::traits::input_parameter< int >::type npathsave(npathsaveSEXP);
+   rcpp_result_gen = Rcpp::wrap(form_mns_optim(npath, b, Time, Delta, Covari, optimType, form, npathsave));
    return rcpp_result_gen;
    END_RCPP
  }

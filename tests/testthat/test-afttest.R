@@ -16,11 +16,11 @@ test_that("test afttest", {
   z1 = simdata$z1
   z2 = simdata$z2
   
-  path = 100; testType = "form"; eqType = "mns"; optimType = "DFSANE"; form = "z2"
+  npath = 100; testType = "form"; eqType = "mns"; optimType = "DFSANE"; form = "z2"
   
-  result = afttest(formula = Surv(X, D) ~ z1 + z2, path = path,
+  result = afttest(formula = Surv(X, D) ~ z1 + z2, npath = npath,
                    testType = testType, eqType = eqType,
-                   optimType = optimType, form = form, pathsave = 50)
+                   optimType = optimType, form = form, npathsave = 50)
   
   expect_equal(result$p_value, 0.01, tolerance=5e-2)
   expect_equal(result$p_std_value, 0.01, tolerance=5e-2)

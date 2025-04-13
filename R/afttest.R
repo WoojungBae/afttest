@@ -9,7 +9,7 @@
 #'    See the documentation of \code{lm}, \code{coxph} and \code{formula} for details.
 #' @param data An optional data frame in which to interpret the variables occurring 
 #'    in the formula.
-#' @param path An integer value specifies the number of approximated processes.
+#' @param npath An integer value specifies the number of approximated processes.
 #'    The default is given by 200.
 #' @param testType A character string specifying the type of the test.
 #'    The following are permitted:
@@ -28,6 +28,14 @@
 #'      \item{\code{mis}}{Regression parameters are estimated by iterating 
 #'      the monotonic smoothed Gehan-based estimating equations.}
 #' }
+#' @param estType A character string specifying the type of the estimator used.
+#'    The readers are refered to the \pkg{aftgee} package for details.
+#'    The following are permitted:
+#'    \describe{
+#'      \item{\code{aftgee}}{Least-Squares Approach for Accelerated Failure Time 
+#'      with Generalized Estimating Equation}
+#'      \item{\code{aftsrr}}{Accelerated Failure Time with Smooth Rank Regression}
+#' }
 #' @param optimType A character string specifying the type of the optimization method.
 #'    The following are permitted:
 #'    \describe{
@@ -43,9 +51,9 @@
 #'    The argument form is necessary only if \code{testType} is \code{form}.
 #'    The default option for \code{form} is given by "1", which represents the 
 #'    first covariate in the formula argument.
-#' @param pathsave An integer value specifies he number of paths saved among all the paths.
+#' @param npathsave An integer value specifies he number of paths saved among all the paths.
 #'    The default is given by 50. Note that it requires a lot of memory if save all
-#'    sampled paths (N by N matrix for each path andso path*N*N elements)
+#'    sampled paths (N by N matrix for each npath andso npath*N*N elements)
 #' @return \code{afttest} returns an object of class \code{afttest}.
 #'    An object of class \code{afttest} is a list containing at least the following components:
 #' \describe{
@@ -59,10 +67,12 @@
 #'    \item{p_std_value}{obtained by the standardized test}
 #'    \item{DF}{a data frame of observed failure time, right censoring indicator, covariates (scaled), 
 #'    time-transformed residual based on beta estimates}
-#'    \item{path}{the number of sample paths}
-#'    \item{eqType}{eqType}
+#'    \item{npath}{the number of sample paths}
 #'    \item{testType}{testType}
+#'    \item{eqType}{eqType}
+#'    \item{estType}{estType}
 #'    \item{optimType}{optimType}
+#'    \item{npathsave}{npathsave}
 #' }
 #'    For an omnibus test, the observed process and the realizations are composed of the 
 #'    n by n matrix that rows represent the t and columns represent the x in the 
@@ -71,14 +81,15 @@
 #'    which is a function of x in the time-transformed residual order. 
 #' 
 #' @importFrom stats optim get_all_vars as.formula model.matrix
-#' @importFrom aftgee aftsrr
+#' @importFrom aftgee aftsrr aftgee
 #' @importFrom survival Surv
 #' 
 #' @example inst/examples/ex_afttest.R
 #' @export
-afttest <- function(formula, data, path = 200, testType = "omni", eqType = "mns", 
-                    optimType = "DFSANE", form = 1, pathsave = 50) {
-  
+afttest <- function(formula, data, npath = 200, testType = "omni", 
+                    eqType = "mns", estType = "aftsrr", optimType = "DFSANE", 
+                    form = 1, npathsave = 50) {
+  # , "aftgee"
   # Data Frame
   # DF <- stats::get_all_vars(formula)
   # varnames <- noquote(all.vars(formula))
@@ -150,16 +161,22 @@ afttest <- function(formula, data, path = 200, testType = "omni", eqType = "mns"
   
   # beta coefficients from aftsrr function (aftgee package)
   formula <- stats::as.formula(paste0("Surv(Time,Delta)~",paste(paste0("Covari", 1:cov.length), collapse="+")))
-  b <- - aftgee::aftsrr(formula, data = DF, eqType = eqType, rankWeights = "gehan")$beta
-  
-  # path
-  if (length(path) > 1){
-    return(warning("path needs to be an integer."))
+  if (estType == "aftgee") {
+    b <- - aftgee::aftgee(formula, data = DF)$coef.res[-1]
+  } else if (estType == "aftsrr") {
+    b <- - aftgee::aftsrr(formula, data = DF, eqType = eqType, rankWeights = "gehan")$beta
   } else {
-    if (!is.numeric(path)) {
-      path <- 200
+    return(warning("estType needs to be one of 'aftgee' and 'aftsrr'"))
+  }
+  
+  # npath
+  if (length(npath) > 1){
+    return(warning("npath needs to be an integer."))
+  } else {
+    if (!is.numeric(npath)) {
+      npath <- 200
     } else {
-      path <- max(path,50)
+      npath <- max(npath,50)
     }
   }
   
@@ -190,12 +207,12 @@ afttest <- function(formula, data, path = 200, testType = "omni", eqType = "mns"
     }
   }
   
-  # pathsave
-  if (length(pathsave) > 1){
-    return(warning("pathsave needs to be an integer."))
+  # npathsave
+  if (length(npathsave) > 1){
+    return(warning("npathsave needs to be an integer."))
   } else {
-    if (!is.numeric(pathsave)) {
-      pathsave <- 50
+    if (!is.numeric(npathsave)) {
+      npathsave <- 50
     }
   }
   
@@ -223,37 +240,37 @@ afttest <- function(formula, data, path = 200, testType = "omni", eqType = "mns"
   if (optimType != "DFSANE"){
     if (eqType=="mns"){
       if (testType == "omni") {
-        out <- .Call(`_afttest_omni_mns_optim`, path, b, Time, Delta, Covari, optimType, pathsave)
+        out <- .Call(`_afttest_omni_mns_optim`, npath, b, Time, Delta, Covari, optimType, npathsave)
       } else if (testType == "link") {
-        out <- .Call(`_afttest_link_mns_optim`, path, b, Time, Delta, Covari, optimType, pathsave)
+        out <- .Call(`_afttest_link_mns_optim`, npath, b, Time, Delta, Covari, optimType, npathsave)
       } else if (testType == "form") {
-        out <- .Call(`_afttest_form_mns_optim`, path, b, Time, Delta, Covari, optimType, form, pathsave)
+        out <- .Call(`_afttest_form_mns_optim`, npath, b, Time, Delta, Covari, optimType, form, npathsave)
       }
     } else if (eqType=="mis"){
       if (testType == "omni") {
-        out <- .Call(`_afttest_omni_mis_optim`, path, b, Time, Delta, Covari, optimType, pathsave)
+        out <- .Call(`_afttest_omni_mis_optim`, npath, b, Time, Delta, Covari, optimType, npathsave)
       } else if (testType == "link") {
-        out <- .Call(`_afttest_link_mis_optim`, path, b, Time, Delta, Covari, optimType, pathsave)
+        out <- .Call(`_afttest_link_mis_optim`, npath, b, Time, Delta, Covari, optimType, npathsave)
       } else if (testType == "form") {
-        out <- .Call(`_afttest_form_mis_optim`, path, b, Time, Delta, Covari, optimType, form, pathsave)
+        out <- .Call(`_afttest_form_mis_optim`, npath, b, Time, Delta, Covari, optimType, form, npathsave)
       }
     }
   } else if (optimType == "DFSANE"){
     if (eqType=="mns"){
       if (testType == "omni") {
-        out <- .Call(`_afttest_omni_mns_DFSANE`, path, b, Time, Delta, Covari, pathsave)
+        out <- .Call(`_afttest_omni_mns_DFSANE`, npath, b, Time, Delta, Covari, npathsave)
       } else if (testType == "link") {
-        out <- .Call(`_afttest_link_mns_DFSANE`, path, b, Time, Delta, Covari, pathsave)
+        out <- .Call(`_afttest_link_mns_DFSANE`, npath, b, Time, Delta, Covari, npathsave)
       } else if (testType == "form") {
-        out <- .Call(`_afttest_form_mns_DFSANE`, path, b, Time, Delta, Covari, form, pathsave)
+        out <- .Call(`_afttest_form_mns_DFSANE`, npath, b, Time, Delta, Covari, form, npathsave)
       }
     } else if (eqType=="mis"){
       if (testType == "omni") {
-        out <- .Call(`_afttest_omni_mis_DFSANE`, path, b, Time, Delta, Covari, pathsave)
+        out <- .Call(`_afttest_omni_mis_DFSANE`, npath, b, Time, Delta, Covari, npathsave)
       } else if (testType == "link") {
-        out <- .Call(`_afttest_link_mis_DFSANE`, path, b, Time, Delta, Covari, pathsave)
+        out <- .Call(`_afttest_link_mis_DFSANE`, npath, b, Time, Delta, Covari, npathsave)
       } else if (testType == "form") {
-        out <- .Call(`_afttest_form_mis_DFSANE`, path, b, Time, Delta, Covari, form, pathsave)
+        out <- .Call(`_afttest_form_mis_DFSANE`, npath, b, Time, Delta, Covari, form, npathsave)
       }
     }
   } else {
@@ -267,11 +284,12 @@ afttest <- function(formula, data, path = 200, testType = "omni", eqType = "mns"
   
   out$DF <- DF
   out$beta <- b
-  out$path <- path
+  out$npath <- npath
   out$eqType <- eqType
   out$testType <- testType
+  out$estType <- estType
   out$optimType <- optimType
-  out$pathsave <- pathsave
+  out$npathsave <- npathsave
   if (testType == "form") {out$form <- form}
   
   return(out)

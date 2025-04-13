@@ -63,7 +63,7 @@ summary.afttest <- function(object, ...) {
 #   if (!inherits(object,"afttest")) stop("Must be afttest class")
 #   
 #   out <- list(call = object$call,
-#              path = object$path,
+#              npath = object$npath,
 #              eqType = object$eqType,
 #              testType = object$testType,
 #              optimType = object$optimType,
@@ -83,7 +83,7 @@ summary.afttest <- function(object, ...) {
 #' plot.afttest
 #'
 #' @param x is a \code{afttest} fit
-#' @param path A numeric value specifies the number of approximated processes plotted
+#' @param npath A numeric value specifies the number of approximated processes plotted
 #'    The default is set to be 100.
 #' @param stdType A character string specifying if the graph is based on the 
 #'    unstandardized test statistics or standardized test statistics
@@ -107,12 +107,12 @@ summary.afttest <- function(object, ...) {
 #' 
 #' @example inst/examples/ex_plot.afttest.R
 #' @export
-plot.afttest <- function(x, path = 50, stdType = "std", quantile = NULL, ...){
+plot.afttest <- function(x, npath = 50, stdType = "std", quantile = NULL, ...){
   
   # class
   if (!inherits(x,"afttest")) return(warning("Must be afttest class"))
-  # pathsave
-  if ((x$pathsave<1)) return(warning("afttest is conduced with pathsave=0"))
+  # npathsave
+  if ((x$npathsave<1)) return(warning("afttest is conduced with npathsave=0"))
   # eqType
   eqType <- x$eqType
   # testType
@@ -121,14 +121,14 @@ plot.afttest <- function(x, path = 50, stdType = "std", quantile = NULL, ...){
   if (!stdType %in% c("std","unstd")) {
     stdType <- "std"
   }
-  # path
-  if (length(path) > 1){
-    return(warning("path needs to be an integer."))
+  # npath
+  if (length(npath) > 1){
+    return(warning("npath needs to be an integer."))
   } else {
-    if (!is.numeric(path)) {
-      path <- 50
+    if (!is.numeric(npath)) {
+      npath <- 50
     } else {
-      path <- min(path,x$pathsave)
+      npath <- min(npath,x$npathsave)
     }
   }
   
@@ -164,24 +164,24 @@ plot.afttest <- function(x, path = 50, stdType = "std", quantile = NULL, ...){
       if (stdType == "std") {
         # DF_app
         DF_app=data.frame()
-        for (group in 1:path){
-          temp <- x$app_std_path[[group]][,Q[k]]
+        for (group in 1:npath){
+          temp <- x$app_std_npath[[group]][,Q[k]]
           temp <- data.frame(group,resid=x_axis,app=temp)
           DF_app <- rbind(DF_app,temp)
         }
         # DF_obs
-        DF_obs <- data.frame(group,resid=x_axis,obs=x$obs_std_path[,Q[k]])
+        DF_obs <- data.frame(group,resid=x_axis,obs=x$obs_std_npath[,Q[k]])
         
       } else {
         #DF_app
         DF_app <- data.frame()
-        for (group in 1:path){
-          temp <- x$app_path[[group]][,Q[k]]
+        for (group in 1:npath){
+          temp <- x$app_npath[[group]][,Q[k]]
           temp <- data.frame(group,resid=x_axis,app=temp)
           DF_app <- rbind(DF_app,temp)
         }
         #DF_obs
-        DF_obs <- data.frame(group,resid=x_axis,obs=x$obs_path[,Q[k]])
+        DF_obs <- data.frame(group,resid=x_axis,obs=x$obs_npath[,Q[k]])
       }
       breaks <- c(DF_app$app,DF_obs$obs)
       breaks <- breaks[which(is.finite(breaks))]
@@ -233,23 +233,23 @@ plot.afttest <- function(x, path = 50, stdType = "std", quantile = NULL, ...){
     if (stdType == "std"){
       # DF_app
       DF_app <- data.frame()
-      for (group in 1:path){
-        temp <- x$app_std_path[[group]]
+      for (group in 1:npath){
+        temp <- x$app_std_npath[[group]]
         temp <- data.frame(group,resid=x_axis,app=temp)
         DF_app <- rbind(DF_app,temp)
       }
       # DF_obs
-      DF_obs <- data.frame(group,resid=x_axis,obs=x$obs_std_path)
+      DF_obs <- data.frame(group,resid=x_axis,obs=x$obs_std_npath)
     } else {
       # DF_app
       DF_app <- data.frame()
-      for (group in 1:path){
-        temp <- x$app_path[[group]]
+      for (group in 1:npath){
+        temp <- x$app_npath[[group]]
         temp <- data.frame(group,resid=x_axis,app=temp)
         DF_app <- rbind(DF_app,temp)
       }
       # DF_obs
-      DF_obs <- data.frame(group,resid=x_axis,obs=x$obs_path)
+      DF_obs <- data.frame(group,resid=x_axis,obs=x$obs_npath)
     }
     breaks <- c(DF_app$app,DF_obs$obs)
     breaks <- breaks[which(is.finite(breaks))]
@@ -275,24 +275,24 @@ plot.afttest <- function(x, path = 50, stdType = "std", quantile = NULL, ...){
     if (stdType == "std"){
       # DF_app
       DF_app <- data.frame()
-      for (group in 1:path){
-        temp <- x$app_std_path[[group]]
+      for (group in 1:npath){
+        temp <- x$app_std_npath[[group]]
         temp <- data.frame(group,resid=x_axis,app=temp)
         DF_app <- rbind(DF_app,temp)
       }
       # DF_obs
-      DF_obs <- data.frame(group,resid=x_axis,obs=x$obs_std_path)
+      DF_obs <- data.frame(group,resid=x_axis,obs=x$obs_std_npath)
       
     } else {
       # DF_app
       DF_app <- data.frame()
-      for (group in 1:path){
-        temp <- x$app_path[[group]]
+      for (group in 1:npath){
+        temp <- x$app_npath[[group]]
         temp <- data.frame(group,resid=x_axis,app=temp)
         DF_app <- rbind(DF_app,temp)
       }
       # DF_obs
-      DF_obs <- data.frame(group,resid=x_axis,obs=x$obs_path)
+      DF_obs <- data.frame(group,resid=x_axis,obs=x$obs_npath)
       
     }
     breaks <- c(DF_app$app,DF_obs$obs)
