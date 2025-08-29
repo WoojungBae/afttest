@@ -159,6 +159,20 @@ afttest <- function(formula, data, npath = 200, testType = "omni",
   #   return(warning("Delta must have 2 statuses (0=observed and 1=censored)"))
   # }
   
+  # eqType
+  if (length(eqType) > 1){
+    return(warning("testType needs to be one of 'mns' and 'mis'"))
+  } else {
+    if (!eqType %in% c("mns","mis")) {
+      print(warning("'mns' is used by default"))
+      eqType <- "mns"
+    }
+  }
+  if (estType == "aftgee") {
+    # print(warning("'mns' is used by default"))
+    eqType <- "mns"
+  }
+  
   # beta coefficients from aftsrr function (aftgee package)
   formula <- stats::as.formula(paste0("Surv(Time,Delta)~",paste(paste0("Covari", 1:cov.length), collapse="+")))
   if (estType == "aftgee") {
@@ -186,15 +200,6 @@ afttest <- function(formula, data, npath = 200, testType = "omni",
   } else {
     if (!testType %in% c("omni","link","form")) {
       testType <- "omni"
-    }
-  }
-  
-  # eqType
-  if (length(eqType) > 1){
-    return(warning("testType needs to be one of 'mns' and 'mis'"))
-  } else {
-    if (!eqType %in% c("mns","mis")) {
-      eqType <- "mns"
     }
   }
   
@@ -277,7 +282,7 @@ afttest <- function(formula, data, npath = 200, testType = "omni",
     return(warning("Check your code"))
   }
   
-  class(out) <- "afttest"
+  class(out) <- c("afttest", "htest")
   out$names <- varnames
   out$call <- match.call()
   out$missingmessage <- missingmessage

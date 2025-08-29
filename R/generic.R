@@ -53,7 +53,7 @@ summary.afttest <- function(object, ...) {
   colnames(p.valueTAB) <- c("p.value", "std.p.value")
   print(p.valueTAB)
   
-  cat("\n Coefficients (estimated by aftgee::aftsrr): \n")
+  cat(paste0("\n Coefficients (estimated by aftgee::", object$estType,"): \n"))
   coefTAB <- data.frame(t(object$beta))
   rownames(coefTAB) <- ""
   colnames(coefTAB) <- object$names[-c(1:2)]
@@ -107,7 +107,7 @@ summary.afttest <- function(object, ...) {
 #' 
 #' @example inst/examples/ex_plot.afttest.R
 #' @export
-plot.afttest <- function(x, npath = 50, stdType = "std", quantile = NULL, ...){
+plot.afttest <- function(x, npath = 50, stdType = NULL, quantile = NULL, ...){
   
   # class
   if (!inherits(x,"afttest")) return(warning("Must be afttest class"))
@@ -118,12 +118,14 @@ plot.afttest <- function(x, npath = 50, stdType = "std", quantile = NULL, ...){
   # testType
   testType <- x$testType
   # stdType
-  if (!stdType %in% c("std","unstd")) {
+  if (is.null(stdType)) {
     stdType <- "std"
+  } else if (!stdType %in% c("std","unstd")) {
+    return(warning("npath needs to be an integer."))
   }
   # npath
   if (length(npath) > 1){
-    return(warning("npath needs to be an integer."))
+    return(warning("stdType must be either 'std' or 'unstd'."))
   } else {
     if (!is.numeric(npath)) {
       npath <- 50

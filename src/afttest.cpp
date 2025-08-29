@@ -429,6 +429,9 @@ using namespace Rcpp;
      obs_npath += tempvec_n*(as<rowvec>(pi_i_z(it)));
    }
    obs_npath /= sqrtn;
+   // rowvec obs_npath_row0 = obs_npath.row(0);
+   // obs_npath.each_row() -= obs_npath_row0;
+   // obs_npath.each_col() -= obs_npath.col(0);
    
    // -----------------------------------------------------------
    // ----------------------Kernel Smoothing---------------------
@@ -553,6 +556,7 @@ using namespace Rcpp;
      mat term3 = cumsum((S_pi_t_z.each_col())%(dLambdahat_0_t - dLambdahat_0_t_s))/sqrtn;
      
      tempmat_nn = term1 - term2 - term3;
+     // tempmat_nn.each_row() -= obs_npath_row0;
      app_npath(itt) = tempmat_nn;
    }
    
@@ -570,9 +574,15 @@ using namespace Rcpp;
    // if (kappa_min<0.1){kappa_min = 0.1;}
    // vec kappa = {kappa_min, kappa_max};
    
-   vec kappa = {0.5, 1};
+   // double min_mat_se_boot = mat_se_boot(find(mat_se_boot > 0)).min();
+   // mat_se_boot.replace(0, min_mat_se_boot); 
+   // mat se_boot = reshape(mat_se_boot,n,n);
+   
+   double censoring = 1-sum(Delta)/n;
+   vec kappa = {sqrt(censoring), 1};
    kappa = quantile(mat_se_boot, kappa);
    mat_se_boot.clamp(kappa(0),kappa(1));
+   // if (kappa(0)<0.1){kappa(0) = 0.1;}
    mat se_boot = reshape(mat_se_boot,n,n);
    
    List app_std_npath(npath); vec absmax_app_npath(npath); vec absmax_app_std_npath(npath);
@@ -677,6 +687,9 @@ using namespace Rcpp;
      obs_npath += tempvec_n*(as<rowvec>(pi_i_z(it)));
    }
    obs_npath /= sqrtn;
+   // rowvec obs_npath_row0 = obs_npath.row(0);
+   // obs_npath.each_row() -= obs_npath_row0;
+   // obs_npath.each_col() -= obs_npath.col(0);
    
    // -----------------------------------------------------------
    // ----------------------Kernel Smoothing---------------------
@@ -801,6 +814,7 @@ using namespace Rcpp;
      mat term3 = cumsum((S_pi_t_z.each_col())%(dLambdahat_0_t - dLambdahat_0_t_s))/sqrtn;
      
      tempmat_nn = term1 - term2 - term3;
+     // tempmat_nn.each_row() -= obs_npath_row0;
      app_npath(itt) = tempmat_nn;
    }
    
@@ -818,9 +832,15 @@ using namespace Rcpp;
    // if (kappa_min<0.1){kappa_min = 0.1;}
    // vec kappa = {kappa_min, kappa_max};
    
-   vec kappa = {0.5, 1};
+   // double min_mat_se_boot = mat_se_boot(find(mat_se_boot > 0)).min();
+   // mat_se_boot.replace(0, min_mat_se_boot); 
+   // mat se_boot = reshape(mat_se_boot,n,n);
+   
+   double censoring = 1-sum(Delta)/n;
+   vec kappa = {sqrt(censoring), 1};
    kappa = quantile(mat_se_boot, kappa);
    mat_se_boot.clamp(kappa(0),kappa(1));
+   // if (kappa(0)<0.1){kappa(0) = 0.1;}
    mat se_boot = reshape(mat_se_boot,n,n);
    
    List app_std_npath(npath); vec absmax_app_npath(npath); vec absmax_app_std_npath(npath);
@@ -925,6 +945,8 @@ using namespace Rcpp;
      obs_npath += (tempvec_n(n-1))*as<vec>(pi_i_z(it));
    }
    obs_npath /= sqrtn;
+   // vec obs_npath_0 = obs_npath(0) * one_vec_n;
+   // obs_npath -= obs_npath_0;
    
    // -----------------------------------------------------------
    // ----------------------Kernel Smoothing---------------------
@@ -1049,6 +1071,7 @@ using namespace Rcpp;
      vec term3 = (sum((S_pi_t_z.each_col())%(dLambdahat_0_t - dLambdahat_0_t_s))).t()/sqrtn;
      
      tempvec_n = term1 - term2 - term3;
+     // tempvec_n -= obs_npath_0;
      app_npath(itt) = tempvec_n;
    }
    
@@ -1066,8 +1089,13 @@ using namespace Rcpp;
    // if (kappa_min<0.1){kappa_min = 0.1;}
    // vec kappa = {kappa_min, kappa_max};
    
-   vec kappa = {0.25, 1};
+   // double min_se_boot = se_boot(find(se_boot > 0)).min();
+   // se_boot.replace(0, min_se_boot); 
+   
+   double censoring = 1-sum(Delta)/n;
+   vec kappa = {censoring, 1};
    kappa = quantile(se_boot, kappa);
+   // if (kappa(0)<0.1){kappa(0) = 0.1;}
    se_boot.clamp(kappa(0),kappa(1));
    
    List app_std_npath(npath); vec absmax_app_npath(npath); vec absmax_app_std_npath(npath);
@@ -1172,6 +1200,8 @@ using namespace Rcpp;
      obs_npath += (tempvec_n(n-1))*as<vec>(pi_i_z(it));
    }
    obs_npath /= sqrtn;
+   // vec obs_npath_0 = obs_npath(0) * one_vec_n;
+   // obs_npath -= obs_npath_0;
    
    // -----------------------------------------------------------
    // ----------------------Kernel Smoothing---------------------
@@ -1296,6 +1326,7 @@ using namespace Rcpp;
      vec term3 = (sum((S_pi_t_z.each_col())%(dLambdahat_0_t - dLambdahat_0_t_s))).t()/sqrtn;
      
      tempvec_n = term1 - term2 - term3;
+     // tempvec_n -= obs_npath_0;
      app_npath(itt) = tempvec_n;
    }
    
@@ -1313,8 +1344,13 @@ using namespace Rcpp;
    // if (kappa_min<0.1){kappa_min = 0.1;}
    // vec kappa = {kappa_min, kappa_max};
    
-   vec kappa = {0.25, 1};
+   // double min_se_boot = se_boot(find(se_boot > 0)).min();
+   // se_boot.replace(0, min_se_boot); 
+   
+   double censoring = 1-sum(Delta)/n;
+   vec kappa = {censoring, 1};
    kappa = quantile(se_boot, kappa);
+   // if (kappa(0)<0.1){kappa(0) = 0.1;}
    se_boot.clamp(kappa(0),kappa(1));
    
    List app_std_npath(npath); vec absmax_app_npath(npath); vec absmax_app_std_npath(npath);
@@ -1420,6 +1456,8 @@ using namespace Rcpp;
      obs_npath += (tempvec_n(n-1))*as<vec>(pi_i_z(it));
    }
    obs_npath /= sqrtn;
+   // vec obs_npath_0 = obs_npath(0) * one_vec_n;
+   // obs_npath -= obs_npath_0;
    
    // -----------------------------------------------------------
    // ----------------------Kernel Smoothing---------------------
@@ -1544,6 +1582,7 @@ using namespace Rcpp;
      vec term3 = (sum((S_pi_t_z.each_col())%(dLambdahat_0_t - dLambdahat_0_t_s))).t()/sqrtn;
      
      tempvec_n = term1 - term2 - term3;
+     // tempvec_n -= obs_npath_0;
      app_npath(itt) = tempvec_n;
    }
    
@@ -1561,8 +1600,13 @@ using namespace Rcpp;
    // if (kappa_min<0.1){kappa_min = 0.1;}
    // vec kappa = {kappa_min, kappa_max};
    
-   vec kappa = {0.25, 1};
+   // double min_se_boot = se_boot(find(se_boot > 0)).min();
+   // se_boot.replace(0, min_se_boot); 
+   
+   double censoring = 1-sum(Delta)/n;
+   vec kappa = {censoring, 1};
    kappa = quantile(se_boot, kappa);
+   // if (kappa(0)<0.1){kappa(0) = 0.1;}
    se_boot.clamp(kappa(0),kappa(1));
    
    List app_std_npath(npath); vec absmax_app_npath(npath); vec absmax_app_std_npath(npath);
@@ -1668,6 +1712,8 @@ using namespace Rcpp;
      obs_npath += (tempvec_n(n-1))*as<vec>(pi_i_z(it));
    }
    obs_npath /= sqrtn;
+   // vec obs_npath_0 = obs_npath(0) * one_vec_n;
+   // obs_npath -= obs_npath_0;
    
    // -----------------------------------------------------------
    // ----------------------Kernel Smoothing---------------------
@@ -1791,7 +1837,7 @@ using namespace Rcpp;
      }
      vec term3 = (sum((S_pi_t_z.each_col())%(dLambdahat_0_t - dLambdahat_0_t_s))).t()/sqrtn;
      
-     tempvec_n = term1 - term2 - term3;
+     tempvec_n = term1 - term2 - term3 - obs_npath(0) * one_vec_n;
      app_npath(itt) = tempvec_n;
    }
    
@@ -1809,8 +1855,13 @@ using namespace Rcpp;
    // if (kappa_min<0.1){kappa_min = 0.1;}
    // vec kappa = {kappa_min, kappa_max};
    
-   vec kappa = {0.25, 1};
+   // double min_se_boot = se_boot(find(se_boot > 0)).min();
+   // se_boot.replace(0, min_se_boot); 
+   
+   double censoring = 1-sum(Delta)/n;
+   vec kappa = {censoring, 1};
    kappa = quantile(se_boot, kappa);
+   // if (kappa(0)<0.1){kappa(0) = 0.1;}
    se_boot.clamp(kappa(0),kappa(1));
    
    List app_std_npath(npath); vec absmax_app_npath(npath); vec absmax_app_std_npath(npath);
@@ -1918,6 +1969,9 @@ using namespace Rcpp;
      obs_npath += tempvec_n*(as<rowvec>(pi_i_z(it)));
    }
    obs_npath /= sqrtn;
+   // rowvec obs_npath_row0 = obs_npath.row(0);
+   // obs_npath.each_row() -= obs_npath_row0;
+   // obs_npath.each_col() -= obs_npath.col(0);
    
    // -----------------------------------------------------------
    // ----------------------Kernel Smoothing---------------------
@@ -2051,6 +2105,7 @@ using namespace Rcpp;
      mat term3 = cumsum((S_pi_t_z.each_col())%(dLambdahat_0_t - dLambdahat_0_t_s))/sqrtn;
      
      tempmat_nn = term1 - term2 - term3;
+     // tempmat_nn.each_row() -= obs_npath_row0;
      app_npath(itt) = tempmat_nn;
    }
    
@@ -2068,9 +2123,15 @@ using namespace Rcpp;
    // if (kappa_min<0.1){kappa_min = 0.1;}
    // vec kappa = {kappa_min, kappa_max};
    
-   vec kappa = {0.5, 1};
+   // double min_mat_se_boot = mat_se_boot(find(mat_se_boot > 0)).min();
+   // mat_se_boot.replace(0, min_mat_se_boot); 
+   // mat se_boot = reshape(mat_se_boot,n,n);
+   
+   double censoring = 1-sum(Delta)/n;
+   vec kappa = {sqrt(censoring), 1};
    kappa = quantile(mat_se_boot, kappa);
    mat_se_boot.clamp(kappa(0),kappa(1));
+   // if (kappa(0)<0.1){kappa(0) = 0.1;}
    mat se_boot = reshape(mat_se_boot,n,n);
    
    List app_std_npath(npath); vec absmax_app_npath(npath); vec absmax_app_std_npath(npath);
@@ -2178,6 +2239,9 @@ using namespace Rcpp;
      obs_npath += tempvec_n*(as<rowvec>(pi_i_z(it)));
    }
    obs_npath /= sqrtn;
+   // rowvec obs_npath_row0 = obs_npath.row(0);
+   // obs_npath.each_row() -= obs_npath_row0;
+   // obs_npath.each_col() -= obs_npath.col(0);
    
    // -----------------------------------------------------------
    // ----------------------Kernel Smoothing---------------------
@@ -2310,6 +2374,7 @@ using namespace Rcpp;
      mat term3 = cumsum((S_pi_t_z.each_col())%(dLambdahat_0_t - dLambdahat_0_t_s))/sqrtn;
      
      tempmat_nn = term1 - term2 - term3;
+     // tempmat_nn.each_row() -= obs_npath_row0;
      app_npath(itt) = tempmat_nn;
    }
    
@@ -2327,9 +2392,15 @@ using namespace Rcpp;
    // if (kappa_min<0.1){kappa_min = 0.1;}
    // vec kappa = {kappa_min, kappa_max};
    
-   vec kappa = {0.5, 1};
+   // double min_mat_se_boot = mat_se_boot(find(mat_se_boot > 0)).min();
+   // mat_se_boot.replace(0, min_mat_se_boot); 
+   // mat se_boot = reshape(mat_se_boot,n,n);
+   
+   double censoring = 1-sum(Delta)/n;
+   vec kappa = {sqrt(censoring), 1};
    kappa = quantile(mat_se_boot, kappa);
    mat_se_boot.clamp(kappa(0),kappa(1));
+   // if (kappa(0)<0.1){kappa(0) = 0.1;}
    mat se_boot = reshape(mat_se_boot,n,n);
    
    List app_std_npath(npath); vec absmax_app_npath(npath); vec absmax_app_std_npath(npath);
@@ -2437,6 +2508,8 @@ using namespace Rcpp;
      obs_npath += (tempvec_n(n-1))*as<vec>(pi_i_z(it));
    }
    obs_npath /= sqrtn;
+   // vec obs_npath_0 = obs_npath(0) * one_vec_n;
+   // obs_npath -= obs_npath_0;
    
    // -----------------------------------------------------------
    // ----------------------Kernel Smoothing---------------------
@@ -2570,6 +2643,7 @@ using namespace Rcpp;
      vec term3 = (sum((S_pi_t_z.each_col())%(dLambdahat_0_t - dLambdahat_0_t_s))).t()/sqrtn;
      
      tempvec_n = term1 - term2 - term3;
+     // tempvec_n -= obs_npath_0;
      app_npath(itt) = tempvec_n;
    }
    
@@ -2587,9 +2661,14 @@ using namespace Rcpp;
    // if (kappa_min<0.1){kappa_min = 0.1;}
    // vec kappa = {kappa_min, kappa_max};
    
-   vec kappa = {0.25, 1};
+   double censoring = 1-sum(Delta)/n;
+   vec kappa = {censoring, 1};
    kappa = quantile(se_boot, kappa);
+   // if (kappa(0)<0.1){kappa(0) = 0.1;}
    se_boot.clamp(kappa(0),kappa(1));
+   
+   // double min_se_boot = se_boot(find(se_boot > 0)).min();
+   // se_boot.replace(0, min_se_boot); 
    
    List app_std_npath(npath); vec absmax_app_npath(npath); vec absmax_app_std_npath(npath);
    for(int it=0; it<npath; it++){
@@ -2696,6 +2775,8 @@ using namespace Rcpp;
      obs_npath += (tempvec_n(n-1))*as<vec>(pi_i_z(it));
    }
    obs_npath /= sqrtn;
+   // vec obs_npath_0 = obs_npath(0) * one_vec_n;
+   // obs_npath -= obs_npath_0;
    
    // -----------------------------------------------------------
    // ----------------------Kernel Smoothing---------------------
@@ -2828,6 +2909,7 @@ using namespace Rcpp;
      vec term3 = (sum((S_pi_t_z.each_col())%(dLambdahat_0_t - dLambdahat_0_t_s))).t()/sqrtn;
      
      tempvec_n = term1 - term2 - term3;
+     // tempvec_n -= obs_npath_0;
      app_npath(itt) = tempvec_n;
    }
    
@@ -2845,8 +2927,13 @@ using namespace Rcpp;
    // if (kappa_min<0.1){kappa_min = 0.1;}
    // vec kappa = {kappa_min, kappa_max};
    
-   vec kappa = {0.25, 1};
+   // double min_se_boot = se_boot(find(se_boot > 0)).min();
+   // se_boot.replace(0, min_se_boot); 
+   
+   double censoring = 1-sum(Delta)/n;
+   vec kappa = {censoring, 1};
    kappa = quantile(se_boot, kappa);
+   // if (kappa(0)<0.1){kappa(0) = 0.1;}
    se_boot.clamp(kappa(0),kappa(1));
    
    List app_std_npath(npath); vec absmax_app_npath(npath); vec absmax_app_std_npath(npath);
@@ -2955,6 +3042,8 @@ using namespace Rcpp;
      obs_npath += (tempvec_n(n-1))*as<vec>(pi_i_z(it));
    }
    obs_npath /= sqrtn;
+   // vec obs_npath_0 = obs_npath(0) * one_vec_n;
+   // obs_npath -= obs_npath_0;
    
    // -----------------------------------------------------------
    // ----------------------Kernel Smoothing---------------------
@@ -3088,6 +3177,7 @@ using namespace Rcpp;
      vec term3 = (sum((S_pi_t_z.each_col())%(dLambdahat_0_t - dLambdahat_0_t_s))).t()/sqrtn;
      
      tempvec_n = term1 - term2 - term3;
+     // tempvec_n -= obs_npath_0;
      app_npath(itt) = tempvec_n;
    }
    
@@ -3105,8 +3195,13 @@ using namespace Rcpp;
    // if (kappa_min<0.1){kappa_min = 0.1;}
    // vec kappa = {kappa_min, kappa_max};
    
-   vec kappa = {0.25, 1};
+   // double min_se_boot = se_boot(find(se_boot > 0)).min();
+   // se_boot.replace(0, min_se_boot); 
+   
+   double censoring = 1-sum(Delta)/n;
+   vec kappa = {censoring, 1};
    kappa = quantile(se_boot, kappa);
+   // if (kappa(0)<0.1){kappa(0) = 0.1;}
    se_boot.clamp(kappa(0),kappa(1));
    
    List app_std_npath(npath); vec absmax_app_npath(npath); vec absmax_app_std_npath(npath);
@@ -3215,6 +3310,8 @@ using namespace Rcpp;
      obs_npath += (tempvec_n(n-1))*as<vec>(pi_i_z(it));
    }
    obs_npath /= sqrtn;
+   // vec obs_npath_0 = obs_npath(0) * one_vec_n;
+   // obs_npath -= obs_npath_0;
    
    // -----------------------------------------------------------
    // ----------------------Kernel Smoothing---------------------
@@ -3347,6 +3444,7 @@ using namespace Rcpp;
      vec term3 = (sum((S_pi_t_z.each_col())%(dLambdahat_0_t - dLambdahat_0_t_s))).t()/sqrtn;
      
      tempvec_n = term1 - term2 - term3;
+     // tempvec_n -= obs_npath_0;
      app_npath(itt) = tempvec_n;
    }
    
@@ -3364,8 +3462,13 @@ using namespace Rcpp;
    // if (kappa_min<0.1){kappa_min = 0.1;}
    // vec kappa = {kappa_min, kappa_max};
    
-   vec kappa = {0.25, 1};
+   // double min_se_boot = se_boot(find(se_boot > 0)).min();
+   // se_boot.replace(0, min_se_boot); 
+   
+   double censoring = 1-sum(Delta)/n;
+   vec kappa = {censoring, 1};
    kappa = quantile(se_boot, kappa);
+   // if (kappa(0)<0.1){kappa(0) = 0.1;}
    se_boot.clamp(kappa(0),kappa(1));
    
    List app_std_npath(npath); vec absmax_app_npath(npath); vec absmax_app_std_npath(npath);
