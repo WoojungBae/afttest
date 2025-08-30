@@ -4,7 +4,7 @@
 \alias{plot.afttest}
 \title{plot.afttest}
 \usage{
-\method{plot}{afttest}(x, npath = 50, stdType = "std", quantile = NULL, ...)
+\method{plot}{afttest}(x, npath = 50, stdType = NULL, quantile = NULL, ...)
 }
 \arguments{
 \item{x}{is a \code{afttest} fit}
