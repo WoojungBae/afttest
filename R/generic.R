@@ -16,11 +16,11 @@ print.afttest <- function(x, ...) {
   cat("\n Call: \n")
   print(x$call)
   
-  cat("\n p.value: \n")
-  p.valueTAB <- data.frame(t(c(x$p_value, x$p_std_value)))
-  rownames(p.valueTAB) <- ""
-  colnames(p.valueTAB) <- c("p.value", "std.p.value")
-  print(p.valueTAB)
+  cat("\n p_value: \n")
+  p_valueTAB <- data.frame(t(c(x$p_value, x$p_std_value)))
+  rownames(p_valueTAB) <- ""
+  colnames(p_valueTAB) <- c("p_value", "std_p_value")
+  print(p_valueTAB)
 }
 # print.afttest <- function(x, ...) {
 #   if (!inherits(x,"afttest")) stop("Must be afttest class")
@@ -47,11 +47,11 @@ summary.afttest <- function(object, ...) {
   cat("\n Call: \n")
   print(object$call)
   
-  cat("\n p.value: \n")
-  p.valueTAB <- data.frame(t(c(object$p_value, object$p_std_value)))
-  rownames(p.valueTAB) <- ""
-  colnames(p.valueTAB) <- c("p.value", "std.p.value")
-  print(p.valueTAB)
+  cat("\n p_value: \n")
+  p_valueTAB <- data.frame(t(c(object$p_value, object$p_std_value)))
+  rownames(p_valueTAB) <- ""
+  colnames(p_valueTAB) <- c("p_value", "std_p_value")
+  print(p_valueTAB)
   
   cat(paste0("\n Coefficients (estimated by aftgee::", object$estType,"): \n"))
   coefTAB <- data.frame(t(object$beta))
