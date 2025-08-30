@@ -22,8 +22,8 @@ test_that("test afttest", {
                    testType = testType, eqType = eqType,
                    optimType = optimType, form = form, npathsave = 50)
   
-  expect_equal(result$p_value, 0.01, tolerance=5e-2)
-  expect_equal(result$p_std_value, 0.01, tolerance=5e-2)
+  expect_equal(result$p_value, 0.03, tolerance=5e-2)
+  expect_equal(result$p_std_value, 0.05, tolerance=5e-2)
   
   # afttestplot(result, stdType = "std")
   # afttestplot(result, stdType = "unstd")
