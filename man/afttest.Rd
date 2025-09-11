@@ -2,24 +2,53 @@
 % Please edit documentation in R/afttest.R
 \name{afttest}
 \alias{afttest}
-\title{afttest}
+\alias{afttest.formula}
+\alias{afttest.aftsrr}
+\alias{afttest.aftgee}
+\title{Model Diagnostics for Semiparametric AFT Models}
 \usage{
-afttest(
-  formula,
+afttest(object, ...)
+
+\method{afttest}{formula}(
+  object,
   data,
   npath = 200,
   testType = "omni",
-  eqType = "mns",
-  estType = "aftsrr",
-  optimType = "DFSANE",
+  estMethod = "rr",
+  eqType = "ns",
   form = 1,
-  npathsave = 50
+  npathsave = 50,
+  ...
+)
+
+\method{afttest}{aftsrr}(
+  object,
+  data,
+  npath = 200,
+  testType = "omni",
+  eqType = "ns",
+  form = 1,
+  npathsave = 50,
+  ...
+)
+
+\method{afttest}{aftgee}(
+  object,
+  data,
+  npath = 200,
+  testType = "omni",
+  eqType = "ls",
+  form = 1,
+  npathsave = 50,
+  ...
 )
 }
 \arguments{
-\item{formula}{A formula expression, of the form \code{response ~ predictors}.
-The \code{response} is a \code{Surv} object object with right censoring.
+\item{object}{A formula expression, of the form \code{response ~ predictors}.
+The \code{response} is a \code{Surv} object with right censoring.
 See the documentation of \code{lm}, \code{coxph} and \code{formula} for details.}
+
+\item{...}{Other arguments passed to methods.}
 
 \item{data}{An optional data frame in which to interpret the variables occurring 
 in the formula.}
@@ -35,36 +64,24 @@ The default is given by 200.}
      \item{\code{form}}{a functional form}
 }}
 
+\item{estMethod}{A character string specifying the type of the estimator used.
+   The readers are refered to the \pkg{aftgee} package for details.
+   The following are permitted:
+   \describe{
+     \item{\code{ls}}{Least-Squares Approach for Accelerated Failure Time 
+     with Generalized Estimating Equation}
+     \item{\code{rr}}{Accelerated Failure Time with Smooth Rank Regression}
+}}
+
 \item{eqType}{A character string specifying the type of the 
    estimating equation used to obtain the regression parameters.
    The readers are refered to the \pkg{aftgee} package for details.
    The following are permitted:
    \describe{
-     \item{\code{mns}}{Regression parameters are estimated by iterating 
-     the monotonic non-smoothed Gehan-based estimating equations.}
-     \item{\code{mis}}{Regression parameters are estimated by iterating 
-     the monotonic smoothed Gehan-based estimating equations.}
-}}
-
-\item{estType}{A character string specifying the type of the estimator used.
-   The readers are refered to the \pkg{aftgee} package for details.
-   The following are permitted:
-   \describe{
-     \item{\code{aftgee}}{Least-Squares Approach for Accelerated Failure Time 
-     with Generalized Estimating Equation}
-     \item{\code{aftsrr}}{Accelerated Failure Time with Smooth Rank Regression}
-}}
-
-\item{optimType}{A character string specifying the type of the optimization method.
-   The following are permitted:
-   \describe{
-     \item{\code{DFSANE}}{See the documentation of \pkg{BB} packages for details.}
-     \item{\code{Nelder-Mead}}{See the documentation of \code{optim} for details.}
-     \item{\code{BFGS}}{See the documentation of \code{optim} for details.}
-     \item{\code{CG}}{See the documentation of \code{optim} for details.}
-     \item{\code{L-BFGS-B}}{See the documentation of \code{optim} for details.}
-     \item{\code{SANN}}{See the documentation of \code{optim} for details.}
-     \item{\code{Brent}}{See the documentation of \code{optim} for details.}
+     \item{\code{ns}}{Regression parameters are estimated by directly solving 
+     the nonsmooth estimating equations.}
+     \item{\code{is}}{Regression parameters are estimated by directly solving 
+     the induced-smoothing estimating equations.}
 }}
 
 \item{form}{A character string specifying the covariate which will be tested.
@@ -77,15 +94,16 @@ The default is given by 50. Note that it requires a lot of memory if save all
 sampled paths (N by N matrix for each npath andso npath*N*N elements)}
 }
 \value{
-\code{afttest} returns an object of class \code{afttest}.
-   An object of class \code{afttest} is a list containing at least the following components:
+An object of class \code{afttest} or \code{htest}.
+   An object is a list containing at least the following components:
 \describe{
-   \item{beta}{a vector of beta estimates based on \code{aftsrr}}
+   \item{beta}{a vector of beta estimates based on \code{estMethod}}
+   \item{hypothesis}{null hypothesis for each \code{testType}}
    \item{SE_process}{estimated standard error of the observed process}
    \item{obs_process}{observed process}
-   \item{app_process}{approximated process}
+   \item{apprx_process}{approximated process}
    \item{obs_std_process}{standardized observed process}
-   \item{app_std_process}{standardized approximated processes}
+   \item{apprx_std_process}{standardized approximated processes}
    \item{p_value}{obtained by the unstandardized test}
    \item{p_std_value}{obtained by the standardized test}
    \item{DF}{a data frame of observed failure time, right censoring indicator, covariates (scaled), 
@@ -93,10 +111,10 @@ sampled paths (N by N matrix for each npath andso npath*N*N elements)}
    \item{npath}{the number of sample paths}
    \item{testType}{testType}
    \item{eqType}{eqType}
-   \item{estType}{estType}
-   \item{optimType}{optimType}
+   \item{estMethod}{estMethod}
    \item{npathsave}{npathsave}
 }
+
    For an omnibus test, the observed process and the realizations are composed of the 
    n by n matrix that rows represent the t and columns represent the x in the 
    time-transformed residual order.The observed process and the simulated processes
@@ -104,12 +122,13 @@ sampled paths (N by N matrix for each npath andso npath*N*N elements)}
    which is a function of x in the time-transformed residual order.
 }
 \description{
-afttest
+Performs model-checking procedures for a semiparametric AFT model.
+This is a generic function with methods for formulas and fitted objects
+from the `aftgee` package.
 }
 \examples{
 ## Simulate data from an AFT model
 library(afttest)
-library(survival)
 datgen <- function(n = 100) {
   z1 <- rbinom(n, 1, 0.5)
   z2 <- rnorm(n)
@@ -122,8 +141,9 @@ datgen <- function(n = 100) {
 set.seed(0)
 simdata <- datgen(n = 20)
 result <- afttest(Surv(Time, status) ~ z1 + z2, data = simdata, npath = 200, 
-                  testType="link", eqType="mns", optimType = "DFSANE",
-                  npathsave = 50)
+                  testType = "link", estMethod = "rr", 
+                  eqType = "ns", npathsave = 50)
+print(result)
 summary(result)
-# plot(result)
+plot(result)
 }

@@ -11,20 +11,13 @@ test_that("test afttest", {
   set.seed(1)
   simdata = datgen(n = 100)
   
-  X = simdata$Time
-  D = simdata$status
-  z1 = simdata$z1
-  z2 = simdata$z2
-  
-  npath = 100; testType = "form"; eqType = "mns"; optimType = "DFSANE"; form = "z2"
-  
-  result = afttest(formula = Surv(X, D) ~ z1 + z2, npath = npath,
-                   testType = testType, eqType = eqType,
-                   optimType = optimType, form = form, npathsave = 50)
+  result = afttest(object = Surv(Time, status) ~ z1 + z2, data = simdata, 
+                   npath = 100, testType = "form", estMethod = "rr", 
+                   eqType = "ns",form = "z2", npathsave = 50)
   
   expect_equal(result$p_value, 0.03, tolerance=5e-2)
   expect_equal(result$p_std_value, 0.05, tolerance=5e-2)
   
-  # afttestplot(result, stdType = "std")
-  # afttestplot(result, stdType = "unstd")
+  # plot(result, stdType = "std")
+  # plot(result, stdType = "unstd")
 })

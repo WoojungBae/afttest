@@ -16,11 +16,33 @@ print.afttest <- function(x, ...) {
   cat("\n Call: \n")
   print(x$call)
   
-  cat("\n p_value: \n")
+  cat("\n P-Values: \n")
   p_valueTAB <- data.frame(t(c(x$p_value, x$p_std_value)))
   rownames(p_valueTAB) <- ""
   colnames(p_valueTAB) <- c("p_value", "std_p_value")
   print(p_valueTAB)
+  
+  if (x$testType == "omni") {
+    cat(paste0("\n H0: The assumed semiparametric AFT model fits the data adequately. \n"))
+  } else if (x$testType == "link") {
+    cat(paste0("\n H0: The relationship between covariates and the log survival time "))
+    cat(paste0("\n     is correctly specified. \n"))
+  } else if (x$testType == "form") {
+    cat(paste0("\n H0: The relationship between the log survival time and the specific "))
+    cat(paste0("\n     covariate chosen by the form argument is correctly specified. \n"))
+  }
+  
+  if (x$estMethod=="ls"){
+    cat(paste0("\n Coefficients (estimated by aftgee::aftgee): \n"))
+  } else if (x$estMethod=="rr"){
+    cat(paste0("\n Coefficients (estimated by aftgee::aftsrr): \n"))
+  }
+  coefTAB <- data.frame(t(-x$beta))
+  rownames(coefTAB) <- ""
+  colnames(coefTAB) <- x$names[-c(1:2)]
+  print(coefTAB)
+  
+  invisible(x)
 }
 # print.afttest <- function(x, ...) {
 #   if (!inherits(x,"afttest")) stop("Must be afttest class")
@@ -47,34 +69,34 @@ summary.afttest <- function(object, ...) {
   cat("\n Call: \n")
   print(object$call)
   
-  cat("\n p_value: \n")
-  p_valueTAB <- data.frame(t(c(object$p_value, object$p_std_value)))
-  rownames(p_valueTAB) <- ""
-  colnames(p_valueTAB) <- c("p_value", "std_p_value")
-  print(p_valueTAB)
+  cat("\n P-Values: \n")
+  p.valueTAB <- data.frame(t(c(object$p_value, object$p_std_value)))
+  rownames(p.valueTAB) <- ""
+  colnames(p.valueTAB) <- c("p.value", "std.p.value")
+  print(p.valueTAB)
   
-  cat(paste0("\n Coefficients (estimated by aftgee::", object$estType,"): \n"))
-  coefTAB <- data.frame(t(object$beta))
+  if (object$testType == "omni") {
+    cat(paste0("\n H0: The assumed semiparametric AFT model fits the data adequately. \n"))
+  } else if (object$testType == "link") {
+    cat(paste0("\n H0: The relationship between covariates and the log survival time "))
+    cat(paste0("\n     is correctly specified. \n"))
+  } else if (object$testType == "form") {
+    cat(paste0("\n H0: The relationship between the log survival time and the specific "))
+    cat(paste0("\n     covariate chosen by the form argument is correctly specified. \n"))
+  }
+  
+  if (object$estMethod=="ls"){
+    cat(paste0("\n Coefficients (estimated by aftgee::aftgee): \n"))
+  } else if (object$estMethod=="rr"){
+    cat(paste0("\n Coefficients (estimated by aftgee::aftsrr): \n"))
+  }
+  coefTAB <- data.frame(t(-object$beta))
   rownames(coefTAB) <- ""
   colnames(coefTAB) <- object$names[-c(1:2)]
   print(coefTAB)
+  
+  invisible(object)
 }
-# summary.afttest <- function(object, ...) {
-#   if (!inherits(object,"afttest")) stop("Must be afttest class")
-#   
-#   out <- list(call = object$call,
-#              npath = object$npath,
-#              eqType = object$eqType,
-#              testType = object$testType,
-#              optimType = object$optimType,
-#              coefficients = object$beta,
-#              p_value = object$p_value,
-#              p_std_value = object$p_std_value,
-#              missingmessage = object$missingmessage)
-# 
-#   class(out) <- "summary.afttest"
-#   out
-# }
 
 ##############################################################################
 ## plot
@@ -135,7 +157,7 @@ plot.afttest <- function(x, npath = 50, stdType = NULL, quantile = NULL, ...){
   }
   
   stdTypeQuote <- ifelse(stdType=="std","standardized","unstandardized")
-  testTypeQuote <- ifelse(eqType=="mns","non-smooth","induced-smoothed")
+  testTypeQuote <- ifelse(eqType=="ns","non-smooth","induced-smoothed")
   
   x_axis <- 1:nrow(x$DF)
   
@@ -167,7 +189,7 @@ plot.afttest <- function(x, npath = 50, stdType = NULL, quantile = NULL, ...){
         # DF_app
         DF_app=data.frame()
         for (group in 1:npath){
-          temp <- x$app_std_npath[[group]][,Q[k]]
+          temp <- x$apprx_std_npath[[group]][,Q[k]]
           temp <- data.frame(group,resid=x_axis,app=temp)
           DF_app <- rbind(DF_app,temp)
         }
@@ -178,7 +200,7 @@ plot.afttest <- function(x, npath = 50, stdType = NULL, quantile = NULL, ...){
         #DF_app
         DF_app <- data.frame()
         for (group in 1:npath){
-          temp <- x$app_npath[[group]][,Q[k]]
+          temp <- x$apprx_npath[[group]][,Q[k]]
           temp <- data.frame(group,resid=x_axis,app=temp)
           DF_app <- rbind(DF_app,temp)
         }
@@ -236,7 +258,7 @@ plot.afttest <- function(x, npath = 50, stdType = NULL, quantile = NULL, ...){
       # DF_app
       DF_app <- data.frame()
       for (group in 1:npath){
-        temp <- x$app_std_npath[[group]]
+        temp <- x$apprx_std_npath[[group]]
         temp <- data.frame(group,resid=x_axis,app=temp)
         DF_app <- rbind(DF_app,temp)
       }
@@ -246,7 +268,7 @@ plot.afttest <- function(x, npath = 50, stdType = NULL, quantile = NULL, ...){
       # DF_app
       DF_app <- data.frame()
       for (group in 1:npath){
-        temp <- x$app_npath[[group]]
+        temp <- x$apprx_npath[[group]]
         temp <- data.frame(group,resid=x_axis,app=temp)
         DF_app <- rbind(DF_app,temp)
       }
@@ -278,7 +300,7 @@ plot.afttest <- function(x, npath = 50, stdType = NULL, quantile = NULL, ...){
       # DF_app
       DF_app <- data.frame()
       for (group in 1:npath){
-        temp <- x$app_std_npath[[group]]
+        temp <- x$apprx_std_npath[[group]]
         temp <- data.frame(group,resid=x_axis,app=temp)
         DF_app <- rbind(DF_app,temp)
       }
@@ -289,7 +311,7 @@ plot.afttest <- function(x, npath = 50, stdType = NULL, quantile = NULL, ...){
       # DF_app
       DF_app <- data.frame()
       for (group in 1:npath){
-        temp <- x$app_npath[[group]]
+        temp <- x$apprx_npath[[group]]
         temp <- data.frame(group,resid=x_axis,app=temp)
         DF_app <- rbind(DF_app,temp)
       }
@@ -318,3 +340,17 @@ plot.afttest <- function(x, npath = 50, stdType = NULL, quantile = NULL, ...){
     return(warning("Check your code"))
   }
 }
+
+##############################################################################
+## Surv
+##############################################################################
+#' \code{Surv} function imported from \code{survival}
+#'
+#' This function is imported from the \code{survival} package. See
+#' \code{\link[survival]{Surv}}.
+#'
+#' @importFrom survival Surv
+#' @name export_Surv
+#' @aliases Surv 
+#' @export Surv
+NULL

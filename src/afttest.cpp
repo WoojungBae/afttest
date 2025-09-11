@@ -12,20 +12,20 @@ using namespace Rcpp;
  Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
  
- double target_score2_mis(vec b, vec Time, vec Delta, mat Covari, 
+ double target_score2_mis(vec b, vec time, vec delta, mat covariates, 
                           vec targetvector, int n, int p, double sqrtn){
    
-   vec resid = log(Time) + Covari*b;
+   vec resid = log(time) + covariates*b;
    uvec index_resid = sort_index(resid);
    
-   Delta = Delta(index_resid);
-   Covari = Covari.rows(index_resid);
+   delta = delta(index_resid);
+   covariates = covariates.rows(index_resid);
    resid = resid(index_resid);
    
    mat tempmat_np = zeros(n,p); vec tempvec_n = zeros(n); vec F_vec = zeros(p);
    for(int it=0; it<n; it++){
-     if (Delta(it)==1){
-       tempmat_np = Covari.row(it) - Covari.each_row();
+     if (delta(it)==1){
+       tempmat_np = covariates.row(it) - covariates.each_row();
        tempvec_n = sqrt(sum(tempmat_np%tempmat_np,1));
        tempvec_n.replace(0,1);
        
@@ -40,21 +40,21 @@ using namespace Rcpp;
    return F2norm;
  }
  
- double target_score2_mns(vec b, vec Time, vec Delta, mat Covari, 
+ double target_score2_mns(vec b, vec time, vec delta, mat covariates, 
                           vec targetvector, int n, int p){
    
-   vec resid = log(Time) + Covari*b;
+   vec resid = log(time) + covariates*b;
    
    uvec index_resid = sort_index(resid);
    
-   Delta = Delta(index_resid);
-   Covari = Covari.rows(index_resid);
+   delta = delta(index_resid);
+   covariates = covariates.rows(index_resid);
    resid = resid(index_resid);
    
    mat tempmat_np = zeros(n,p); vec F_vec = zeros(p);
    for(int it=0; it<n; it++){
-     if (Delta(it)==1){
-       tempmat_np = Covari.row(it) - Covari.each_row();
+     if (delta(it)==1){
+       tempmat_np = covariates.row(it) - covariates.each_row();
        F_vec += sum(tempmat_np.each_col()%conv_to<vec>::from((resid>=resid(it)))).t();
      }
    }
@@ -65,20 +65,20 @@ using namespace Rcpp;
    return F2norm;
  }
  
- vec target_score_mis(vec b, vec Time, vec Delta, mat Covari, 
+ vec target_score_mis(vec b, vec time, vec delta, mat covariates, 
                       vec targetvector, int n, int p, double sqrtn){
    
-   vec resid = log(Time) + Covari*b;
+   vec resid = log(time) + covariates*b;
    uvec index_resid = sort_index(resid);
    
-   Delta = Delta(index_resid);
-   Covari = Covari.rows(index_resid);
+   delta = delta(index_resid);
+   covariates = covariates.rows(index_resid);
    resid = resid(index_resid);
    
    mat tempmat_np = zeros(n,p); vec tempvec_n = zeros(n); vec F_vec = zeros(p);
    for(int it=0; it<n; it++){
-     if (Delta(it)==1){
-       tempmat_np = Covari.row(it) - Covari.each_row();
+     if (delta(it)==1){
+       tempmat_np = covariates.row(it) - covariates.each_row();
        tempvec_n = sqrt(sum(tempmat_np%tempmat_np,1));
        tempvec_n.replace(0,1);
        
@@ -91,21 +91,21 @@ using namespace Rcpp;
    return F_vec;
  }
  
- vec target_score_mns(vec b, vec Time, vec Delta, mat Covari, 
+ vec target_score_mns(vec b, vec time, vec delta, mat covariates, 
                       vec targetvector, int n, int p){
    
-   vec resid = log(Time) + Covari*b;
+   vec resid = log(time) + covariates*b;
    
    uvec index_resid = sort_index(resid);
    
-   Delta = Delta(index_resid);
-   Covari = Covari.rows(index_resid);
+   delta = delta(index_resid);
+   covariates = covariates.rows(index_resid);
    resid = resid(index_resid);
    
    mat tempmat_np = zeros(n,p); vec F_vec = zeros(p);
    for(int it=0; it<n; it++){
-     if (Delta(it)==1){
-       tempmat_np = Covari.row(it) - Covari.each_row();
+     if (delta(it)==1){
+       tempmat_np = covariates.row(it) - covariates.each_row();
        F_vec += sum(tempmat_np.each_col()%conv_to<vec>::from((resid>=resid(it)))).t();
      }
    }
@@ -114,16 +114,16 @@ using namespace Rcpp;
    return F_vec;
  }
  
- List dfsane_mis(vec b, vec Time, vec Delta, mat Covari, 
+ List dfsane_mis(vec b, vec time, vec delta, mat covariates, 
                  vec targetvector, int n, int p, double sqrtn){
    
    vec b_old = b;
-   vec F_old = target_score_mis(b_old,Time,Delta,Covari,targetvector,n,p,sqrtn);
+   vec F_old = target_score_mis(b_old,time,delta,covariates,targetvector,n,p,sqrtn);
    double sig_k = (1/sqrt(dot(F_old, F_old))); if (sig_k>1){sig_k=1;}
    
    vec b_new = b_old - sig_k*F_old;
    
-   vec F_new = target_score_mis(b_new,Time,Delta,Covari,targetvector,n,p,sqrtn);
+   vec F_new = target_score_mis(b_new,time,delta,covariates,targetvector,n,p,sqrtn);
    
    vec s_k = b_new - b_old;
    vec y_k = F_new - F_old;
@@ -172,14 +172,14 @@ using namespace Rcpp;
        
        // alpha_plus
        b_new_p = b_new + alp_p * d_k;
-       F_new_p = target_score_mis(b_new_p,Time,Delta,Covari,targetvector,n,p,sqrtn);
+       F_new_p = target_score_mis(b_new_p,time,delta,covariates,targetvector,n,p,sqrtn);
        
        RHS_p = dot(F_new_p, F_new_p);
        LHS_p = f_bar.max() + eta_k - gam * pow(alp_p,2) * tol_f;
        
        // alpha_minus
        b_new_m = b_new - alp_m * d_k;
-       F_new_m = target_score_mis(b_new_m,Time,Delta,Covari,targetvector,n,p,sqrtn);
+       F_new_m = target_score_mis(b_new_m,time,delta,covariates,targetvector,n,p,sqrtn);
        
        RHS_m = dot(F_new_m, F_new_m);
        LHS_m = f_bar.max() + eta_k - gam * pow(alp_m,2) * tol_f;
@@ -219,7 +219,7 @@ using namespace Rcpp;
      }
      
      // STEP 3
-     F_new = target_score_mis(b_new,Time,Delta,Covari,targetvector,n,p,sqrtn);
+     F_new = target_score_mis(b_new,time,delta,covariates,targetvector,n,p,sqrtn);
      
      s_k = b_new - b_old;
      y_k = F_new - F_old;
@@ -240,15 +240,15 @@ using namespace Rcpp;
    return List::create(tol_f,b_new);
  }
  
- List dfsane_mns(vec b, vec Time, vec Delta, mat Covari, vec targetvector, int n, int p){
+ List dfsane_mns(vec b, vec time, vec delta, mat covariates, vec targetvector, int n, int p){
    
    vec b_old = b;
-   vec F_old = target_score_mns(b_old,Time,Delta,Covari,targetvector,n,p);
+   vec F_old = target_score_mns(b_old,time,delta,covariates,targetvector,n,p);
    double sig_k = (1/sqrt(dot(F_old, F_old))); if (sig_k>1){sig_k=1;}
    
    vec b_new = b_old - sig_k*F_old;
    
-   vec F_new = target_score_mns(b_new,Time,Delta,Covari,targetvector,n,p);
+   vec F_new = target_score_mns(b_new,time,delta,covariates,targetvector,n,p);
    
    vec s_k = b_new - b_old;
    vec y_k = F_new - F_old;
@@ -297,14 +297,14 @@ using namespace Rcpp;
        
        // alpha_plus
        b_new_p = b_new + alp_p * d_k;
-       F_new_p = target_score_mns(b_new_p,Time,Delta,Covari,targetvector,n,p);
+       F_new_p = target_score_mns(b_new_p,time,delta,covariates,targetvector,n,p);
        
        RHS_p = dot(F_new_p, F_new_p);
        LHS_p = f_bar.max() + eta_k - gam * pow(alp_p,2) * tol_f;
        
        // alpha_minus
        b_new_m = b_new - alp_m * d_k;
-       F_new_m = target_score_mns(b_new_m,Time,Delta,Covari,targetvector,n,p);
+       F_new_m = target_score_mns(b_new_m,time,delta,covariates,targetvector,n,p);
        
        RHS_m = dot(F_new_m, F_new_m);
        LHS_m = f_bar.max() + eta_k - gam * pow(alp_m,2) * tol_f;
@@ -344,7 +344,7 @@ using namespace Rcpp;
      }
      
      // STEP 3
-     F_new = target_score_mns(b_new,Time,Delta,Covari,targetvector,n,p);
+     F_new = target_score_mns(b_new,time,delta,covariates,targetvector,n,p);
      
      s_k = b_new - b_old;
      y_k = F_new - F_old;
@@ -365,10 +365,10 @@ using namespace Rcpp;
    return List::create(tol_f,b_new);
  }
  
- List omni_mis_DFSANE(int npath, vec b, vec Time, vec Delta, mat Covari, int npathsave){
+ List omni_mis_DFSANE(int npath, vec b, vec time, vec delta, mat covariates, int npathsave){
    
-   int n = Covari.n_rows;
-   int p = Covari.n_cols;
+   int n = covariates.n_rows;
+   int p = covariates.n_cols;
    
    double sqrtn = sqrt(n);
    
@@ -385,36 +385,36 @@ using namespace Rcpp;
    mat tempmat_np(n,p);
    mat tempmat_nn(n,n);
    
-   vec resid = log(Time) + Covari*b;
+   vec resid = log(time) + covariates*b;
    
    uvec index_resid = sort_index(resid);
    
-   Time = Time(index_resid);
-   Delta = Delta(index_resid);
-   Covari = Covari.rows(index_resid);
+   time = time(index_resid);
+   delta = delta(index_resid);
+   covariates = covariates.rows(index_resid);
    resid = resid(index_resid);
    
    List pi_i_z(n); List N_i_t(n); List Y_i_t(n);
    vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
-   mat sorted_Covari = sort(Covari);
+   mat sorted_Covari = sort(covariates);
    tempvec_n = zero_vec_n;
    for(int it=0; it<n; it++){
      for(int itt=0; itt<n; itt++){
-       tempvec_n(itt) = (prod(Covari.row(it)<=sorted_Covari.row(itt))*1);
+       tempvec_n(itt) = (prod(covariates.row(it)<=sorted_Covari.row(itt))*1);
      }
      pi_i_z(it) = tempvec_n;
-     if (Delta(it)==1){
+     if (delta(it)==1){
        N_i_t(it) = (resid>=resid(it));
      } else {
        N_i_t(it) = zero_vec_n;
      }
      Y_i_t(it) = (resid<=resid(it))*1;
      S_0_t += as<vec>(Y_i_t(it));
-     S_1_t += as<vec>(Y_i_t(it))*(Covari.row(it));
+     S_1_t += as<vec>(Y_i_t(it))*(covariates.row(it));
      S_pi_t_z += (as<vec>(Y_i_t(it)))*(as<rowvec>(pi_i_z(it)));
    }
    
-   vec dLambdahat_0_t = Delta/S_0_t;
+   vec dLambdahat_0_t = delta/S_0_t;
    dLambdahat_0_t.replace(datum::nan,0);
    
    mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
@@ -452,9 +452,9 @@ using namespace Rcpp;
    ghat_0_t /= n;
    
    List ghat_t_z(p);
-   tempvec_n = ghat_0_t % Time;
+   tempvec_n = ghat_0_t % time;
    for(int itt=0; itt<p; itt++){
-     vec Covari_col = Covari.col(itt);
+     vec Covari_col = covariates.col(itt);
      tempmat_nn = zero_mat_nn;
      for(int it=0; it<n; it++){
        tempmat_nn += tempvec_n*((as<rowvec>(pi_i_z(it)))*Covari_col(it));
@@ -480,7 +480,7 @@ using namespace Rcpp;
    // }
    // Condi_Ehat.replace(datum::nan,0);
    // 
-   // vec rhat_i = Delta % resid + (one_vec_n - Delta) % Condi_Ehat;
+   // vec rhat_i = delta % resid + (one_vec_n - delta) % Condi_Ehat;
    // vec given_data_f = exp(rhat_i);
    // double bw_fn = bw_base * stddev(given_data_f);
    // vec fhat_0_t = zero_vec_n;
@@ -492,12 +492,12 @@ using namespace Rcpp;
    // fhat_0_t /= n;
    
    List fhat_t_z(p);
-   tempvec_n = fhat_0_t % Time;
+   tempvec_n = fhat_0_t % time;
    for(int itt=0; itt<p; itt++){
-     vec Covari_col = Covari.col(itt);
+     vec Covari_col = covariates.col(itt);
      tempmat_nn = zero_mat_nn;
      for(int it=0; it<n; it++){
-       if (Delta(it)==1){
+       if (delta(it)==1){
          tempmat_nn += tempvec_n*((as<rowvec>(pi_i_z(it)))*Covari_col(it));
        }
      }
@@ -517,11 +517,11 @@ using namespace Rcpp;
        tempvec_n = zero_vec_n; tempmat_np = zero_mat_np;
        for(int it=0; it<n; it++){
          tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
-         tempmat_np += (as<vec>(dMhat_i_t(it))*(Covari.row(it)))*phi_i(it);
+         tempmat_np += (as<vec>(dMhat_i_t(it))*(covariates.row(it)))*phi_i(it);
        }
        vec U_phi_inf = sum((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)).t();
        
-       List b_s_result = dfsane_mis(b, Time, Delta, Covari, U_phi_inf, n, p, sqrtn);
+       List b_s_result = dfsane_mis(b, time, delta, covariates, U_phi_inf, n, p, sqrtn);
        tolerance = as<double>(b_s_result[0]);
        b_s = as<vec>(b_s_result[1]);
      }
@@ -532,10 +532,10 @@ using namespace Rcpp;
      }
      mat U_pi_phi_t_z = cumsum(tempmat_nn);
      
-     vec resid_s = log(Time) + Covari*b_s;
+     vec resid_s = log(time) + covariates*b_s;
      uvec index_resid_s = sort_index(resid_s);
      
-     vec Delta_s = Delta(index_resid_s);
+     vec Delta_s = delta(index_resid_s);
      resid_s = resid_s(index_resid_s);
      
      NumericVector Y_i_t_s(n); vec S_0_t_s = zero_vec_n;
@@ -568,7 +568,7 @@ using namespace Rcpp;
    // too low values which are 0 or computationally 0 of se_boot makes a problem,
    // so we adjust them to have kappa = quantile of mat_se_boot
    // e.g., kappa_min = censoring; quantile(mat_se_boot) = {censoring, 1};
-   // double censoring = 1-sum(Delta)/n;
+   // double censoring = 1-sum(delta)/n;
    // double kappa_min = censoring;
    // double kappa_max = 1;
    // if (kappa_min<0.1){kappa_min = 0.1;}
@@ -578,7 +578,7 @@ using namespace Rcpp;
    // mat_se_boot.replace(0, min_mat_se_boot); 
    // mat se_boot = reshape(mat_se_boot,n,n);
    
-   double censoring = 1-sum(Delta)/n;
+   double censoring = 1-sum(delta)/n;
    vec kappa = {sqrt(censoring), 1};
    kappa = quantile(mat_se_boot, kappa);
    mat_se_boot.clamp(kappa(0),kappa(1));
@@ -610,7 +610,7 @@ using namespace Rcpp;
    } else if (npathsave > npath) {
      return List::create(_["SE_boot"]=se_boot,
                          _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
-                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
+                         _["apprx_npath"]=app_npath,_["apprx_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    } else {
      npathsave = npathsave - 1;
@@ -618,15 +618,15 @@ using namespace Rcpp;
      app_std_npath = app_std_npath[Range(0,npathsave)];
      return List::create(_["SE_boot"]=se_boot,
                          _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
-                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
+                         _["apprx_npath"]=app_npath,_["apprx_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    }
  }
  
- List omni_mns_DFSANE(int npath, vec b, vec Time, vec Delta, mat Covari, int npathsave){
+ List omni_mns_DFSANE(int npath, vec b, vec time, vec delta, mat covariates, int npathsave){
    
-   int n = Covari.n_rows;
-   int p = Covari.n_cols;
+   int n = covariates.n_rows;
+   int p = covariates.n_cols;
    
    double sqrtn = sqrt(n);
    
@@ -643,36 +643,36 @@ using namespace Rcpp;
    mat tempmat_np(n,p);
    mat tempmat_nn(n,n);
    
-   vec resid = log(Time) + Covari*b;
+   vec resid = log(time) + covariates*b;
    
    uvec index_resid = sort_index(resid);
    
-   Time = Time(index_resid);
-   Delta = Delta(index_resid);
-   Covari = Covari.rows(index_resid);
+   time = time(index_resid);
+   delta = delta(index_resid);
+   covariates = covariates.rows(index_resid);
    resid = resid(index_resid);
    
    List pi_i_z(n); List N_i_t(n); List Y_i_t(n);
    vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
-   mat sorted_Covari = sort(Covari);
+   mat sorted_Covari = sort(covariates);
    tempvec_n = zero_vec_n;
    for(int it=0; it<n; it++){
      for(int itt=0; itt<n; itt++){
-       tempvec_n(itt) = (prod(Covari.row(it)<=sorted_Covari.row(itt))*1);
+       tempvec_n(itt) = (prod(covariates.row(it)<=sorted_Covari.row(itt))*1);
      }
      pi_i_z(it) = tempvec_n;
-     if (Delta(it)==1){
+     if (delta(it)==1){
        N_i_t(it) = (resid>=resid(it));
      } else {
        N_i_t(it) = zero_vec_n;
      }
      Y_i_t(it) = (resid<=resid(it))*1;
      S_0_t += as<vec>(Y_i_t(it));
-     S_1_t += as<vec>(Y_i_t(it))*(Covari.row(it));
+     S_1_t += as<vec>(Y_i_t(it))*(covariates.row(it));
      S_pi_t_z += (as<vec>(Y_i_t(it)))*(as<rowvec>(pi_i_z(it)));
    }
    
-   vec dLambdahat_0_t = Delta/S_0_t;
+   vec dLambdahat_0_t = delta/S_0_t;
    dLambdahat_0_t.replace(datum::nan,0);
    
    mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
@@ -710,9 +710,9 @@ using namespace Rcpp;
    ghat_0_t /= n;
    
    List ghat_t_z(p);
-   tempvec_n = ghat_0_t % Time;
+   tempvec_n = ghat_0_t % time;
    for(int itt=0; itt<p; itt++){
-     vec Covari_col = Covari.col(itt);
+     vec Covari_col = covariates.col(itt);
      tempmat_nn = zero_mat_nn;
      for(int it=0; it<n; it++){
        tempmat_nn += tempvec_n*((as<rowvec>(pi_i_z(it)))*Covari_col(it));
@@ -738,7 +738,7 @@ using namespace Rcpp;
    // }
    // Condi_Ehat.replace(datum::nan,0);
    // 
-   // vec rhat_i = Delta % resid + (one_vec_n - Delta) % Condi_Ehat;
+   // vec rhat_i = delta % resid + (one_vec_n - delta) % Condi_Ehat;
    // vec given_data_f = exp(rhat_i);
    // double bw_fn = bw_base * stddev(given_data_f);
    // vec fhat_0_t = zero_vec_n;
@@ -750,12 +750,12 @@ using namespace Rcpp;
    // fhat_0_t /= n;
    
    List fhat_t_z(p);
-   tempvec_n = fhat_0_t % Time;
+   tempvec_n = fhat_0_t % time;
    for(int itt=0; itt<p; itt++){
-     vec Covari_col = Covari.col(itt);
+     vec Covari_col = covariates.col(itt);
      tempmat_nn = zero_mat_nn;
      for(int it=0; it<n; it++){
-       if (Delta(it)==1){
+       if (delta(it)==1){
          tempmat_nn += tempvec_n*((as<rowvec>(pi_i_z(it)))*Covari_col(it));
        }
      }
@@ -775,11 +775,11 @@ using namespace Rcpp;
        tempvec_n = zero_vec_n; tempmat_np = zero_mat_np;
        for(int it=0; it<n; it++){
          tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
-         tempmat_np += (as<vec>(dMhat_i_t(it))*(Covari.row(it)))*phi_i(it);
+         tempmat_np += (as<vec>(dMhat_i_t(it))*(covariates.row(it)))*phi_i(it);
        }
        vec U_phi_inf = sum((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)).t();
        
-       List b_s_result = dfsane_mns(b, Time, Delta, Covari, U_phi_inf, n, p);
+       List b_s_result = dfsane_mns(b, time, delta, covariates, U_phi_inf, n, p);
        tolerance = as<double>(b_s_result[0]);
        b_s = as<vec>(b_s_result[1]);
      }
@@ -790,10 +790,10 @@ using namespace Rcpp;
      }
      mat U_pi_phi_t_z = cumsum(tempmat_nn);
      
-     vec resid_s = log(Time) + Covari*b_s;
+     vec resid_s = log(time) + covariates*b_s;
      uvec index_resid_s = sort_index(resid_s);
      
-     vec Delta_s = Delta(index_resid_s);
+     vec Delta_s = delta(index_resid_s);
      resid_s = resid_s(index_resid_s);
      
      NumericVector Y_i_t_s(n); vec S_0_t_s = zero_vec_n;
@@ -826,7 +826,7 @@ using namespace Rcpp;
    // too low values which are 0 or computationally 0 of se_boot makes a problem,
    // so we adjust them to have kappa = quantile of mat_se_boot
    // e.g., kappa_min = censoring; quantile(mat_se_boot) = {censoring, 1};
-   // double censoring = 1-sum(Delta)/n;
+   // double censoring = 1-sum(delta)/n;
    // double kappa_min = censoring;
    // double kappa_max = 1;
    // if (kappa_min<0.1){kappa_min = 0.1;}
@@ -836,7 +836,7 @@ using namespace Rcpp;
    // mat_se_boot.replace(0, min_mat_se_boot); 
    // mat se_boot = reshape(mat_se_boot,n,n);
    
-   double censoring = 1-sum(Delta)/n;
+   double censoring = 1-sum(delta)/n;
    vec kappa = {sqrt(censoring), 1};
    kappa = quantile(mat_se_boot, kappa);
    mat_se_boot.clamp(kappa(0),kappa(1));
@@ -868,7 +868,7 @@ using namespace Rcpp;
    } else if (npathsave > npath) {
      return List::create(_["SE_boot"]=se_boot,
                          _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
-                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
+                         _["apprx_npath"]=app_npath,_["apprx_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    } else {
      npathsave = npathsave - 1;
@@ -876,15 +876,15 @@ using namespace Rcpp;
      app_std_npath = app_std_npath[Range(0,npathsave)];
      return List::create(_["SE_boot"]=se_boot,
                          _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
-                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
+                         _["apprx_npath"]=app_npath,_["apprx_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    }
  }
  
- List link_mis_DFSANE(int npath, vec b, vec Time, vec Delta, mat Covari, int npathsave){
+ List link_mis_DFSANE(int npath, vec b, vec time, vec delta, mat covariates, int npathsave){
    
-   int n = Covari.n_rows;
-   int p = Covari.n_cols;
+   int n = covariates.n_rows;
+   int p = covariates.n_cols;
    
    double sqrtn = sqrt(n);
    
@@ -901,36 +901,36 @@ using namespace Rcpp;
    mat tempmat_np(n,p);
    mat tempmat_nn(n,n);
    
-   vec resid = log(Time) + Covari*b;
+   vec resid = log(time) + covariates*b;
    
    uvec index_resid = sort_index(resid);
    
-   Time = Time(index_resid);
-   Delta = Delta(index_resid);
-   Covari = Covari.rows(index_resid);
+   time = time(index_resid);
+   delta = delta(index_resid);
+   covariates = covariates.rows(index_resid);
    resid = resid(index_resid);
    
    List pi_i_z(n); List N_i_t(n); List Y_i_t(n);
    vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
-   mat sorted_Covari = sort(Covari);
+   mat sorted_Covari = sort(covariates);
    tempvec_n = zero_vec_n;
    for(int it=0; it<n; it++){
      for(int itt=0; itt<n; itt++){
-       tempvec_n(itt) = (prod(Covari.row(it)<=sorted_Covari.row(itt))*1);
+       tempvec_n(itt) = (prod(covariates.row(it)<=sorted_Covari.row(itt))*1);
      }
      pi_i_z(it) = tempvec_n;
-     if (Delta(it)==1){
+     if (delta(it)==1){
        N_i_t(it) = (resid>=resid(it));
      } else {
        N_i_t(it) = zero_vec_n;
      }
      Y_i_t(it) = (resid<=resid(it))*1;
      S_0_t += as<vec>(Y_i_t(it));
-     S_1_t += as<vec>(Y_i_t(it))*(Covari.row(it));
+     S_1_t += as<vec>(Y_i_t(it))*(covariates.row(it));
      S_pi_t_z += (as<vec>(Y_i_t(it)))*(as<rowvec>(pi_i_z(it)));
    }
    
-   vec dLambdahat_0_t = Delta/S_0_t;
+   vec dLambdahat_0_t = delta/S_0_t;
    dLambdahat_0_t.replace(datum::nan,0);
    
    mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
@@ -967,9 +967,9 @@ using namespace Rcpp;
    ghat_0_t /= n;
    
    List ghat_t_z(p);
-   tempvec_n = ghat_0_t % Time;
+   tempvec_n = ghat_0_t % time;
    for(int itt=0; itt<p; itt++){
-     vec Covari_col = Covari.col(itt);
+     vec Covari_col = covariates.col(itt);
      tempmat_nn = zero_mat_nn;
      for(int it=0; it<n; it++){
        tempmat_nn += tempvec_n*((as<rowvec>(pi_i_z(it)))*Covari_col(it));
@@ -995,7 +995,7 @@ using namespace Rcpp;
    // }
    // Condi_Ehat.replace(datum::nan,0);
    // 
-   // vec rhat_i = Delta % resid + (one_vec_n - Delta) % Condi_Ehat;
+   // vec rhat_i = delta % resid + (one_vec_n - delta) % Condi_Ehat;
    // vec given_data_f = exp(rhat_i);
    // double bw_fn = bw_base * stddev(given_data_f);
    // vec fhat_0_t = zero_vec_n;
@@ -1007,12 +1007,12 @@ using namespace Rcpp;
    // fhat_0_t /= n;
    
    List fhat_inf_z(p);
-   double tempvec_1 = fhat_0_t(n-1) * Time(n-1);
+   double tempvec_1 = fhat_0_t(n-1) * time(n-1);
    for(int itt=0; itt<p; itt++){
-     vec Covari_col = Covari.col(itt);
+     vec Covari_col = covariates.col(itt);
      tempvec_n = zero_vec_n;
      for(int it=0; it<n; it++){
-       if (Delta(it)==1){
+       if (delta(it)==1){
          tempvec_n += tempvec_1*(as<vec>(pi_i_z(it))*Covari_col(it));
        }
      }
@@ -1032,11 +1032,11 @@ using namespace Rcpp;
        tempvec_n = zero_vec_n; tempmat_np = zero_mat_np;
        for(int it=0; it<n; it++){
          tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
-         tempmat_np += (as<vec>(dMhat_i_t(it))*(Covari.row(it)))*phi_i(it);
+         tempmat_np += (as<vec>(dMhat_i_t(it))*(covariates.row(it)))*phi_i(it);
        }
        vec U_phi_inf = sum((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)).t();
        
-       List b_s_result = dfsane_mis(b, Time, Delta, Covari, U_phi_inf, n, p, sqrtn);
+       List b_s_result = dfsane_mis(b, time, delta, covariates, U_phi_inf, n, p, sqrtn);
        tolerance = as<double>(b_s_result[0]);
        b_s = as<vec>(b_s_result[1]);
      }
@@ -1047,10 +1047,10 @@ using namespace Rcpp;
      }
      mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
      
-     vec resid_s = log(Time) + Covari*b_s;
+     vec resid_s = log(time) + covariates*b_s;
      uvec index_resid_s = sort_index(resid_s);
      
-     vec Delta_s = Delta(index_resid_s);
+     vec Delta_s = delta(index_resid_s);
      resid_s = resid_s(index_resid_s);
      
      NumericVector Y_i_t_s(n); vec S_0_t_s = zero_vec_n;
@@ -1083,7 +1083,7 @@ using namespace Rcpp;
    // too low values which are 0 or computationally 0 of se_boot makes a problem,
    // so we adjust them to have kappa = quantile of mat_se_boot
    // e.g., kappa_min = censoring; quantile(mat_se_boot) = {censoring, 1};
-   // double censoring = 1-sum(Delta)/n;
+   // double censoring = 1-sum(delta)/n;
    // double kappa_min = censoring;
    // double kappa_max = 1;
    // if (kappa_min<0.1){kappa_min = 0.1;}
@@ -1092,7 +1092,7 @@ using namespace Rcpp;
    // double min_se_boot = se_boot(find(se_boot > 0)).min();
    // se_boot.replace(0, min_se_boot); 
    
-   double censoring = 1-sum(Delta)/n;
+   double censoring = 1-sum(delta)/n;
    vec kappa = {censoring, 1};
    kappa = quantile(se_boot, kappa);
    // if (kappa(0)<0.1){kappa(0) = 0.1;}
@@ -1123,7 +1123,7 @@ using namespace Rcpp;
    } else if (npathsave > npath) {
      return List::create(_["SE_boot"]=se_boot,
                          _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
-                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
+                         _["apprx_npath"]=app_npath,_["apprx_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    } else {
      npathsave = npathsave - 1;
@@ -1131,15 +1131,15 @@ using namespace Rcpp;
      app_std_npath = app_std_npath[Range(0,npathsave)];
      return List::create(_["SE_boot"]=se_boot,
                          _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
-                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
+                         _["apprx_npath"]=app_npath,_["apprx_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    }
  }
  
- List link_mns_DFSANE(int npath, vec b, vec Time, vec Delta, mat Covari, int npathsave){
+ List link_mns_DFSANE(int npath, vec b, vec time, vec delta, mat covariates, int npathsave){
    
-   int n = Covari.n_rows;
-   int p = Covari.n_cols;
+   int n = covariates.n_rows;
+   int p = covariates.n_cols;
    
    double sqrtn = sqrt(n);
    
@@ -1156,36 +1156,36 @@ using namespace Rcpp;
    mat tempmat_np(n,p);
    mat tempmat_nn(n,n);
    
-   vec resid = log(Time) + Covari*b;
+   vec resid = log(time) + covariates*b;
    
    uvec index_resid = sort_index(resid);
    
-   Time = Time(index_resid);
-   Delta = Delta(index_resid);
-   Covari = Covari.rows(index_resid);
+   time = time(index_resid);
+   delta = delta(index_resid);
+   covariates = covariates.rows(index_resid);
    resid = resid(index_resid);
    
    List pi_i_z(n); List N_i_t(n); List Y_i_t(n);
    vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
-   mat sorted_Covari = sort(Covari);
+   mat sorted_Covari = sort(covariates);
    tempvec_n = zero_vec_n;
    for(int it=0; it<n; it++){
      for(int itt=0; itt<n; itt++){
-       tempvec_n(itt) = (prod(Covari.row(it)<=sorted_Covari.row(itt))*1);
+       tempvec_n(itt) = (prod(covariates.row(it)<=sorted_Covari.row(itt))*1);
      }
      pi_i_z(it) = tempvec_n;
-     if (Delta(it)==1){
+     if (delta(it)==1){
        N_i_t(it) = (resid>=resid(it));
      } else {
        N_i_t(it) = zero_vec_n;
      }
      Y_i_t(it) = (resid<=resid(it))*1;
      S_0_t += as<vec>(Y_i_t(it));
-     S_1_t += as<vec>(Y_i_t(it))*(Covari.row(it));
+     S_1_t += as<vec>(Y_i_t(it))*(covariates.row(it));
      S_pi_t_z += (as<vec>(Y_i_t(it)))*(as<rowvec>(pi_i_z(it)));
    }
    
-   vec dLambdahat_0_t = Delta/S_0_t;
+   vec dLambdahat_0_t = delta/S_0_t;
    dLambdahat_0_t.replace(datum::nan,0);
    
    mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
@@ -1222,9 +1222,9 @@ using namespace Rcpp;
    ghat_0_t /= n;
    
    List ghat_t_z(p);
-   tempvec_n = ghat_0_t % Time;
+   tempvec_n = ghat_0_t % time;
    for(int itt=0; itt<p; itt++){
-     vec Covari_col = Covari.col(itt);
+     vec Covari_col = covariates.col(itt);
      tempmat_nn = zero_mat_nn;
      for(int it=0; it<n; it++){
        tempmat_nn += tempvec_n*((as<rowvec>(pi_i_z(it)))*Covari_col(it));
@@ -1250,7 +1250,7 @@ using namespace Rcpp;
    // }
    // Condi_Ehat.replace(datum::nan,0);
    // 
-   // vec rhat_i = Delta % resid + (one_vec_n - Delta) % Condi_Ehat;
+   // vec rhat_i = delta % resid + (one_vec_n - delta) % Condi_Ehat;
    // vec given_data_f = exp(rhat_i);
    // double bw_fn = bw_base * stddev(given_data_f);
    // vec fhat_0_t = zero_vec_n;
@@ -1262,12 +1262,12 @@ using namespace Rcpp;
    // fhat_0_t /= n;
    
    List fhat_inf_z(p);
-   double tempvec_1 = fhat_0_t(n-1) * Time(n-1);
+   double tempvec_1 = fhat_0_t(n-1) * time(n-1);
    for(int itt=0; itt<p; itt++){
-     vec Covari_col = Covari.col(itt);
+     vec Covari_col = covariates.col(itt);
      tempvec_n = zero_vec_n;
      for(int it=0; it<n; it++){
-       if (Delta(it)==1){
+       if (delta(it)==1){
          tempvec_n += tempvec_1*(as<vec>(pi_i_z(it))*Covari_col(it));
        }
      }
@@ -1287,11 +1287,11 @@ using namespace Rcpp;
        tempvec_n = zero_vec_n; tempmat_np = zero_mat_np;
        for(int it=0; it<n; it++){
          tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
-         tempmat_np += (as<vec>(dMhat_i_t(it))*(Covari.row(it)))*phi_i(it);
+         tempmat_np += (as<vec>(dMhat_i_t(it))*(covariates.row(it)))*phi_i(it);
        }
        vec U_phi_inf = sum((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)).t();
        
-       List b_s_result = dfsane_mns(b, Time, Delta, Covari, U_phi_inf, n, p);
+       List b_s_result = dfsane_mns(b, time, delta, covariates, U_phi_inf, n, p);
        tolerance = as<double>(b_s_result[0]);
        b_s = as<vec>(b_s_result[1]);
      }
@@ -1302,10 +1302,10 @@ using namespace Rcpp;
      }
      mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
      
-     vec resid_s = log(Time) + Covari*b_s;
+     vec resid_s = log(time) + covariates*b_s;
      uvec index_resid_s = sort_index(resid_s);
      
-     vec Delta_s = Delta(index_resid_s);
+     vec Delta_s = delta(index_resid_s);
      resid_s = resid_s(index_resid_s);
      
      NumericVector Y_i_t_s(n); vec S_0_t_s = zero_vec_n;
@@ -1338,7 +1338,7 @@ using namespace Rcpp;
    // too low values which are 0 or computationally 0 of se_boot makes a problem,
    // so we adjust them to have kappa = quantile of mat_se_boot
    // e.g., kappa_min = censoring; quantile(mat_se_boot) = {censoring, 1};
-   // double censoring = 1-sum(Delta)/n;
+   // double censoring = 1-sum(delta)/n;
    // double kappa_min = censoring;
    // double kappa_max = 1;
    // if (kappa_min<0.1){kappa_min = 0.1;}
@@ -1347,7 +1347,7 @@ using namespace Rcpp;
    // double min_se_boot = se_boot(find(se_boot > 0)).min();
    // se_boot.replace(0, min_se_boot); 
    
-   double censoring = 1-sum(Delta)/n;
+   double censoring = 1-sum(delta)/n;
    vec kappa = {censoring, 1};
    kappa = quantile(se_boot, kappa);
    // if (kappa(0)<0.1){kappa(0) = 0.1;}
@@ -1378,7 +1378,7 @@ using namespace Rcpp;
    } else if (npathsave > npath) {
      return List::create(_["SE_boot"]=se_boot,
                          _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
-                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
+                         _["apprx_npath"]=app_npath,_["apprx_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    } else {
      npathsave = npathsave - 1;
@@ -1386,15 +1386,15 @@ using namespace Rcpp;
      app_std_npath = app_std_npath[Range(0,npathsave)];
      return List::create(_["SE_boot"]=se_boot,
                          _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
-                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
+                         _["apprx_npath"]=app_npath,_["apprx_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    }
  }
  
- List form_mis_DFSANE(int npath, vec b, vec Time, vec Delta, mat Covari, int form, int npathsave){
+ List form_mis_DFSANE(int npath, vec b, vec time, vec delta, mat covariates, int form, int npathsave){
    
-   int n = Covari.n_rows;
-   int p = Covari.n_cols;
+   int n = covariates.n_rows;
+   int p = covariates.n_cols;
    
    double sqrtn = sqrt(n);
    
@@ -1411,18 +1411,18 @@ using namespace Rcpp;
    mat tempmat_np(n,p);
    mat tempmat_nn(n,n);
    
-   vec resid = log(Time) + Covari*b;
+   vec resid = log(time) + covariates*b;
    
    uvec index_resid = sort_index(resid);
    
-   Time = Time(index_resid);
-   Delta = Delta(index_resid);
-   Covari = Covari.rows(index_resid);
+   time = time(index_resid);
+   delta = delta(index_resid);
+   covariates = covariates.rows(index_resid);
    resid = resid(index_resid);
    
    List pi_i_z(n); List N_i_t(n); List Y_i_t(n);
    vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
-   vec form_Covari = Covari.col(form-1);
+   vec form_Covari = covariates.col(form-1);
    vec sorted_form_Covari = sort(form_Covari);
    tempvec_n = zero_vec_n;
    for(int it=0; it<n; it++){
@@ -1430,18 +1430,18 @@ using namespace Rcpp;
        tempvec_n(itt) = (form_Covari(it)<=sorted_form_Covari(itt))*1;
      }
      pi_i_z(it) = tempvec_n;
-     if (Delta(it)==1){
+     if (delta(it)==1){
        N_i_t(it) = (resid>=resid(it));
      } else {
        N_i_t(it) = zero_vec_n;
      }
      Y_i_t(it) = (resid<=resid(it))*1;
      S_0_t += as<vec>(Y_i_t(it));
-     S_1_t += as<vec>(Y_i_t(it))*(Covari.row(it));
+     S_1_t += as<vec>(Y_i_t(it))*(covariates.row(it));
      S_pi_t_z += (as<vec>(Y_i_t(it)))*(as<rowvec>(pi_i_z(it)));
    }
    
-   vec dLambdahat_0_t = Delta/S_0_t;
+   vec dLambdahat_0_t = delta/S_0_t;
    dLambdahat_0_t.replace(datum::nan,0);
    
    mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
@@ -1478,9 +1478,9 @@ using namespace Rcpp;
    ghat_0_t /= n;
    
    List ghat_t_z(p);
-   tempvec_n = ghat_0_t % Time;
+   tempvec_n = ghat_0_t % time;
    for(int itt=0; itt<p; itt++){
-     vec Covari_col = Covari.col(itt);
+     vec Covari_col = covariates.col(itt);
      tempmat_nn = zero_mat_nn;
      for(int it=0; it<n; it++){
        tempmat_nn += tempvec_n*((as<rowvec>(pi_i_z(it)))*Covari_col(it));
@@ -1506,7 +1506,7 @@ using namespace Rcpp;
    // }
    // Condi_Ehat.replace(datum::nan,0);
    // 
-   // vec rhat_i = Delta % resid + (one_vec_n - Delta) % Condi_Ehat;
+   // vec rhat_i = delta % resid + (one_vec_n - delta) % Condi_Ehat;
    // vec given_data_f = exp(rhat_i);
    // double bw_fn = bw_base * stddev(given_data_f);
    // vec fhat_0_t = zero_vec_n;
@@ -1518,12 +1518,12 @@ using namespace Rcpp;
    // fhat_0_t /= n;
    
    List fhat_inf_z(p);
-   double tempvec_1 = fhat_0_t(n-1) * Time(n-1);
+   double tempvec_1 = fhat_0_t(n-1) * time(n-1);
    for(int itt=0; itt<p; itt++){
-     vec Covari_col = Covari.col(itt);
+     vec Covari_col = covariates.col(itt);
      tempvec_n = zero_vec_n;
      for(int it=0; it<n; it++){
-       if (Delta(it)==1){
+       if (delta(it)==1){
          tempvec_n += tempvec_1*(as<vec>(pi_i_z(it))*Covari_col(it));
        }
      }
@@ -1543,11 +1543,11 @@ using namespace Rcpp;
        tempvec_n = zero_vec_n; tempmat_np = zero_mat_np;
        for(int it=0; it<n; it++){
          tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
-         tempmat_np += (as<vec>(dMhat_i_t(it))*(Covari.row(it)))*phi_i(it);
+         tempmat_np += (as<vec>(dMhat_i_t(it))*(covariates.row(it)))*phi_i(it);
        }
        vec U_phi_inf = sum((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)).t();
        
-       List b_s_result = dfsane_mis(b, Time, Delta, Covari, U_phi_inf, n, p, sqrtn);
+       List b_s_result = dfsane_mis(b, time, delta, covariates, U_phi_inf, n, p, sqrtn);
        tolerance = as<double>(b_s_result[0]);
        b_s = as<vec>(b_s_result[1]);
      }
@@ -1558,10 +1558,10 @@ using namespace Rcpp;
      }
      mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
      
-     vec resid_s = log(Time) + Covari*b_s;
+     vec resid_s = log(time) + covariates*b_s;
      uvec index_resid_s = sort_index(resid_s);
      
-     vec Delta_s = Delta(index_resid_s);
+     vec Delta_s = delta(index_resid_s);
      resid_s = resid_s(index_resid_s);
      
      NumericVector Y_i_t_s(n); vec S_0_t_s = zero_vec_n;
@@ -1594,7 +1594,7 @@ using namespace Rcpp;
    // too low values which are 0 or computationally 0 of se_boot makes a problem,
    // so we adjust them to have kappa = quantile of mat_se_boot
    // e.g., kappa_min = censoring; quantile(mat_se_boot) = {censoring, 1};
-   // double censoring = 1-sum(Delta)/n;
+   // double censoring = 1-sum(delta)/n;
    // double kappa_min = censoring;
    // double kappa_max = 1;
    // if (kappa_min<0.1){kappa_min = 0.1;}
@@ -1603,7 +1603,7 @@ using namespace Rcpp;
    // double min_se_boot = se_boot(find(se_boot > 0)).min();
    // se_boot.replace(0, min_se_boot); 
    
-   double censoring = 1-sum(Delta)/n;
+   double censoring = 1-sum(delta)/n;
    vec kappa = {censoring, 1};
    kappa = quantile(se_boot, kappa);
    // if (kappa(0)<0.1){kappa(0) = 0.1;}
@@ -1634,7 +1634,7 @@ using namespace Rcpp;
    } else if (npathsave > npath) {
      return List::create(_["SE_boot"]=se_boot,
                          _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
-                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
+                         _["apprx_npath"]=app_npath,_["apprx_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    } else {
      npathsave = npathsave - 1;
@@ -1642,15 +1642,15 @@ using namespace Rcpp;
      app_std_npath = app_std_npath[Range(0,npathsave)];
      return List::create(_["SE_boot"]=se_boot,
                          _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
-                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
+                         _["apprx_npath"]=app_npath,_["apprx_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    }
  }
  
- List form_mns_DFSANE(int npath, vec b, vec Time, vec Delta, mat Covari, int form, int npathsave){
+ List form_mns_DFSANE(int npath, vec b, vec time, vec delta, mat covariates, int form, int npathsave){
    
-   int n = Covari.n_rows;
-   int p = Covari.n_cols;
+   int n = covariates.n_rows;
+   int p = covariates.n_cols;
    
    double sqrtn = sqrt(n);
    
@@ -1667,18 +1667,18 @@ using namespace Rcpp;
    mat tempmat_np(n,p);
    mat tempmat_nn(n,n);
    
-   vec resid = log(Time) + Covari*b;
+   vec resid = log(time) + covariates*b;
    
    uvec index_resid = sort_index(resid);
    
-   Time = Time(index_resid);
-   Delta = Delta(index_resid);
-   Covari = Covari.rows(index_resid);
+   time = time(index_resid);
+   delta = delta(index_resid);
+   covariates = covariates.rows(index_resid);
    resid = resid(index_resid);
    
    List pi_i_z(n); List N_i_t(n); List Y_i_t(n);
    vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
-   vec form_Covari = Covari.col(form-1);
+   vec form_Covari = covariates.col(form-1);
    vec sorted_form_Covari = sort(form_Covari);
    tempvec_n = zero_vec_n;
    for(int it=0; it<n; it++){
@@ -1686,18 +1686,18 @@ using namespace Rcpp;
        tempvec_n(itt) = (form_Covari(it)<=sorted_form_Covari(itt))*1;
      }
      pi_i_z(it) = tempvec_n;
-     if (Delta(it)==1){
+     if (delta(it)==1){
        N_i_t(it) = (resid>=resid(it));
      } else {
        N_i_t(it) = zero_vec_n;
      }
      Y_i_t(it) = (resid<=resid(it))*1;
      S_0_t += as<vec>(Y_i_t(it));
-     S_1_t += as<vec>(Y_i_t(it))*(Covari.row(it));
+     S_1_t += as<vec>(Y_i_t(it))*(covariates.row(it));
      S_pi_t_z += (as<vec>(Y_i_t(it)))*(as<rowvec>(pi_i_z(it)));
    }
    
-   vec dLambdahat_0_t = Delta/S_0_t;
+   vec dLambdahat_0_t = delta/S_0_t;
    dLambdahat_0_t.replace(datum::nan,0);
    
    mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
@@ -1734,9 +1734,9 @@ using namespace Rcpp;
    ghat_0_t /= n;
    
    List ghat_t_z(p);
-   tempvec_n = ghat_0_t % Time;
+   tempvec_n = ghat_0_t % time;
    for(int itt=0; itt<p; itt++){
-     vec Covari_col = Covari.col(itt);
+     vec Covari_col = covariates.col(itt);
      tempmat_nn = zero_mat_nn;
      for(int it=0; it<n; it++){
        tempmat_nn += tempvec_n*((as<rowvec>(pi_i_z(it)))*Covari_col(it));
@@ -1762,7 +1762,7 @@ using namespace Rcpp;
    // }
    // Condi_Ehat.replace(datum::nan,0);
    // 
-   // vec rhat_i = Delta % resid + (one_vec_n - Delta) % Condi_Ehat;
+   // vec rhat_i = delta % resid + (one_vec_n - delta) % Condi_Ehat;
    // vec given_data_f = exp(rhat_i);
    // double bw_fn = bw_base * stddev(given_data_f);
    // vec fhat_0_t = zero_vec_n;
@@ -1774,12 +1774,12 @@ using namespace Rcpp;
    // fhat_0_t /= n;
    
    List fhat_inf_z(p);
-   double tempvec_1 = fhat_0_t(n-1) * Time(n-1);
+   double tempvec_1 = fhat_0_t(n-1) * time(n-1);
    for(int itt=0; itt<p; itt++){
-     vec Covari_col = Covari.col(itt);
+     vec Covari_col = covariates.col(itt);
      tempvec_n = zero_vec_n;
      for(int it=0; it<n; it++){
-       if (Delta(it)==1){
+       if (delta(it)==1){
          tempvec_n += tempvec_1*(as<vec>(pi_i_z(it))*Covari_col(it));
        }
      }
@@ -1799,11 +1799,11 @@ using namespace Rcpp;
        tempvec_n = zero_vec_n; tempmat_np = zero_mat_np;
        for(int it=0; it<n; it++){
          tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
-         tempmat_np += (as<vec>(dMhat_i_t(it))*(Covari.row(it)))*phi_i(it);
+         tempmat_np += (as<vec>(dMhat_i_t(it))*(covariates.row(it)))*phi_i(it);
        }
        vec U_phi_inf = sum((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)).t();
        
-       List b_s_result = dfsane_mns(b, Time, Delta, Covari, U_phi_inf, n, p);
+       List b_s_result = dfsane_mns(b, time, delta, covariates, U_phi_inf, n, p);
        tolerance = as<double>(b_s_result[0]);
        b_s = as<vec>(b_s_result[1]);
      }
@@ -1814,10 +1814,10 @@ using namespace Rcpp;
      }
      mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
      
-     vec resid_s = log(Time) + Covari*b_s;
+     vec resid_s = log(time) + covariates*b_s;
      uvec index_resid_s = sort_index(resid_s);
      
-     vec Delta_s = Delta(index_resid_s);
+     vec Delta_s = delta(index_resid_s);
      resid_s = resid_s(index_resid_s);
      
      NumericVector Y_i_t_s(n); vec S_0_t_s = zero_vec_n;
@@ -1849,7 +1849,7 @@ using namespace Rcpp;
    // too low values which are 0 or computationally 0 of se_boot makes a problem,
    // so we adjust them to have kappa = quantile of mat_se_boot
    // e.g., kappa_min = censoring; quantile(mat_se_boot) = {censoring, 1};
-   // double censoring = 1-sum(Delta)/n;
+   // double censoring = 1-sum(delta)/n;
    // double kappa_min = censoring;
    // double kappa_max = 1;
    // if (kappa_min<0.1){kappa_min = 0.1;}
@@ -1858,7 +1858,7 @@ using namespace Rcpp;
    // double min_se_boot = se_boot(find(se_boot > 0)).min();
    // se_boot.replace(0, min_se_boot); 
    
-   double censoring = 1-sum(Delta)/n;
+   double censoring = 1-sum(delta)/n;
    vec kappa = {censoring, 1};
    kappa = quantile(se_boot, kappa);
    // if (kappa(0)<0.1){kappa(0) = 0.1;}
@@ -1889,7 +1889,7 @@ using namespace Rcpp;
    } else if (npathsave > npath) {
      return List::create(_["SE_boot"]=se_boot,
                          _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
-                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
+                         _["apprx_npath"]=app_npath,_["apprx_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    } else {
      npathsave = npathsave - 1;
@@ -1897,18 +1897,18 @@ using namespace Rcpp;
      app_std_npath = app_std_npath[Range(0,npathsave)];
      return List::create(_["SE_boot"]=se_boot,
                          _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
-                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
+                         _["apprx_npath"]=app_npath,_["apprx_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    }
  }
  
- List omni_mis_optim(int npath, vec b, vec Time, vec Delta, mat Covari, String optimType, int npathsave){
+ List omni_mis_optim(int npath, vec b, vec time, vec delta, mat covariates, String optimType, int npathsave){
    
    Rcpp::Environment stats("package:stats"); 
    Rcpp::Function optim = stats["optim"];
    
-   int n = Covari.n_rows;
-   int p = Covari.n_cols;
+   int n = covariates.n_rows;
+   int p = covariates.n_cols;
    
    double sqrtn = sqrt(n);
    
@@ -1925,36 +1925,36 @@ using namespace Rcpp;
    mat tempmat_np(n,p);
    mat tempmat_nn(n,n);
    
-   vec resid = log(Time) + Covari*b;
+   vec resid = log(time) + covariates*b;
    
    uvec index_resid = sort_index(resid);
    
-   Time = Time(index_resid);
-   Delta = Delta(index_resid);
-   Covari = Covari.rows(index_resid);
+   time = time(index_resid);
+   delta = delta(index_resid);
+   covariates = covariates.rows(index_resid);
    resid = resid(index_resid);
    
    List pi_i_z(n); List N_i_t(n); List Y_i_t(n);
    vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
-   mat sorted_Covari = sort(Covari);
+   mat sorted_Covari = sort(covariates);
    tempvec_n = zero_vec_n;
    for(int it=0; it<n; it++){
      for(int itt=0; itt<n; itt++){
-       tempvec_n(itt) = (prod(Covari.row(it)<=sorted_Covari.row(itt))*1);
+       tempvec_n(itt) = (prod(covariates.row(it)<=sorted_Covari.row(itt))*1);
      }
      pi_i_z(it) = tempvec_n;
-     if (Delta(it)==1){
+     if (delta(it)==1){
        N_i_t(it) = (resid>=resid(it));
      } else {
        N_i_t(it) = zero_vec_n;
      }
      Y_i_t(it) = (resid<=resid(it))*1;
      S_0_t += as<vec>(Y_i_t(it));
-     S_1_t += as<vec>(Y_i_t(it))*(Covari.row(it));
+     S_1_t += as<vec>(Y_i_t(it))*(covariates.row(it));
      S_pi_t_z += (as<vec>(Y_i_t(it)))*(as<rowvec>(pi_i_z(it)));
    }
    
-   vec dLambdahat_0_t = Delta/S_0_t;
+   vec dLambdahat_0_t = delta/S_0_t;
    dLambdahat_0_t.replace(datum::nan,0);
    
    mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
@@ -1992,9 +1992,9 @@ using namespace Rcpp;
    ghat_0_t /= n;
    
    List ghat_t_z(p);
-   tempvec_n = ghat_0_t % Time;
+   tempvec_n = ghat_0_t % time;
    for(int itt=0; itt<p; itt++){
-     vec Covari_col = Covari.col(itt);
+     vec Covari_col = covariates.col(itt);
      tempmat_nn = zero_mat_nn;
      for(int it=0; it<n; it++){
        tempmat_nn += tempvec_n*((as<rowvec>(pi_i_z(it)))*Covari_col(it));
@@ -2020,7 +2020,7 @@ using namespace Rcpp;
    // }
    // Condi_Ehat.replace(datum::nan,0);
    // 
-   // vec rhat_i = Delta % resid + (one_vec_n - Delta) % Condi_Ehat;
+   // vec rhat_i = delta % resid + (one_vec_n - delta) % Condi_Ehat;
    // vec given_data_f = exp(rhat_i);
    // double bw_fn = bw_base * stddev(given_data_f);
    // vec fhat_0_t = zero_vec_n;
@@ -2032,12 +2032,12 @@ using namespace Rcpp;
    // fhat_0_t /= n;
    
    List fhat_t_z(p);
-   tempvec_n = fhat_0_t % Time;
+   tempvec_n = fhat_0_t % time;
    for(int itt=0; itt<p; itt++){
-     vec Covari_col = Covari.col(itt);
+     vec Covari_col = covariates.col(itt);
      tempmat_nn = zero_mat_nn;
      for(int it=0; it<n; it++){
-       if (Delta(it)==1){
+       if (delta(it)==1){
          tempmat_nn += tempvec_n*((as<rowvec>(pi_i_z(it)))*Covari_col(it));
        }
      }
@@ -2057,16 +2057,16 @@ using namespace Rcpp;
        tempvec_n = zero_vec_n; tempmat_np = zero_mat_np;
        for(int it=0; it<n; it++){
          tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
-         tempmat_np += (as<vec>(dMhat_i_t(it))*(Covari.row(it)))*phi_i(it);
+         tempmat_np += (as<vec>(dMhat_i_t(it))*(covariates.row(it)))*phi_i(it);
        }
        vec U_phi_inf = sum((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)).t();
        
        Rcpp::List b_s_opt_results = optim(Rcpp::_["par"]    = b,
                                           Rcpp::_["fn"]     = Rcpp::InternalFunction(&target_score2_mis),
                                           Rcpp::_["method"] = optimType,
-                                          Rcpp::_["Time"] = Time,
-                                          Rcpp::_["Delta"] = Delta,
-                                          Rcpp::_["Covari"] = Covari,
+                                          Rcpp::_["time"] = time,
+                                          Rcpp::_["delta"] = delta,
+                                          Rcpp::_["covariates"] = covariates,
                                           Rcpp::_["targetvector"] = U_phi_inf,
                                           Rcpp::_["n"] = n,
                                           Rcpp::_["p"] = p,
@@ -2081,10 +2081,10 @@ using namespace Rcpp;
      }
      mat U_pi_phi_t_z = cumsum(tempmat_nn);
      
-     vec resid_s = log(Time) + Covari*b_s;
+     vec resid_s = log(time) + covariates*b_s;
      uvec index_resid_s = sort_index(resid_s);
      
-     vec Delta_s = Delta(index_resid_s);
+     vec Delta_s = delta(index_resid_s);
      resid_s = resid_s(index_resid_s);
      
      NumericVector Y_i_t_s(n); vec S_0_t_s = zero_vec_n;
@@ -2117,7 +2117,7 @@ using namespace Rcpp;
    // too low values which are 0 or computationally 0 of se_boot makes a problem,
    // so we adjust them to have kappa = quantile of mat_se_boot
    // e.g., kappa_min = censoring; quantile(mat_se_boot) = {censoring, 1};
-   // double censoring = 1-sum(Delta)/n;
+   // double censoring = 1-sum(delta)/n;
    // double kappa_min = censoring;
    // double kappa_max = 1;
    // if (kappa_min<0.1){kappa_min = 0.1;}
@@ -2127,7 +2127,7 @@ using namespace Rcpp;
    // mat_se_boot.replace(0, min_mat_se_boot); 
    // mat se_boot = reshape(mat_se_boot,n,n);
    
-   double censoring = 1-sum(Delta)/n;
+   double censoring = 1-sum(delta)/n;
    vec kappa = {sqrt(censoring), 1};
    kappa = quantile(mat_se_boot, kappa);
    mat_se_boot.clamp(kappa(0),kappa(1));
@@ -2159,7 +2159,7 @@ using namespace Rcpp;
    } else if (npathsave > npath) {
      return List::create(_["SE_boot"]=se_boot,
                          _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
-                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
+                         _["apprx_npath"]=app_npath,_["apprx_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    } else {
      npathsave = npathsave - 1;
@@ -2167,18 +2167,18 @@ using namespace Rcpp;
      app_std_npath = app_std_npath[Range(0,npathsave)];
      return List::create(_["SE_boot"]=se_boot,
                          _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
-                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
+                         _["apprx_npath"]=app_npath,_["apprx_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    }
  }
  
- List omni_mns_optim(int npath, vec b, vec Time, vec Delta, mat Covari, String optimType, int npathsave){
+ List omni_mns_optim(int npath, vec b, vec time, vec delta, mat covariates, String optimType, int npathsave){
    
    Rcpp::Environment stats("package:stats"); 
    Rcpp::Function optim = stats["optim"];
    
-   int n = Covari.n_rows;
-   int p = Covari.n_cols;
+   int n = covariates.n_rows;
+   int p = covariates.n_cols;
    
    double sqrtn = sqrt(n);
    
@@ -2195,36 +2195,36 @@ using namespace Rcpp;
    mat tempmat_np(n,p);
    mat tempmat_nn(n,n);
    
-   vec resid = log(Time) + Covari*b;
+   vec resid = log(time) + covariates*b;
    
    uvec index_resid = sort_index(resid);
    
-   Time = Time(index_resid);
-   Delta = Delta(index_resid);
-   Covari = Covari.rows(index_resid);
+   time = time(index_resid);
+   delta = delta(index_resid);
+   covariates = covariates.rows(index_resid);
    resid = resid(index_resid);
    
    List pi_i_z(n); List N_i_t(n); List Y_i_t(n);
    vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
-   mat sorted_Covari = sort(Covari);
+   mat sorted_Covari = sort(covariates);
    tempvec_n = zero_vec_n;
    for(int it=0; it<n; it++){
      for(int itt=0; itt<n; itt++){
-       tempvec_n(itt) = (prod(Covari.row(it)<=sorted_Covari.row(itt))*1);
+       tempvec_n(itt) = (prod(covariates.row(it)<=sorted_Covari.row(itt))*1);
      }
      pi_i_z(it) = tempvec_n;
-     if (Delta(it)==1){
+     if (delta(it)==1){
        N_i_t(it) = (resid>=resid(it));
      } else {
        N_i_t(it) = zero_vec_n;
      }
      Y_i_t(it) = (resid<=resid(it))*1;
      S_0_t += as<vec>(Y_i_t(it));
-     S_1_t += as<vec>(Y_i_t(it))*(Covari.row(it));
+     S_1_t += as<vec>(Y_i_t(it))*(covariates.row(it));
      S_pi_t_z += (as<vec>(Y_i_t(it)))*(as<rowvec>(pi_i_z(it)));
    }
    
-   vec dLambdahat_0_t = Delta/S_0_t;
+   vec dLambdahat_0_t = delta/S_0_t;
    dLambdahat_0_t.replace(datum::nan,0);
    
    mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
@@ -2262,9 +2262,9 @@ using namespace Rcpp;
    ghat_0_t /= n;
    
    List ghat_t_z(p);
-   tempvec_n = ghat_0_t % Time;
+   tempvec_n = ghat_0_t % time;
    for(int itt=0; itt<p; itt++){
-     vec Covari_col = Covari.col(itt);
+     vec Covari_col = covariates.col(itt);
      tempmat_nn = zero_mat_nn;
      for(int it=0; it<n; it++){
        tempmat_nn += tempvec_n*((as<rowvec>(pi_i_z(it)))*Covari_col(it));
@@ -2290,7 +2290,7 @@ using namespace Rcpp;
    // }
    // Condi_Ehat.replace(datum::nan,0);
    // 
-   // vec rhat_i = Delta % resid + (one_vec_n - Delta) % Condi_Ehat;
+   // vec rhat_i = delta % resid + (one_vec_n - delta) % Condi_Ehat;
    // vec given_data_f = exp(rhat_i);
    // double bw_fn = bw_base * stddev(given_data_f);
    // vec fhat_0_t = zero_vec_n;
@@ -2302,12 +2302,12 @@ using namespace Rcpp;
    // fhat_0_t /= n;
    
    List fhat_t_z(p);
-   tempvec_n = fhat_0_t % Time;
+   tempvec_n = fhat_0_t % time;
    for(int itt=0; itt<p; itt++){
-     vec Covari_col = Covari.col(itt);
+     vec Covari_col = covariates.col(itt);
      tempmat_nn = zero_mat_nn;
      for(int it=0; it<n; it++){
-       if (Delta(it)==1){
+       if (delta(it)==1){
          tempmat_nn += tempvec_n*((as<rowvec>(pi_i_z(it)))*Covari_col(it));
        }
      }
@@ -2327,16 +2327,16 @@ using namespace Rcpp;
        tempvec_n = zero_vec_n; tempmat_np = zero_mat_np;
        for(int it=0; it<n; it++){
          tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
-         tempmat_np += (as<vec>(dMhat_i_t(it))*(Covari.row(it)))*phi_i(it);
+         tempmat_np += (as<vec>(dMhat_i_t(it))*(covariates.row(it)))*phi_i(it);
        }
        vec U_phi_inf = sum((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)).t();
        
        Rcpp::List b_s_opt_results = optim(Rcpp::_["par"]    = b,
                                           Rcpp::_["fn"]     = Rcpp::InternalFunction(&target_score2_mns),
                                           Rcpp::_["method"] = optimType,
-                                          Rcpp::_["Time"] = Time,
-                                          Rcpp::_["Delta"] = Delta,
-                                          Rcpp::_["Covari"] = Covari,
+                                          Rcpp::_["time"] = time,
+                                          Rcpp::_["delta"] = delta,
+                                          Rcpp::_["covariates"] = covariates,
                                           Rcpp::_["targetvector"] = U_phi_inf,
                                           Rcpp::_["n"] = n,
                                           Rcpp::_["p"] = p);
@@ -2350,10 +2350,10 @@ using namespace Rcpp;
      }
      mat U_pi_phi_t_z = cumsum(tempmat_nn);
      
-     vec resid_s = log(Time) + Covari*b_s;
+     vec resid_s = log(time) + covariates*b_s;
      uvec index_resid_s = sort_index(resid_s);
      
-     vec Delta_s = Delta(index_resid_s);
+     vec Delta_s = delta(index_resid_s);
      resid_s = resid_s(index_resid_s);
      
      NumericVector Y_i_t_s(n); vec S_0_t_s = zero_vec_n;
@@ -2386,7 +2386,7 @@ using namespace Rcpp;
    // too low values which are 0 or computationally 0 of se_boot makes a problem,
    // so we adjust them to have kappa = quantile of mat_se_boot
    // e.g., kappa_min = censoring; quantile(mat_se_boot) = {censoring, 1};
-   // double censoring = 1-sum(Delta)/n;
+   // double censoring = 1-sum(delta)/n;
    // double kappa_min = censoring;
    // double kappa_max = 1;
    // if (kappa_min<0.1){kappa_min = 0.1;}
@@ -2396,7 +2396,7 @@ using namespace Rcpp;
    // mat_se_boot.replace(0, min_mat_se_boot); 
    // mat se_boot = reshape(mat_se_boot,n,n);
    
-   double censoring = 1-sum(Delta)/n;
+   double censoring = 1-sum(delta)/n;
    vec kappa = {sqrt(censoring), 1};
    kappa = quantile(mat_se_boot, kappa);
    mat_se_boot.clamp(kappa(0),kappa(1));
@@ -2428,7 +2428,7 @@ using namespace Rcpp;
    } else if (npathsave > npath) {
      return List::create(_["SE_boot"]=se_boot,
                          _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
-                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
+                         _["apprx_npath"]=app_npath,_["apprx_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    } else {
      npathsave = npathsave - 1;
@@ -2436,18 +2436,18 @@ using namespace Rcpp;
      app_std_npath = app_std_npath[Range(0,npathsave)];
      return List::create(_["SE_boot"]=se_boot,
                          _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
-                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
+                         _["apprx_npath"]=app_npath,_["apprx_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    }
  }
  
- List link_mis_optim(int npath, vec b, vec Time, vec Delta, mat Covari, String optimType, int npathsave){
+ List link_mis_optim(int npath, vec b, vec time, vec delta, mat covariates, String optimType, int npathsave){
    
    Rcpp::Environment stats("package:stats"); 
    Rcpp::Function optim = stats["optim"];
    
-   int n = Covari.n_rows;
-   int p = Covari.n_cols;
+   int n = covariates.n_rows;
+   int p = covariates.n_cols;
    
    double sqrtn = sqrt(n);
    
@@ -2464,36 +2464,36 @@ using namespace Rcpp;
    mat tempmat_np(n,p);
    mat tempmat_nn(n,n);
    
-   vec resid = log(Time) + Covari*b;
+   vec resid = log(time) + covariates*b;
    
    uvec index_resid = sort_index(resid);
    
-   Time = Time(index_resid);
-   Delta = Delta(index_resid);
-   Covari = Covari.rows(index_resid);
+   time = time(index_resid);
+   delta = delta(index_resid);
+   covariates = covariates.rows(index_resid);
    resid = resid(index_resid);
    
    List pi_i_z(n); List N_i_t(n); List Y_i_t(n);
    vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
-   mat sorted_Covari = sort(Covari);
+   mat sorted_Covari = sort(covariates);
    tempvec_n = zero_vec_n;
    for(int it=0; it<n; it++){
      for(int itt=0; itt<n; itt++){
-       tempvec_n(itt) = (prod(Covari.row(it)<=sorted_Covari.row(itt))*1);
+       tempvec_n(itt) = (prod(covariates.row(it)<=sorted_Covari.row(itt))*1);
      }
      pi_i_z(it) = tempvec_n;
-     if (Delta(it)==1){
+     if (delta(it)==1){
        N_i_t(it) = (resid>=resid(it));
      } else {
        N_i_t(it) = zero_vec_n;
      }
      Y_i_t(it) = (resid<=resid(it))*1;
      S_0_t += as<vec>(Y_i_t(it));
-     S_1_t += as<vec>(Y_i_t(it))*(Covari.row(it));
+     S_1_t += as<vec>(Y_i_t(it))*(covariates.row(it));
      S_pi_t_z += (as<vec>(Y_i_t(it)))*(as<rowvec>(pi_i_z(it)));
    }
    
-   vec dLambdahat_0_t = Delta/S_0_t;
+   vec dLambdahat_0_t = delta/S_0_t;
    dLambdahat_0_t.replace(datum::nan,0);
    
    mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
@@ -2530,9 +2530,9 @@ using namespace Rcpp;
    ghat_0_t /= n;
    
    List ghat_t_z(p);
-   tempvec_n = ghat_0_t % Time;
+   tempvec_n = ghat_0_t % time;
    for(int itt=0; itt<p; itt++){
-     vec Covari_col = Covari.col(itt);
+     vec Covari_col = covariates.col(itt);
      tempmat_nn = zero_mat_nn;
      for(int it=0; it<n; it++){
        tempmat_nn += tempvec_n*((as<rowvec>(pi_i_z(it)))*Covari_col(it));
@@ -2558,7 +2558,7 @@ using namespace Rcpp;
    // }
    // Condi_Ehat.replace(datum::nan,0);
    // 
-   // vec rhat_i = Delta % resid + (one_vec_n - Delta) % Condi_Ehat;
+   // vec rhat_i = delta % resid + (one_vec_n - delta) % Condi_Ehat;
    // vec given_data_f = exp(rhat_i);
    // double bw_fn = bw_base * stddev(given_data_f);
    // vec fhat_0_t = zero_vec_n;
@@ -2570,12 +2570,12 @@ using namespace Rcpp;
    // fhat_0_t /= n;
    
    List fhat_inf_z(p);
-   double tempvec_1 = fhat_0_t(n-1) * Time(n-1);
+   double tempvec_1 = fhat_0_t(n-1) * time(n-1);
    for(int itt=0; itt<p; itt++){
-     vec Covari_col = Covari.col(itt);
+     vec Covari_col = covariates.col(itt);
      tempvec_n = zero_vec_n;
      for(int it=0; it<n; it++){
-       if (Delta(it)==1){
+       if (delta(it)==1){
          tempvec_n += tempvec_1*(as<vec>(pi_i_z(it))*Covari_col(it));
        }
      }
@@ -2595,16 +2595,16 @@ using namespace Rcpp;
        tempvec_n = zero_vec_n; tempmat_np = zero_mat_np;
        for(int it=0; it<n; it++){
          tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
-         tempmat_np += (as<vec>(dMhat_i_t(it))*(Covari.row(it)))*phi_i(it);
+         tempmat_np += (as<vec>(dMhat_i_t(it))*(covariates.row(it)))*phi_i(it);
        }
        vec U_phi_inf = sum((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)).t();
        
        Rcpp::List b_s_opt_results = optim(Rcpp::_["par"]    = b,
                                           Rcpp::_["fn"]     = Rcpp::InternalFunction(&target_score2_mis),
                                           Rcpp::_["method"] = optimType,
-                                          Rcpp::_["Time"] = Time,
-                                          Rcpp::_["Delta"] = Delta,
-                                          Rcpp::_["Covari"] = Covari,
+                                          Rcpp::_["time"] = time,
+                                          Rcpp::_["delta"] = delta,
+                                          Rcpp::_["covariates"] = covariates,
                                           Rcpp::_["targetvector"] = U_phi_inf,
                                           Rcpp::_["n"] = n,
                                           Rcpp::_["p"] = p,
@@ -2619,10 +2619,10 @@ using namespace Rcpp;
      }
      mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
      
-     vec resid_s = log(Time) + Covari*b_s;
+     vec resid_s = log(time) + covariates*b_s;
      uvec index_resid_s = sort_index(resid_s);
      
-     vec Delta_s = Delta(index_resid_s);
+     vec Delta_s = delta(index_resid_s);
      resid_s = resid_s(index_resid_s);
      
      NumericVector Y_i_t_s(n); vec S_0_t_s = zero_vec_n;
@@ -2655,13 +2655,13 @@ using namespace Rcpp;
    // too low values which are 0 or computationally 0 of se_boot makes a problem,
    // so we adjust them to have kappa = quantile of mat_se_boot
    // e.g., kappa_min = censoring; quantile(mat_se_boot) = {censoring, 1};
-   // double censoring = 1-sum(Delta)/n;
+   // double censoring = 1-sum(delta)/n;
    // double kappa_min = censoring;
    // double kappa_max = 1;
    // if (kappa_min<0.1){kappa_min = 0.1;}
    // vec kappa = {kappa_min, kappa_max};
    
-   double censoring = 1-sum(Delta)/n;
+   double censoring = 1-sum(delta)/n;
    vec kappa = {censoring, 1};
    kappa = quantile(se_boot, kappa);
    // if (kappa(0)<0.1){kappa(0) = 0.1;}
@@ -2695,7 +2695,7 @@ using namespace Rcpp;
    } else if (npathsave > npath) {
      return List::create(_["SE_boot"]=se_boot,
                          _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
-                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
+                         _["apprx_npath"]=app_npath,_["apprx_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    } else {
      npathsave = npathsave - 1;
@@ -2703,18 +2703,18 @@ using namespace Rcpp;
      app_std_npath = app_std_npath[Range(0,npathsave)];
      return List::create(_["SE_boot"]=se_boot,
                          _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
-                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
+                         _["apprx_npath"]=app_npath,_["apprx_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    }
  }
  
- List link_mns_optim(int npath, vec b, vec Time, vec Delta, mat Covari, String optimType, int npathsave){
+ List link_mns_optim(int npath, vec b, vec time, vec delta, mat covariates, String optimType, int npathsave){
    
    Rcpp::Environment stats("package:stats"); 
    Rcpp::Function optim = stats["optim"];
    
-   int n = Covari.n_rows;
-   int p = Covari.n_cols;
+   int n = covariates.n_rows;
+   int p = covariates.n_cols;
    
    double sqrtn = sqrt(n);
    
@@ -2731,36 +2731,36 @@ using namespace Rcpp;
    mat tempmat_np(n,p);
    mat tempmat_nn(n,n);
    
-   vec resid = log(Time) + Covari*b;
+   vec resid = log(time) + covariates*b;
    
    uvec index_resid = sort_index(resid);
    
-   Time = Time(index_resid);
-   Delta = Delta(index_resid);
-   Covari = Covari.rows(index_resid);
+   time = time(index_resid);
+   delta = delta(index_resid);
+   covariates = covariates.rows(index_resid);
    resid = resid(index_resid);
    
    List pi_i_z(n); List N_i_t(n); List Y_i_t(n);
    vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
-   mat sorted_Covari = sort(Covari);
+   mat sorted_Covari = sort(covariates);
    tempvec_n = zero_vec_n;
    for(int it=0; it<n; it++){
      for(int itt=0; itt<n; itt++){
-       tempvec_n(itt) = (prod(Covari.row(it)<=sorted_Covari.row(itt))*1);
+       tempvec_n(itt) = (prod(covariates.row(it)<=sorted_Covari.row(itt))*1);
      }
      pi_i_z(it) = tempvec_n;
-     if (Delta(it)==1){
+     if (delta(it)==1){
        N_i_t(it) = (resid>=resid(it));
      } else {
        N_i_t(it) = zero_vec_n;
      }
      Y_i_t(it) = (resid<=resid(it))*1;
      S_0_t += as<vec>(Y_i_t(it));
-     S_1_t += as<vec>(Y_i_t(it))*(Covari.row(it));
+     S_1_t += as<vec>(Y_i_t(it))*(covariates.row(it));
      S_pi_t_z += (as<vec>(Y_i_t(it)))*(as<rowvec>(pi_i_z(it)));
    }
    
-   vec dLambdahat_0_t = Delta/S_0_t;
+   vec dLambdahat_0_t = delta/S_0_t;
    dLambdahat_0_t.replace(datum::nan,0);
    
    mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
@@ -2797,9 +2797,9 @@ using namespace Rcpp;
    ghat_0_t /= n;
    
    List ghat_t_z(p);
-   tempvec_n = ghat_0_t % Time;
+   tempvec_n = ghat_0_t % time;
    for(int itt=0; itt<p; itt++){
-     vec Covari_col = Covari.col(itt);
+     vec Covari_col = covariates.col(itt);
      tempmat_nn = zero_mat_nn;
      for(int it=0; it<n; it++){
        tempmat_nn += tempvec_n*((as<rowvec>(pi_i_z(it)))*Covari_col(it));
@@ -2825,7 +2825,7 @@ using namespace Rcpp;
    // }
    // Condi_Ehat.replace(datum::nan,0);
    // 
-   // vec rhat_i = Delta % resid + (one_vec_n - Delta) % Condi_Ehat;
+   // vec rhat_i = delta % resid + (one_vec_n - delta) % Condi_Ehat;
    // vec given_data_f = exp(rhat_i);
    // double bw_fn = bw_base * stddev(given_data_f);
    // vec fhat_0_t = zero_vec_n;
@@ -2837,12 +2837,12 @@ using namespace Rcpp;
    // fhat_0_t /= n;
    
    List fhat_inf_z(p);
-   double tempvec_1 = fhat_0_t(n-1) * Time(n-1);
+   double tempvec_1 = fhat_0_t(n-1) * time(n-1);
    for(int itt=0; itt<p; itt++){
-     vec Covari_col = Covari.col(itt);
+     vec Covari_col = covariates.col(itt);
      tempvec_n = zero_vec_n;
      for(int it=0; it<n; it++){
-       if (Delta(it)==1){
+       if (delta(it)==1){
          tempvec_n += tempvec_1*(as<vec>(pi_i_z(it))*Covari_col(it));
        }
      }
@@ -2862,16 +2862,16 @@ using namespace Rcpp;
        tempvec_n = zero_vec_n; tempmat_np = zero_mat_np;
        for(int it=0; it<n; it++){
          tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
-         tempmat_np += (as<vec>(dMhat_i_t(it))*(Covari.row(it)))*phi_i(it);
+         tempmat_np += (as<vec>(dMhat_i_t(it))*(covariates.row(it)))*phi_i(it);
        }
        vec U_phi_inf = sum((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)).t();
        
        Rcpp::List b_s_opt_results = optim(Rcpp::_["par"]    = b,
                                           Rcpp::_["fn"]     = Rcpp::InternalFunction(&target_score2_mns),
                                           Rcpp::_["method"] = optimType,
-                                          Rcpp::_["Time"] = Time,
-                                          Rcpp::_["Delta"] = Delta,
-                                          Rcpp::_["Covari"] = Covari,
+                                          Rcpp::_["time"] = time,
+                                          Rcpp::_["delta"] = delta,
+                                          Rcpp::_["covariates"] = covariates,
                                           Rcpp::_["targetvector"] = U_phi_inf,
                                           Rcpp::_["n"] = n,
                                           Rcpp::_["p"] = p);
@@ -2885,10 +2885,10 @@ using namespace Rcpp;
      }
      mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
      
-     vec resid_s = log(Time) + Covari*b_s;
+     vec resid_s = log(time) + covariates*b_s;
      uvec index_resid_s = sort_index(resid_s);
      
-     vec Delta_s = Delta(index_resid_s);
+     vec Delta_s = delta(index_resid_s);
      resid_s = resid_s(index_resid_s);
      
      NumericVector Y_i_t_s(n); vec S_0_t_s = zero_vec_n;
@@ -2921,7 +2921,7 @@ using namespace Rcpp;
    // too low values which are 0 or computationally 0 of se_boot makes a problem,
    // so we adjust them to have kappa = quantile of mat_se_boot
    // e.g., kappa_min = censoring; quantile(mat_se_boot) = {censoring, 1};
-   // double censoring = 1-sum(Delta)/n;
+   // double censoring = 1-sum(delta)/n;
    // double kappa_min = censoring;
    // double kappa_max = 1;
    // if (kappa_min<0.1){kappa_min = 0.1;}
@@ -2930,7 +2930,7 @@ using namespace Rcpp;
    // double min_se_boot = se_boot(find(se_boot > 0)).min();
    // se_boot.replace(0, min_se_boot); 
    
-   double censoring = 1-sum(Delta)/n;
+   double censoring = 1-sum(delta)/n;
    vec kappa = {censoring, 1};
    kappa = quantile(se_boot, kappa);
    // if (kappa(0)<0.1){kappa(0) = 0.1;}
@@ -2961,7 +2961,7 @@ using namespace Rcpp;
    } else if (npathsave > npath) {
      return List::create(_["SE_boot"]=se_boot,
                          _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
-                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
+                         _["apprx_npath"]=app_npath,_["apprx_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    } else {
      npathsave = npathsave - 1;
@@ -2969,18 +2969,18 @@ using namespace Rcpp;
      app_std_npath = app_std_npath[Range(0,npathsave)];
      return List::create(_["SE_boot"]=se_boot,
                          _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
-                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
+                         _["apprx_npath"]=app_npath,_["apprx_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    }
  }
  
- List form_mis_optim(int npath, vec b, vec Time, vec Delta, mat Covari, String optimType, int form, int npathsave){
+ List form_mis_optim(int npath, vec b, vec time, vec delta, mat covariates, String optimType, int form, int npathsave){
    
    Rcpp::Environment stats("package:stats"); 
    Rcpp::Function optim = stats["optim"];
    
-   int n = Covari.n_rows;
-   int p = Covari.n_cols;
+   int n = covariates.n_rows;
+   int p = covariates.n_cols;
    
    double sqrtn = sqrt(n);
    
@@ -2997,18 +2997,18 @@ using namespace Rcpp;
    mat tempmat_np(n,p);
    mat tempmat_nn(n,n);
    
-   vec resid = log(Time) + Covari*b;
+   vec resid = log(time) + covariates*b;
    
    uvec index_resid = sort_index(resid);
    
-   Time = Time(index_resid);
-   Delta = Delta(index_resid);
-   Covari = Covari.rows(index_resid);
+   time = time(index_resid);
+   delta = delta(index_resid);
+   covariates = covariates.rows(index_resid);
    resid = resid(index_resid);
    
    List pi_i_z(n); List N_i_t(n); List Y_i_t(n);
    vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
-   vec form_Covari = Covari.col(form-1);
+   vec form_Covari = covariates.col(form-1);
    vec sorted_form_Covari = sort(form_Covari);
    tempvec_n = zero_vec_n;
    for(int it=0; it<n; it++){
@@ -3016,18 +3016,18 @@ using namespace Rcpp;
        tempvec_n(itt) = (form_Covari(it)<=sorted_form_Covari(itt))*1;
      }
      pi_i_z(it) = tempvec_n;
-     if (Delta(it)==1){
+     if (delta(it)==1){
        N_i_t(it) = (resid>=resid(it));
      } else {
        N_i_t(it) = zero_vec_n;
      }
      Y_i_t(it) = (resid<=resid(it))*1;
      S_0_t += as<vec>(Y_i_t(it));
-     S_1_t += as<vec>(Y_i_t(it))*(Covari.row(it));
+     S_1_t += as<vec>(Y_i_t(it))*(covariates.row(it));
      S_pi_t_z += (as<vec>(Y_i_t(it)))*(as<rowvec>(pi_i_z(it)));
    }
    
-   vec dLambdahat_0_t = Delta/S_0_t;
+   vec dLambdahat_0_t = delta/S_0_t;
    dLambdahat_0_t.replace(datum::nan,0);
    
    mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
@@ -3064,9 +3064,9 @@ using namespace Rcpp;
    ghat_0_t /= n;
    
    List ghat_t_z(p);
-   tempvec_n = ghat_0_t % Time;
+   tempvec_n = ghat_0_t % time;
    for(int itt=0; itt<p; itt++){
-     vec Covari_col = Covari.col(itt);
+     vec Covari_col = covariates.col(itt);
      tempmat_nn = zero_mat_nn;
      for(int it=0; it<n; it++){
        tempmat_nn += tempvec_n*((as<rowvec>(pi_i_z(it)))*Covari_col(it));
@@ -3092,7 +3092,7 @@ using namespace Rcpp;
    // }
    // Condi_Ehat.replace(datum::nan,0);
    // 
-   // vec rhat_i = Delta % resid + (one_vec_n - Delta) % Condi_Ehat;
+   // vec rhat_i = delta % resid + (one_vec_n - delta) % Condi_Ehat;
    // vec given_data_f = exp(rhat_i);
    // double bw_fn = bw_base * stddev(given_data_f);
    // vec fhat_0_t = zero_vec_n;
@@ -3104,12 +3104,12 @@ using namespace Rcpp;
    // fhat_0_t /= n;
    
    List fhat_inf_z(p);
-   double tempvec_1 = fhat_0_t(n-1) * Time(n-1);
+   double tempvec_1 = fhat_0_t(n-1) * time(n-1);
    for(int itt=0; itt<p; itt++){
-     vec Covari_col = Covari.col(itt);
+     vec Covari_col = covariates.col(itt);
      tempvec_n = zero_vec_n;
      for(int it=0; it<n; it++){
-       if (Delta(it)==1){
+       if (delta(it)==1){
          tempvec_n += tempvec_1*(as<vec>(pi_i_z(it))*Covari_col(it));
        }
      }
@@ -3129,16 +3129,16 @@ using namespace Rcpp;
        tempvec_n = zero_vec_n; tempmat_np = zero_mat_np;
        for(int it=0; it<n; it++){
          tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
-         tempmat_np += (as<vec>(dMhat_i_t(it))*(Covari.row(it)))*phi_i(it);
+         tempmat_np += (as<vec>(dMhat_i_t(it))*(covariates.row(it)))*phi_i(it);
        }
        vec U_phi_inf = sum((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)).t();
        
        Rcpp::List b_s_opt_results = optim(Rcpp::_["par"]    = b,
                                           Rcpp::_["fn"]     = Rcpp::InternalFunction(&target_score2_mis),
                                           Rcpp::_["method"] = optimType,
-                                          Rcpp::_["Time"] = Time,
-                                          Rcpp::_["Delta"] = Delta,
-                                          Rcpp::_["Covari"] = Covari,
+                                          Rcpp::_["time"] = time,
+                                          Rcpp::_["delta"] = delta,
+                                          Rcpp::_["covariates"] = covariates,
                                           Rcpp::_["targetvector"] = U_phi_inf,
                                           Rcpp::_["n"] = n,
                                           Rcpp::_["p"] = p,
@@ -3153,10 +3153,10 @@ using namespace Rcpp;
      }
      mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
      
-     vec resid_s = log(Time) + Covari*b_s;
+     vec resid_s = log(time) + covariates*b_s;
      uvec index_resid_s = sort_index(resid_s);
      
-     vec Delta_s = Delta(index_resid_s);
+     vec Delta_s = delta(index_resid_s);
      resid_s = resid_s(index_resid_s);
      
      NumericVector Y_i_t_s(n); vec S_0_t_s = zero_vec_n;
@@ -3189,7 +3189,7 @@ using namespace Rcpp;
    // too low values which are 0 or computationally 0 of se_boot makes a problem,
    // so we adjust them to have kappa = quantile of mat_se_boot
    // e.g., kappa_min = censoring; quantile(mat_se_boot) = {censoring, 1};
-   // double censoring = 1-sum(Delta)/n;
+   // double censoring = 1-sum(delta)/n;
    // double kappa_min = censoring;
    // double kappa_max = 1;
    // if (kappa_min<0.1){kappa_min = 0.1;}
@@ -3198,7 +3198,7 @@ using namespace Rcpp;
    // double min_se_boot = se_boot(find(se_boot > 0)).min();
    // se_boot.replace(0, min_se_boot); 
    
-   double censoring = 1-sum(Delta)/n;
+   double censoring = 1-sum(delta)/n;
    vec kappa = {censoring, 1};
    kappa = quantile(se_boot, kappa);
    // if (kappa(0)<0.1){kappa(0) = 0.1;}
@@ -3229,7 +3229,7 @@ using namespace Rcpp;
    } else if (npathsave > npath) {
      return List::create(_["SE_boot"]=se_boot,
                          _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
-                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
+                         _["apprx_npath"]=app_npath,_["apprx_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    } else {
      npathsave = npathsave - 1;
@@ -3237,18 +3237,18 @@ using namespace Rcpp;
      app_std_npath = app_std_npath[Range(0,npathsave)];
      return List::create(_["SE_boot"]=se_boot,
                          _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
-                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
+                         _["apprx_npath"]=app_npath,_["apprx_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    }
  }
  
- List form_mns_optim(int npath, vec b, vec Time, vec Delta, mat Covari, String optimType, int form, int npathsave){
+ List form_mns_optim(int npath, vec b, vec time, vec delta, mat covariates, String optimType, int form, int npathsave){
    
    Rcpp::Environment stats("package:stats"); 
    Rcpp::Function optim = stats["optim"];
    
-   int n = Covari.n_rows;
-   int p = Covari.n_cols;
+   int n = covariates.n_rows;
+   int p = covariates.n_cols;
    
    double sqrtn = sqrt(n);
    
@@ -3265,18 +3265,18 @@ using namespace Rcpp;
    mat tempmat_np(n,p);
    mat tempmat_nn(n,n);
    
-   vec resid = log(Time) + Covari*b;
+   vec resid = log(time) + covariates*b;
    
    uvec index_resid = sort_index(resid);
    
-   Time = Time(index_resid);
-   Delta = Delta(index_resid);
-   Covari = Covari.rows(index_resid);
+   time = time(index_resid);
+   delta = delta(index_resid);
+   covariates = covariates.rows(index_resid);
    resid = resid(index_resid);
    
    List pi_i_z(n); List N_i_t(n); List Y_i_t(n);
    vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
-   vec form_Covari = Covari.col(form-1);
+   vec form_Covari = covariates.col(form-1);
    vec sorted_form_Covari = sort(form_Covari);
    tempvec_n = zero_vec_n;
    for(int it=0; it<n; it++){
@@ -3284,18 +3284,18 @@ using namespace Rcpp;
        tempvec_n(itt) = (form_Covari(it)<=sorted_form_Covari(itt))*1;
      }
      pi_i_z(it) = tempvec_n;
-     if (Delta(it)==1){
+     if (delta(it)==1){
        N_i_t(it) = (resid>=resid(it));
      } else {
        N_i_t(it) = zero_vec_n;
      }
      Y_i_t(it) = (resid<=resid(it))*1;
      S_0_t += as<vec>(Y_i_t(it));
-     S_1_t += as<vec>(Y_i_t(it))*(Covari.row(it));
+     S_1_t += as<vec>(Y_i_t(it))*(covariates.row(it));
      S_pi_t_z += (as<vec>(Y_i_t(it)))*(as<rowvec>(pi_i_z(it)));
    }
    
-   vec dLambdahat_0_t = Delta/S_0_t;
+   vec dLambdahat_0_t = delta/S_0_t;
    dLambdahat_0_t.replace(datum::nan,0);
    
    mat E_pi_t_z = S_pi_t_z.each_col()/S_0_t;
@@ -3332,9 +3332,9 @@ using namespace Rcpp;
    ghat_0_t /= n;
    
    List ghat_t_z(p);
-   tempvec_n = ghat_0_t % Time;
+   tempvec_n = ghat_0_t % time;
    for(int itt=0; itt<p; itt++){
-     vec Covari_col = Covari.col(itt);
+     vec Covari_col = covariates.col(itt);
      tempmat_nn = zero_mat_nn;
      for(int it=0; it<n; it++){
        tempmat_nn += tempvec_n*((as<rowvec>(pi_i_z(it)))*Covari_col(it));
@@ -3360,7 +3360,7 @@ using namespace Rcpp;
    // }
    // Condi_Ehat.replace(datum::nan,0);
    // 
-   // vec rhat_i = Delta % resid + (one_vec_n - Delta) % Condi_Ehat;
+   // vec rhat_i = delta % resid + (one_vec_n - delta) % Condi_Ehat;
    // vec given_data_f = exp(rhat_i);
    // double bw_fn = bw_base * stddev(given_data_f);
    // vec fhat_0_t = zero_vec_n;
@@ -3372,12 +3372,12 @@ using namespace Rcpp;
    // fhat_0_t /= n;
    
    List fhat_inf_z(p);
-   double tempvec_1 = fhat_0_t(n-1) * Time(n-1);
+   double tempvec_1 = fhat_0_t(n-1) * time(n-1);
    for(int itt=0; itt<p; itt++){
-     vec Covari_col = Covari.col(itt);
+     vec Covari_col = covariates.col(itt);
      tempvec_n = zero_vec_n;
      for(int it=0; it<n; it++){
-       if (Delta(it)==1){
+       if (delta(it)==1){
          tempvec_n += tempvec_1*(as<vec>(pi_i_z(it))*Covari_col(it));
        }
      }
@@ -3397,16 +3397,16 @@ using namespace Rcpp;
        tempvec_n = zero_vec_n; tempmat_np = zero_mat_np;
        for(int it=0; it<n; it++){
          tempvec_n += as<vec>(dMhat_i_t(it))*phi_i(it);
-         tempmat_np += (as<vec>(dMhat_i_t(it))*(Covari.row(it)))*phi_i(it);
+         tempmat_np += (as<vec>(dMhat_i_t(it))*(covariates.row(it)))*phi_i(it);
        }
        vec U_phi_inf = sum((S_0_t%tempmat_np.each_col())-(S_1_t.each_col()%tempvec_n)).t();
        
        Rcpp::List b_s_opt_results = optim(Rcpp::_["par"]    = b,
                                           Rcpp::_["fn"]     = Rcpp::InternalFunction(&target_score2_mns),
                                           Rcpp::_["method"] = optimType,
-                                          Rcpp::_["Time"] = Time,
-                                          Rcpp::_["Delta"] = Delta,
-                                          Rcpp::_["Covari"] = Covari,
+                                          Rcpp::_["time"] = time,
+                                          Rcpp::_["delta"] = delta,
+                                          Rcpp::_["covariates"] = covariates,
                                           Rcpp::_["targetvector"] = U_phi_inf,
                                           Rcpp::_["n"] = n,
                                           Rcpp::_["p"] = p);
@@ -3420,10 +3420,10 @@ using namespace Rcpp;
      }
      mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
      
-     vec resid_s = log(Time) + Covari*b_s;
+     vec resid_s = log(time) + covariates*b_s;
      uvec index_resid_s = sort_index(resid_s);
      
-     vec Delta_s = Delta(index_resid_s);
+     vec Delta_s = delta(index_resid_s);
      resid_s = resid_s(index_resid_s);
      
      NumericVector Y_i_t_s(n); vec S_0_t_s = zero_vec_n;
@@ -3456,7 +3456,7 @@ using namespace Rcpp;
    // too low values which are 0 or computationally 0 of se_boot makes a problem,
    // so we adjust them to have kappa = quantile of mat_se_boot
    // e.g., kappa_min = censoring; quantile(mat_se_boot) = {censoring, 1};
-   // double censoring = 1-sum(Delta)/n;
+   // double censoring = 1-sum(delta)/n;
    // double kappa_min = censoring;
    // double kappa_max = 1;
    // if (kappa_min<0.1){kappa_min = 0.1;}
@@ -3465,7 +3465,7 @@ using namespace Rcpp;
    // double min_se_boot = se_boot(find(se_boot > 0)).min();
    // se_boot.replace(0, min_se_boot); 
    
-   double censoring = 1-sum(Delta)/n;
+   double censoring = 1-sum(delta)/n;
    vec kappa = {censoring, 1};
    kappa = quantile(se_boot, kappa);
    // if (kappa(0)<0.1){kappa(0) = 0.1;}
@@ -3496,7 +3496,7 @@ using namespace Rcpp;
    } else if (npathsave > npath) {
      return List::create(_["SE_boot"]=se_boot,
                          _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
-                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
+                         _["apprx_npath"]=app_npath,_["apprx_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    } else {
      npathsave = npathsave - 1;
@@ -3504,210 +3504,210 @@ using namespace Rcpp;
      app_std_npath = app_std_npath[Range(0,npathsave)];
      return List::create(_["SE_boot"]=se_boot,
                          _["obs_npath"]=obs_npath,_["obs_std_npath"]=obs_std_npath,
-                         _["app_npath"]=app_npath,_["app_std_npath"]=app_std_npath,
+                         _["apprx_npath"]=app_npath,_["apprx_std_npath"]=app_std_npath,
                          _["p_value"]=p_value,_["p_std_value"]=p_std_value);
    }
  }
  
  // omni_mis_DFSANE
- List omni_mis_DFSANE(int npath, vec b, vec Time, vec Delta, mat Covari, int npathsave);
+ List omni_mis_DFSANE(int npath, vec b, vec time, vec delta, mat covariates, int npathsave);
  RcppExport SEXP _afttest_omni_mis_DFSANE(SEXP npathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP npathsaveSEXP) {
    BEGIN_RCPP
    Rcpp::RObject rcpp_result_gen;
    Rcpp::RNGScope rcpp_rngScope_gen;
    Rcpp::traits::input_parameter< int >::type npath(npathSEXP);
    Rcpp::traits::input_parameter< vec >::type b(bSEXP);
-   Rcpp::traits::input_parameter< vec >::type Time(TimeSEXP);
-   Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
-   Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
+   Rcpp::traits::input_parameter< vec >::type time(TimeSEXP);
+   Rcpp::traits::input_parameter< vec >::type delta(DeltaSEXP);
+   Rcpp::traits::input_parameter< mat >::type covariates(CovariSEXP);
    Rcpp::traits::input_parameter< int >::type npathsave(npathsaveSEXP);
-   rcpp_result_gen = Rcpp::wrap(omni_mis_DFSANE(npath, b, Time, Delta, Covari, npathsave));
+   rcpp_result_gen = Rcpp::wrap(omni_mis_DFSANE(npath, b, time, delta, covariates, npathsave));
    return rcpp_result_gen;
    END_RCPP
  }
  // omni_mns_DFSANE
- List omni_mns_DFSANE(int npath, vec b, vec Time, vec Delta, mat Covari, int npathsave);
+ List omni_mns_DFSANE(int npath, vec b, vec time, vec delta, mat covariates, int npathsave);
  RcppExport SEXP _afttest_omni_mns_DFSANE(SEXP npathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP npathsaveSEXP) {
    BEGIN_RCPP
    Rcpp::RObject rcpp_result_gen;
    Rcpp::RNGScope rcpp_rngScope_gen;
    Rcpp::traits::input_parameter< int >::type npath(npathSEXP);
    Rcpp::traits::input_parameter< vec >::type b(bSEXP);
-   Rcpp::traits::input_parameter< vec >::type Time(TimeSEXP);
-   Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
-   Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
+   Rcpp::traits::input_parameter< vec >::type time(TimeSEXP);
+   Rcpp::traits::input_parameter< vec >::type delta(DeltaSEXP);
+   Rcpp::traits::input_parameter< mat >::type covariates(CovariSEXP);
    Rcpp::traits::input_parameter< int >::type npathsave(npathsaveSEXP);
-   rcpp_result_gen = Rcpp::wrap(omni_mns_DFSANE(npath, b, Time, Delta, Covari, npathsave));
+   rcpp_result_gen = Rcpp::wrap(omni_mns_DFSANE(npath, b, time, delta, covariates, npathsave));
    return rcpp_result_gen;
    END_RCPP
  }
  // link_mis_DFSANE
- List link_mis_DFSANE(int npath, vec b, vec Time, vec Delta, mat Covari, int npathsave);
+ List link_mis_DFSANE(int npath, vec b, vec time, vec delta, mat covariates, int npathsave);
  RcppExport SEXP _afttest_link_mis_DFSANE(SEXP npathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP npathsaveSEXP) {
    BEGIN_RCPP
    Rcpp::RObject rcpp_result_gen;
    Rcpp::RNGScope rcpp_rngScope_gen;
    Rcpp::traits::input_parameter< int >::type npath(npathSEXP);
    Rcpp::traits::input_parameter< vec >::type b(bSEXP);
-   Rcpp::traits::input_parameter< vec >::type Time(TimeSEXP);
-   Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
-   Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
+   Rcpp::traits::input_parameter< vec >::type time(TimeSEXP);
+   Rcpp::traits::input_parameter< vec >::type delta(DeltaSEXP);
+   Rcpp::traits::input_parameter< mat >::type covariates(CovariSEXP);
    Rcpp::traits::input_parameter< int >::type npathsave(npathsaveSEXP);
-   rcpp_result_gen = Rcpp::wrap(link_mis_DFSANE(npath, b, Time, Delta, Covari, npathsave));
+   rcpp_result_gen = Rcpp::wrap(link_mis_DFSANE(npath, b, time, delta, covariates, npathsave));
    return rcpp_result_gen;
    END_RCPP
  }
  // link_mns_DFSANE
- List link_mns_DFSANE(int npath, vec b, vec Time, vec Delta, mat Covari, int npathsave);
+ List link_mns_DFSANE(int npath, vec b, vec time, vec delta, mat covariates, int npathsave);
  RcppExport SEXP _afttest_link_mns_DFSANE(SEXP npathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP npathsaveSEXP) {
    BEGIN_RCPP
    Rcpp::RObject rcpp_result_gen;
    Rcpp::RNGScope rcpp_rngScope_gen;
    Rcpp::traits::input_parameter< int >::type npath(npathSEXP);
    Rcpp::traits::input_parameter< vec >::type b(bSEXP);
-   Rcpp::traits::input_parameter< vec >::type Time(TimeSEXP);
-   Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
-   Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
+   Rcpp::traits::input_parameter< vec >::type time(TimeSEXP);
+   Rcpp::traits::input_parameter< vec >::type delta(DeltaSEXP);
+   Rcpp::traits::input_parameter< mat >::type covariates(CovariSEXP);
    Rcpp::traits::input_parameter< int >::type npathsave(npathsaveSEXP);
-   rcpp_result_gen = Rcpp::wrap(link_mns_DFSANE(npath, b, Time, Delta, Covari, npathsave));
+   rcpp_result_gen = Rcpp::wrap(link_mns_DFSANE(npath, b, time, delta, covariates, npathsave));
    return rcpp_result_gen;
    END_RCPP
  }
  // form_mis_DFSANE
- List form_mis_DFSANE(int npath, vec b, vec Time, vec Delta, mat Covari, int form, int npathsave);
+ List form_mis_DFSANE(int npath, vec b, vec time, vec delta, mat covariates, int form, int npathsave);
  RcppExport SEXP _afttest_form_mis_DFSANE(SEXP npathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP formSEXP, SEXP npathsaveSEXP) {
    BEGIN_RCPP
    Rcpp::RObject rcpp_result_gen;
    Rcpp::RNGScope rcpp_rngScope_gen;
    Rcpp::traits::input_parameter< int >::type npath(npathSEXP);
    Rcpp::traits::input_parameter< vec >::type b(bSEXP);
-   Rcpp::traits::input_parameter< vec >::type Time(TimeSEXP);
-   Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
-   Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
+   Rcpp::traits::input_parameter< vec >::type time(TimeSEXP);
+   Rcpp::traits::input_parameter< vec >::type delta(DeltaSEXP);
+   Rcpp::traits::input_parameter< mat >::type covariates(CovariSEXP);
    Rcpp::traits::input_parameter< int >::type form(formSEXP);
    Rcpp::traits::input_parameter< int >::type npathsave(npathsaveSEXP);
-   rcpp_result_gen = Rcpp::wrap(form_mis_DFSANE(npath, b, Time, Delta, Covari, form, npathsave));
+   rcpp_result_gen = Rcpp::wrap(form_mis_DFSANE(npath, b, time, delta, covariates, form, npathsave));
    return rcpp_result_gen;
    END_RCPP
  }
  // form_mns_DFSANE
- List form_mns_DFSANE(int npath, vec b, vec Time, vec Delta, mat Covari, int form, int npathsave);
+ List form_mns_DFSANE(int npath, vec b, vec time, vec delta, mat covariates, int form, int npathsave);
  RcppExport SEXP _afttest_form_mns_DFSANE(SEXP npathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP formSEXP, SEXP npathsaveSEXP) {
    BEGIN_RCPP
    Rcpp::RObject rcpp_result_gen;
    Rcpp::RNGScope rcpp_rngScope_gen;
    Rcpp::traits::input_parameter< int >::type npath(npathSEXP);
    Rcpp::traits::input_parameter< vec >::type b(bSEXP);
-   Rcpp::traits::input_parameter< vec >::type Time(TimeSEXP);
-   Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
-   Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
+   Rcpp::traits::input_parameter< vec >::type time(TimeSEXP);
+   Rcpp::traits::input_parameter< vec >::type delta(DeltaSEXP);
+   Rcpp::traits::input_parameter< mat >::type covariates(CovariSEXP);
    Rcpp::traits::input_parameter< int >::type form(formSEXP);
    Rcpp::traits::input_parameter< int >::type npathsave(npathsaveSEXP);
-   rcpp_result_gen = Rcpp::wrap(form_mns_DFSANE(npath, b, Time, Delta, Covari, form, npathsave));
+   rcpp_result_gen = Rcpp::wrap(form_mns_DFSANE(npath, b, time, delta, covariates, form, npathsave));
    return rcpp_result_gen;
    END_RCPP
  }
  // omni_mis_optim
- List omni_mis_optim(int npath, vec b, vec Time, vec Delta, mat Covari, String optimType, int npathsave);
+ List omni_mis_optim(int npath, vec b, vec time, vec delta, mat covariates, String optimType, int npathsave);
  RcppExport SEXP _afttest_omni_mis_optim(SEXP npathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP optimTypeSEXP, SEXP npathsaveSEXP) {
    BEGIN_RCPP
    Rcpp::RObject rcpp_result_gen;
    Rcpp::RNGScope rcpp_rngScope_gen;
    Rcpp::traits::input_parameter< int >::type npath(npathSEXP);
    Rcpp::traits::input_parameter< vec >::type b(bSEXP);
-   Rcpp::traits::input_parameter< vec >::type Time(TimeSEXP);
-   Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
-   Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
+   Rcpp::traits::input_parameter< vec >::type time(TimeSEXP);
+   Rcpp::traits::input_parameter< vec >::type delta(DeltaSEXP);
+   Rcpp::traits::input_parameter< mat >::type covariates(CovariSEXP);
    Rcpp::traits::input_parameter< String >::type optimType(optimTypeSEXP);
    Rcpp::traits::input_parameter< int >::type npathsave(npathsaveSEXP);
-   rcpp_result_gen = Rcpp::wrap(omni_mis_optim(npath, b, Time, Delta, Covari, optimType, npathsave));
+   rcpp_result_gen = Rcpp::wrap(omni_mis_optim(npath, b, time, delta, covariates, optimType, npathsave));
    return rcpp_result_gen;
    END_RCPP
  }
  // omni_mns_optim
- List omni_mns_optim(int npath, vec b, vec Time, vec Delta, mat Covari, String optimType, int npathsave);
+ List omni_mns_optim(int npath, vec b, vec time, vec delta, mat covariates, String optimType, int npathsave);
  RcppExport SEXP _afttest_omni_mns_optim(SEXP npathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP optimTypeSEXP, SEXP npathsaveSEXP) {
    BEGIN_RCPP
    Rcpp::RObject rcpp_result_gen;
    Rcpp::RNGScope rcpp_rngScope_gen;
    Rcpp::traits::input_parameter< int >::type npath(npathSEXP);
    Rcpp::traits::input_parameter< vec >::type b(bSEXP);
-   Rcpp::traits::input_parameter< vec >::type Time(TimeSEXP);
-   Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
-   Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
+   Rcpp::traits::input_parameter< vec >::type time(TimeSEXP);
+   Rcpp::traits::input_parameter< vec >::type delta(DeltaSEXP);
+   Rcpp::traits::input_parameter< mat >::type covariates(CovariSEXP);
    Rcpp::traits::input_parameter< String >::type optimType(optimTypeSEXP);
    Rcpp::traits::input_parameter< int >::type npathsave(npathsaveSEXP);
-   rcpp_result_gen = Rcpp::wrap(omni_mns_optim(npath, b, Time, Delta, Covari, optimType, npathsave));
+   rcpp_result_gen = Rcpp::wrap(omni_mns_optim(npath, b, time, delta, covariates, optimType, npathsave));
    return rcpp_result_gen;
    END_RCPP
  }
  // link_mis_optim
- List link_mis_optim(int npath, vec b, vec Time, vec Delta, mat Covari, String optimType, int npathsave);
+ List link_mis_optim(int npath, vec b, vec time, vec delta, mat covariates, String optimType, int npathsave);
  RcppExport SEXP _afttest_link_mis_optim(SEXP npathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP optimTypeSEXP, SEXP npathsaveSEXP) {
    BEGIN_RCPP
    Rcpp::RObject rcpp_result_gen;
    Rcpp::RNGScope rcpp_rngScope_gen;
    Rcpp::traits::input_parameter< int >::type npath(npathSEXP);
    Rcpp::traits::input_parameter< vec >::type b(bSEXP);
-   Rcpp::traits::input_parameter< vec >::type Time(TimeSEXP);
-   Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
-   Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
+   Rcpp::traits::input_parameter< vec >::type time(TimeSEXP);
+   Rcpp::traits::input_parameter< vec >::type delta(DeltaSEXP);
+   Rcpp::traits::input_parameter< mat >::type covariates(CovariSEXP);
    Rcpp::traits::input_parameter< String >::type optimType(optimTypeSEXP);
    Rcpp::traits::input_parameter< int >::type npathsave(npathsaveSEXP);
-   rcpp_result_gen = Rcpp::wrap(link_mis_optim(npath, b, Time, Delta, Covari, optimType, npathsave));
+   rcpp_result_gen = Rcpp::wrap(link_mis_optim(npath, b, time, delta, covariates, optimType, npathsave));
    return rcpp_result_gen;
    END_RCPP
  }
  // link_mns_optim
- List link_mns_optim(int npath, vec b, vec Time, vec Delta, mat Covari, String optimType, int npathsave);
+ List link_mns_optim(int npath, vec b, vec time, vec delta, mat covariates, String optimType, int npathsave);
  RcppExport SEXP _afttest_link_mns_optim(SEXP npathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP optimTypeSEXP, SEXP npathsaveSEXP) {
    BEGIN_RCPP
    Rcpp::RObject rcpp_result_gen;
    Rcpp::RNGScope rcpp_rngScope_gen;
    Rcpp::traits::input_parameter< int >::type npath(npathSEXP);
    Rcpp::traits::input_parameter< vec >::type b(bSEXP);
-   Rcpp::traits::input_parameter< vec >::type Time(TimeSEXP);
-   Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
-   Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
+   Rcpp::traits::input_parameter< vec >::type time(TimeSEXP);
+   Rcpp::traits::input_parameter< vec >::type delta(DeltaSEXP);
+   Rcpp::traits::input_parameter< mat >::type covariates(CovariSEXP);
    Rcpp::traits::input_parameter< String >::type optimType(optimTypeSEXP);
    Rcpp::traits::input_parameter< int >::type npathsave(npathsaveSEXP);
-   rcpp_result_gen = Rcpp::wrap(link_mns_optim(npath, b, Time, Delta, Covari, optimType, npathsave));
+   rcpp_result_gen = Rcpp::wrap(link_mns_optim(npath, b, time, delta, covariates, optimType, npathsave));
    return rcpp_result_gen;
    END_RCPP
  }
  // form_mis_optim
- List form_mis_optim(int npath, vec b, vec Time, vec Delta, mat Covari, String optimType, int form, int npathsave);
+ List form_mis_optim(int npath, vec b, vec time, vec delta, mat covariates, String optimType, int form, int npathsave);
  RcppExport SEXP _afttest_form_mis_optim(SEXP npathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP optimTypeSEXP, SEXP formSEXP, SEXP npathsaveSEXP) {
    BEGIN_RCPP
    Rcpp::RObject rcpp_result_gen;
    Rcpp::RNGScope rcpp_rngScope_gen;
    Rcpp::traits::input_parameter< int >::type npath(npathSEXP);
    Rcpp::traits::input_parameter< vec >::type b(bSEXP);
-   Rcpp::traits::input_parameter< vec >::type Time(TimeSEXP);
-   Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
-   Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
+   Rcpp::traits::input_parameter< vec >::type time(TimeSEXP);
+   Rcpp::traits::input_parameter< vec >::type delta(DeltaSEXP);
+   Rcpp::traits::input_parameter< mat >::type covariates(CovariSEXP);
    Rcpp::traits::input_parameter< String >::type optimType(optimTypeSEXP);
    Rcpp::traits::input_parameter< int >::type form(formSEXP);
    Rcpp::traits::input_parameter< int >::type npathsave(npathsaveSEXP);
-   rcpp_result_gen = Rcpp::wrap(form_mis_optim(npath, b, Time, Delta, Covari, optimType, form, npathsave));
+   rcpp_result_gen = Rcpp::wrap(form_mis_optim(npath, b, time, delta, covariates, optimType, form, npathsave));
    return rcpp_result_gen;
    END_RCPP
  }
  // form_mns_optim
- List form_mns_optim(int npath, vec b, vec Time, vec Delta, mat Covari, String optimType, int form, int npathsave);
+ List form_mns_optim(int npath, vec b, vec time, vec delta, mat covariates, String optimType, int form, int npathsave);
  RcppExport SEXP _afttest_form_mns_optim(SEXP npathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP optimTypeSEXP, SEXP formSEXP, SEXP npathsaveSEXP) {
    BEGIN_RCPP
    Rcpp::RObject rcpp_result_gen;
    Rcpp::RNGScope rcpp_rngScope_gen;
    Rcpp::traits::input_parameter< int >::type npath(npathSEXP);
    Rcpp::traits::input_parameter< vec >::type b(bSEXP);
-   Rcpp::traits::input_parameter< vec >::type Time(TimeSEXP);
-   Rcpp::traits::input_parameter< vec >::type Delta(DeltaSEXP);
-   Rcpp::traits::input_parameter< mat >::type Covari(CovariSEXP);
+   Rcpp::traits::input_parameter< vec >::type time(TimeSEXP);
+   Rcpp::traits::input_parameter< vec >::type delta(DeltaSEXP);
+   Rcpp::traits::input_parameter< mat >::type covariates(CovariSEXP);
    Rcpp::traits::input_parameter< String >::type optimType(optimTypeSEXP);
    Rcpp::traits::input_parameter< int >::type form(formSEXP);
    Rcpp::traits::input_parameter< int >::type npathsave(npathsaveSEXP);
-   rcpp_result_gen = Rcpp::wrap(form_mns_optim(npath, b, Time, Delta, Covari, optimType, form, npathsave));
+   rcpp_result_gen = Rcpp::wrap(form_mns_optim(npath, b, time, delta, covariates, optimType, form, npathsave));
    return rcpp_result_gen;
    END_RCPP
  }
