@@ -1391,7 +1391,7 @@ using namespace Rcpp;
    }
  }
  
- List form_mis_DFSANE(int npath, vec b, vec time, vec delta, mat covariates, int form, int npathsave){
+ List form_mis_DFSANE(int npath, vec b, vec time, vec delta, mat covariates, int cov_tested, int npathsave){
    
    int n = covariates.n_rows;
    int p = covariates.n_cols;
@@ -1422,7 +1422,7 @@ using namespace Rcpp;
    
    List pi_i_z(n); List N_i_t(n); List Y_i_t(n);
    vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
-   vec form_Covari = covariates.col(form-1);
+   vec form_Covari = covariates.col(cov_tested-1);
    vec sorted_form_Covari = sort(form_Covari);
    tempvec_n = zero_vec_n;
    for(int it=0; it<n; it++){
@@ -1647,7 +1647,7 @@ using namespace Rcpp;
    }
  }
  
- List form_mns_DFSANE(int npath, vec b, vec time, vec delta, mat covariates, int form, int npathsave){
+ List form_mns_DFSANE(int npath, vec b, vec time, vec delta, mat covariates, int cov_tested, int npathsave){
    
    int n = covariates.n_rows;
    int p = covariates.n_cols;
@@ -1678,7 +1678,7 @@ using namespace Rcpp;
    
    List pi_i_z(n); List N_i_t(n); List Y_i_t(n);
    vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
-   vec form_Covari = covariates.col(form-1);
+   vec form_Covari = covariates.col(cov_tested-1);
    vec sorted_form_Covari = sort(form_Covari);
    tempvec_n = zero_vec_n;
    for(int it=0; it<n; it++){
@@ -2974,7 +2974,7 @@ using namespace Rcpp;
    }
  }
  
- List form_mis_optim(int npath, vec b, vec time, vec delta, mat covariates, String optimType, int form, int npathsave){
+ List form_mis_optim(int npath, vec b, vec time, vec delta, mat covariates, String optimType, int cov_tested, int npathsave){
    
    Rcpp::Environment stats("package:stats"); 
    Rcpp::Function optim = stats["optim"];
@@ -3008,7 +3008,7 @@ using namespace Rcpp;
    
    List pi_i_z(n); List N_i_t(n); List Y_i_t(n);
    vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
-   vec form_Covari = covariates.col(form-1);
+   vec form_Covari = covariates.col(cov_tested-1);
    vec sorted_form_Covari = sort(form_Covari);
    tempvec_n = zero_vec_n;
    for(int it=0; it<n; it++){
@@ -3242,7 +3242,7 @@ using namespace Rcpp;
    }
  }
  
- List form_mns_optim(int npath, vec b, vec time, vec delta, mat covariates, String optimType, int form, int npathsave){
+ List form_mns_optim(int npath, vec b, vec time, vec delta, mat covariates, String optimType, int cov_tested, int npathsave){
    
    Rcpp::Environment stats("package:stats"); 
    Rcpp::Function optim = stats["optim"];
@@ -3276,7 +3276,7 @@ using namespace Rcpp;
    
    List pi_i_z(n); List N_i_t(n); List Y_i_t(n);
    vec S_0_t = zero_vec_n; mat S_1_t = zero_mat_np; mat S_pi_t_z = zero_mat_nn;
-   vec form_Covari = covariates.col(form-1);
+   vec form_Covari = covariates.col(cov_tested-1);
    vec sorted_form_Covari = sort(form_Covari);
    tempvec_n = zero_vec_n;
    for(int it=0; it<n; it++){
@@ -3574,8 +3574,8 @@ using namespace Rcpp;
    END_RCPP
  }
  // form_mis_DFSANE
- List form_mis_DFSANE(int npath, vec b, vec time, vec delta, mat covariates, int form, int npathsave);
- RcppExport SEXP _afttest_form_mis_DFSANE(SEXP npathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP formSEXP, SEXP npathsaveSEXP) {
+ List form_mis_DFSANE(int npath, vec b, vec time, vec delta, mat covariates, int cov_tested, int npathsave);
+ RcppExport SEXP _afttest_form_mis_DFSANE(SEXP npathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP cov_testedSEXP, SEXP npathsaveSEXP) {
    BEGIN_RCPP
    Rcpp::RObject rcpp_result_gen;
    Rcpp::RNGScope rcpp_rngScope_gen;
@@ -3584,15 +3584,15 @@ using namespace Rcpp;
    Rcpp::traits::input_parameter< vec >::type time(TimeSEXP);
    Rcpp::traits::input_parameter< vec >::type delta(DeltaSEXP);
    Rcpp::traits::input_parameter< mat >::type covariates(CovariSEXP);
-   Rcpp::traits::input_parameter< int >::type form(formSEXP);
+   Rcpp::traits::input_parameter< int >::type cov_tested(cov_testedSEXP);
    Rcpp::traits::input_parameter< int >::type npathsave(npathsaveSEXP);
-   rcpp_result_gen = Rcpp::wrap(form_mis_DFSANE(npath, b, time, delta, covariates, form, npathsave));
+   rcpp_result_gen = Rcpp::wrap(form_mis_DFSANE(npath, b, time, delta, covariates, cov_tested, npathsave));
    return rcpp_result_gen;
    END_RCPP
  }
  // form_mns_DFSANE
- List form_mns_DFSANE(int npath, vec b, vec time, vec delta, mat covariates, int form, int npathsave);
- RcppExport SEXP _afttest_form_mns_DFSANE(SEXP npathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP formSEXP, SEXP npathsaveSEXP) {
+ List form_mns_DFSANE(int npath, vec b, vec time, vec delta, mat covariates, int cov_tested, int npathsave);
+ RcppExport SEXP _afttest_form_mns_DFSANE(SEXP npathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP cov_testedSEXP, SEXP npathsaveSEXP) {
    BEGIN_RCPP
    Rcpp::RObject rcpp_result_gen;
    Rcpp::RNGScope rcpp_rngScope_gen;
@@ -3601,9 +3601,9 @@ using namespace Rcpp;
    Rcpp::traits::input_parameter< vec >::type time(TimeSEXP);
    Rcpp::traits::input_parameter< vec >::type delta(DeltaSEXP);
    Rcpp::traits::input_parameter< mat >::type covariates(CovariSEXP);
-   Rcpp::traits::input_parameter< int >::type form(formSEXP);
+   Rcpp::traits::input_parameter< int >::type cov_tested(cov_testedSEXP);
    Rcpp::traits::input_parameter< int >::type npathsave(npathsaveSEXP);
-   rcpp_result_gen = Rcpp::wrap(form_mns_DFSANE(npath, b, time, delta, covariates, form, npathsave));
+   rcpp_result_gen = Rcpp::wrap(form_mns_DFSANE(npath, b, time, delta, covariates, cov_tested, npathsave));
    return rcpp_result_gen;
    END_RCPP
  }
@@ -3676,8 +3676,8 @@ using namespace Rcpp;
    END_RCPP
  }
  // form_mis_optim
- List form_mis_optim(int npath, vec b, vec time, vec delta, mat covariates, String optimType, int form, int npathsave);
- RcppExport SEXP _afttest_form_mis_optim(SEXP npathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP optimTypeSEXP, SEXP formSEXP, SEXP npathsaveSEXP) {
+ List form_mis_optim(int npath, vec b, vec time, vec delta, mat covariates, String optimType, int cov_tested, int npathsave);
+ RcppExport SEXP _afttest_form_mis_optim(SEXP npathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP optimTypeSEXP, SEXP cov_testedSEXP, SEXP npathsaveSEXP) {
    BEGIN_RCPP
    Rcpp::RObject rcpp_result_gen;
    Rcpp::RNGScope rcpp_rngScope_gen;
@@ -3687,15 +3687,15 @@ using namespace Rcpp;
    Rcpp::traits::input_parameter< vec >::type delta(DeltaSEXP);
    Rcpp::traits::input_parameter< mat >::type covariates(CovariSEXP);
    Rcpp::traits::input_parameter< String >::type optimType(optimTypeSEXP);
-   Rcpp::traits::input_parameter< int >::type form(formSEXP);
+   Rcpp::traits::input_parameter< int >::type cov_tested(cov_testedSEXP);
    Rcpp::traits::input_parameter< int >::type npathsave(npathsaveSEXP);
-   rcpp_result_gen = Rcpp::wrap(form_mis_optim(npath, b, time, delta, covariates, optimType, form, npathsave));
+   rcpp_result_gen = Rcpp::wrap(form_mis_optim(npath, b, time, delta, covariates, optimType, cov_tested, npathsave));
    return rcpp_result_gen;
    END_RCPP
  }
  // form_mns_optim
- List form_mns_optim(int npath, vec b, vec time, vec delta, mat covariates, String optimType, int form, int npathsave);
- RcppExport SEXP _afttest_form_mns_optim(SEXP npathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP optimTypeSEXP, SEXP formSEXP, SEXP npathsaveSEXP) {
+ List form_mns_optim(int npath, vec b, vec time, vec delta, mat covariates, String optimType, int cov_tested, int npathsave);
+ RcppExport SEXP _afttest_form_mns_optim(SEXP npathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP optimTypeSEXP, SEXP cov_testedSEXP, SEXP npathsaveSEXP) {
    BEGIN_RCPP
    Rcpp::RObject rcpp_result_gen;
    Rcpp::RNGScope rcpp_rngScope_gen;
@@ -3705,9 +3705,9 @@ using namespace Rcpp;
    Rcpp::traits::input_parameter< vec >::type delta(DeltaSEXP);
    Rcpp::traits::input_parameter< mat >::type covariates(CovariSEXP);
    Rcpp::traits::input_parameter< String >::type optimType(optimTypeSEXP);
-   Rcpp::traits::input_parameter< int >::type form(formSEXP);
+   Rcpp::traits::input_parameter< int >::type cov_tested(cov_testedSEXP);
    Rcpp::traits::input_parameter< int >::type npathsave(npathsaveSEXP);
-   rcpp_result_gen = Rcpp::wrap(form_mns_optim(npath, b, time, delta, covariates, optimType, form, npathsave));
+   rcpp_result_gen = Rcpp::wrap(form_mns_optim(npath, b, time, delta, covariates, optimType, cov_tested, npathsave));
    return rcpp_result_gen;
    END_RCPP
  }

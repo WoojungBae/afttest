@@ -16,18 +16,18 @@ print.afttest <- function(x, ...) {
   cat("\n Call: \n")
   print(x$call)
   
-  cat("\n P-Values: \n")
+  cat("\n p-values: \n")
   p_valueTAB <- data.frame(t(c(x$p_value, x$p_std_value)))
   rownames(p_valueTAB) <- ""
-  colnames(p_valueTAB) <- c("p_value", "std_p_value")
+  colnames(p_valueTAB) <- c("unstandardized", "standardized")
   print(p_valueTAB)
   
-  if (x$testType == "omni") {
+  if (x$testType == "omnibus") {
     cat(paste0("\n H0: The assumed semiparametric AFT model fits the data adequately. \n"))
   } else if (x$testType == "link") {
     cat(paste0("\n H0: The relationship between covariates and the log survival time "))
     cat(paste0("\n     is correctly specified. \n"))
-  } else if (x$testType == "form") {
+  } else if (x$testType == "covform") {
     cat(paste0("\n H0: The relationship between the log survival time and the specific "))
     cat(paste0("\n     covariate chosen by the form argument is correctly specified. \n"))
   }
@@ -69,18 +69,18 @@ summary.afttest <- function(object, ...) {
   cat("\n Call: \n")
   print(object$call)
   
-  cat("\n P-Values: \n")
+  cat("\n p-values: \n")
   p.valueTAB <- data.frame(t(c(object$p_value, object$p_std_value)))
   rownames(p.valueTAB) <- ""
-  colnames(p.valueTAB) <- c("p.value", "std.p.value")
+  colnames(p.valueTAB) <- c("unstandardized", "standardized")
   print(p.valueTAB)
   
-  if (object$testType == "omni") {
+  if (object$testType == "omnibus") {
     cat(paste0("\n H0: The assumed semiparametric AFT model fits the data adequately. \n"))
   } else if (object$testType == "link") {
     cat(paste0("\n H0: The relationship between covariates and the log survival time "))
     cat(paste0("\n     is correctly specified. \n"))
-  } else if (object$testType == "form") {
+  } else if (object$testType == "covform") {
     cat(paste0("\n H0: The relationship between the log survival time and the specific "))
     cat(paste0("\n     covariate chosen by the form argument is correctly specified. \n"))
   }
@@ -105,23 +105,23 @@ summary.afttest <- function(object, ...) {
 #' plot.afttest
 #'
 #' @param x is a \code{afttest} fit
-#' @param npath A numeric value specifies the number of approximated processes plotted
+#' @param npath A numeric value specifies the number of approximated processes plotted.
 #'    The default is set to be 100.
-#' @param stdType A character string specifying if the graph is based on the 
-#'    unstandardized test statistics or standardized test statistics
+#' @param standardized A character string specifying if the graph is based on 
+#'    the unstandardized test statistics or standardized test statistics
 #'    The default is set to be "std".
 #' @param quantile A numeric vector specifies 5 of five quantiles within the range [0,1]. 
 #'    The default is set to be c(0.1,0.25,0.5,0.75,0.9).
 #' @param ... for future extension
 #' @return \code{plot.afttest} returns a plot based on the \code{testType}:
 #' \describe{
-#'    \item{omni}{an x of the omnibus test is the form of n by n matrix, 
+#'    \item{omnibus}{an x of the omnibus test is the form of n by n matrix, 
 #'    some quantiles of x, which are used in weight, are plotted for graphs, 
 #'    i.e. 0\%, 10\%, 25\%, 40\%, 50\%, 60\%, 75\%, 90\%, and 100\% are used.}
 #'    \item{link}{an x of the link function test is the form of n by 1 matrix}
-#'    \item{form}{an x of the functional form test is the form of n by 1 matrix}
+#'    \item{covform}{an x of the functional form test is the form of n by 1 matrix}
 #' }
-#'    See the documentation of \pkg{ggplot2} and \pkg{gridExtra} for details.\
+#'    See the documentation of \pkg{ggplot2} and \pkg{gridExtra} for details.
 #' 
 #' @importFrom ggplot2 ggplot geom_step geom_label theme theme_minimal ggtitle aes unit labs ylab xlab scale_y_continuous element_text
 #' @importFrom gridExtra grid.arrange
@@ -129,7 +129,7 @@ summary.afttest <- function(object, ...) {
 #' 
 #' @example inst/examples/ex_plot.afttest.R
 #' @export
-plot.afttest <- function(x, npath = 50, stdType = NULL, quantile = NULL, ...){
+plot.afttest <- function(x, npath = 50, standardized = TRUE, quantile = NULL, ...){
   
   # class
   if (!inherits(x,"afttest")) return(warning("Must be afttest class"))
@@ -139,15 +139,15 @@ plot.afttest <- function(x, npath = 50, stdType = NULL, quantile = NULL, ...){
   eqType <- x$eqType
   # testType
   testType <- x$testType
-  # stdType
-  if (is.null(stdType)) {
-    stdType <- "std"
-  } else if (!stdType %in% c("std","unstd")) {
-    return(warning("npath needs to be an integer."))
+  # standardized
+  if (isTRUE(standardized)) {
+    standardized <- "std"
+  } else if (!standardized %in% c(T, F)) {
+    return(warning("standardized needs to be logical."))
   }
   # npath
-  if (length(npath) > 1){
-    return(warning("stdType must be either 'std' or 'unstd'."))
+  if (!is.numeric(npath) || !(length(npath)==1)){
+    return(warning("npath needs to be a positive integer."))
   } else {
     if (!is.numeric(npath)) {
       npath <- 50
@@ -156,7 +156,7 @@ plot.afttest <- function(x, npath = 50, stdType = NULL, quantile = NULL, ...){
     }
   }
   
-  stdTypeQuote <- ifelse(stdType=="std","standardized","unstandardized")
+  stdTypeQuote <- ifelse(standardized=="std","standardized","unstandardized")
   testTypeQuote <- ifelse(eqType=="ns","non-smooth","induced-smoothed")
   
   x_axis <- 1:nrow(x$DF)
@@ -178,14 +178,14 @@ plot.afttest <- function(x, npath = 50, stdType = NULL, quantile = NULL, ...){
   # names(Q) <- paste0(Q*100,"%")
   K <- length(Q)
   
-  if(testType=="omni"){
+  if(testType=="omnibus"){
     resid <- c(NA)
     app <- matrix(NA)
     obs <- matrix(NA)
     
     Figure <- list(NA)
     for(k in 1:K){
-      if (stdType == "std") {
+      if (standardized == "std") {
         # DF_app
         DF_app=data.frame()
         for (group in 1:npath){
@@ -254,7 +254,7 @@ plot.afttest <- function(x, npath = 50, stdType = NULL, quantile = NULL, ...){
     resid <- c(NA)
     app <- c(NA)
     obs <- c(NA)
-    if (stdType == "std"){
+    if (standardized == "std"){
       # DF_app
       DF_app <- data.frame()
       for (group in 1:npath){
@@ -292,11 +292,11 @@ plot.afttest <- function(x, npath = 50, stdType = NULL, quantile = NULL, ...){
     
     return(Figure)
     
-  } else if(testType=="form"){
+  } else if(testType=="covform"){
     resid <- c(NA)
     app <- c(NA)
     obs <- c(NA)
-    if (stdType == "std"){
+    if (standardized == "std"){
       # DF_app
       DF_app <- data.frame()
       for (group in 1:npath){

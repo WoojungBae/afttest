@@ -60,9 +60,9 @@ afttest <- function(object, ...) {
 #' @param testType A character string specifying the type of the test.
 #'    The following are permitted:
 #'    \describe{
-#'      \item{\code{omni}}{an omnibus test}
+#'      \item{\code{omnibus}}{an omnibus test}
 #'      \item{\code{link}}{a link function test}
-#'      \item{\code{form}}{a functional form}
+#'      \item{\code{covform}}{a functional form of a covariate}
 #' }
 #' @param estMethod A character string specifying the type of the estimator used.
 #'    The readers are refered to the \pkg{aftgee} package for details.
@@ -82,10 +82,10 @@ afttest <- function(object, ...) {
 #'      \item{\code{is}}{Regression parameters are estimated by directly solving 
 #'      the induced-smoothing estimating equations.}
 #' }
-#' @param form A character string specifying the covariate which will be tested.
-#'    The argument form is necessary only if \code{testType} is \code{form}.
-#'    The default option for \code{form} is given by "1", which represents the 
-#'    first covariate in the formula argument.
+#' @param cov.tested A character string specifying the covariate which will be tested.
+#'    The argument \code{cov.tested} is necessary only if \code{testType} is 
+#'    \code{covform}.The default option for \code{cov.tested} is given by "1", which 
+#'    represents the first covariate in the formula argument.
 #' @param npathsave An integer value specifies he number of paths saved among all the paths.
 #'    The default is given by 50. Note that it requires a lot of memory if save all
 #'    sampled paths (N by N matrix for each npath andso npath*N*N elements)
@@ -93,9 +93,9 @@ afttest <- function(object, ...) {
 #'  
 #' @rdname afttest
 #' @export
-afttest.formula <- function(object, data, npath = 200, testType = "omni", 
+afttest.formula <- function(object, data, npath = 200, testType = "omnibus", 
                             estMethod = "rr", eqType = "ns", 
-                            form = 1, npathsave = 50, ...) {
+                            cov.tested = 1, npathsave = 50, ...) {
   # Extract variable names and dimensions
   # varnames <- noquote(all.vars(object))
   # var.length <- length(varnames)
@@ -187,10 +187,10 @@ afttest.formula <- function(object, data, npath = 200, testType = "omni",
   
   # testType
   if (length(testType) > 1){
-    return(warning("testType needs to be one of 'omni', 'link', or 'form'"))
+    return(warning("testType needs to be one of 'omnibus', 'link', or 'covform'"))
   } else {
-    if (!testType %in% c("omni","link","form")) {
-      testType <- "omni"
+    if (!testType %in% c("omnibus","link","covform")) {
+      testType <- "omnibus"
     }
   }
   
@@ -213,23 +213,23 @@ afttest.formula <- function(object, data, npath = 200, testType = "omni",
     }
   }
   
-  # form
-  if (testType == "form") {
-    if (length(form) > 1){
-      return(warning("the length if form needs to be exactly 1."))
+  # cov.tested
+  if (testType == "covform") {
+    if (length(cov.tested) > 1){
+      return(warning("the length if cov.tested needs to be exactly 1."))
     } else {
-      if (is.numeric(form)) {
-        if (form%%1 != 0 || form > cov.length) {
-          return(warning("form needs to be postivie integer and less than the lenght of covariates."))
+      if (is.numeric(cov.tested)) {
+        if (cov.tested %%1 != 0 || cov.tested > cov.length) {
+          return(warning("cov.tested needs to be postivie integer and less than the lenght of covariates."))
         }
-      } else if (is.character(form)) {
-        if (!form %in% covnames) {
-          return(warning("form needs to specified the one of the covariates in the formula."))
+      } else if (is.character(cov.tested)) {
+        if (!cov.tested %in% covnames) {
+          return(warning("cov.tested needs to specified the one of the covariates in the formula."))
         } else {
-          form <- which(form == covnames)
+          cov.tested <- which(cov.tested == covnames)
         }
       } else {
-        return(warning("form needs to be specified correctly."))
+        return(warning("cov.tested needs to be specified correctly."))
       }
     }
   }
@@ -246,7 +246,7 @@ afttest.formula <- function(object, data, npath = 200, testType = "omni",
   
   # This function contains the core logic (the C++ calls)
   out <- .afttest_worker(b, time, delta, covariates, npath, testType,
-                         eqType, optimMethod, form, npathsave)
+                         eqType, optimMethod, cov.tested, npathsave)
   
   out$call <- scall
   out$beta <- beta
@@ -258,7 +258,7 @@ afttest.formula <- function(object, data, npath = 200, testType = "omni",
   return(out)
 }
 
-#' @param object A formula expression, of the form \code{response ~ predictors}.
+#' @param object A formula expression, of the cov.tested \code{response ~ predictors}.
 #'    The \code{response} is a \code{Surv} object with right censoring.
 #'    See the documentation of \code{lm}, \code{coxph} and \code{formula} for details.
 #' @param data An optional data frame in which to interpret the variables occurring 
@@ -268,9 +268,9 @@ afttest.formula <- function(object, data, npath = 200, testType = "omni",
 #' @param testType A character string specifying the type of the test.
 #'    The following are permitted:
 #'    \describe{
-#'      \item{\code{omni}}{an omnibus test}
+#'      \item{\code{omnibus}}{an omnibus test}
 #'      \item{\code{link}}{a link function test}
-#'      \item{\code{form}}{a functional form}
+#'      \item{\code{covform}}{a functional cov.tested of a covariate}
 #' }
 #' @param eqType A character string specifying the type of the 
 #'    estimating equation used to obtain the regression parameters.
@@ -282,10 +282,10 @@ afttest.formula <- function(object, data, npath = 200, testType = "omni",
 #'      \item{\code{is}}{Regression parameters are estimated by directly solving 
 #'      the induced-smoothing estimating equations.}
 #' }
-#' @param form A character string specifying the covariate which will be tested.
-#'    The argument form is necessary only if \code{testType} is \code{form}.
-#'    The default option for \code{form} is given by "1", which represents the 
-#'    first covariate in the formula argument.
+#' @param cov.tested A character string specifying the covariate which will be tested.
+#'    The argument \code{cov.tested} is necessary only if \code{testType} is 
+#'    \code{covform}.The default option for \code{cov.tested} is given by "1", which 
+#'    represents the first covariate in the formula argument.
 #' @param npathsave An integer value specifies he number of paths saved among all the paths.
 #'    The default is given by 50. Note that it requires a lot of memory if save all
 #'    sampled paths (N by N matrix for each npath andso npath*N*N elements)
@@ -293,8 +293,8 @@ afttest.formula <- function(object, data, npath = 200, testType = "omni",
 #' 
 #' @rdname afttest
 #' @export
-afttest.aftsrr <- function(object, data, npath = 200, testType = "omni", eqType = "ns", 
-                           form = 1, npathsave = 50, ...) {
+afttest.aftsrr <- function(object, data, npath = 200, testType = "omnibus", eqType = "ns", 
+                           cov.tested = 1, npathsave = 50, ...) {
   scall <- match.call()
   mf <- model.frame(object, data)
   Y <- mf[[1]]
@@ -370,10 +370,10 @@ afttest.aftsrr <- function(object, data, npath = 200, testType = "omni", eqType 
   
   # testType
   if (length(testType) > 1){
-    return(warning("testType needs to be one of 'omni', 'link', or 'form'"))
+    return(warning("testType needs to be one of 'omnibus', 'link', or 'covform'"))
   } else {
-    if (!testType %in% c("omni","link","form")) {
-      testType <- "omni"
+    if (!testType %in% c("omnibus","link","covform")) {
+      testType <- "omnibus"
     }
   }
   
@@ -396,23 +396,23 @@ afttest.aftsrr <- function(object, data, npath = 200, testType = "omni", eqType 
     }
   }
   
-  # form
-  if (testType == "form") {
-    if (length(form) > 1){
-      return(warning("the length if form needs to be exactly 1."))
+  # cov.tested
+  if (testType == "covform") {
+    if (length(cov.tested) > 1){
+      return(warning("the length if cov.tested needs to be exactly 1."))
     } else {
-      if (is.numeric(form)) {
-        if (form%%1 != 0 || form > cov.length) {
-          return(warning("form needs to be postivie integer and less than the lenght of covariates."))
+      if (is.numeric(cov.tested)) {
+        if (cov.tested %%1 != 0 || cov.tested > cov.length) {
+          return(warning("cov.tested needs to be postivie integer and less than the lenght of covariates."))
         }
-      } else if (is.character(form)) {
-        if (!form %in% covnames) {
-          return(warning("form needs to specified the one of the covariates in the formula."))
+      } else if (is.character(cov.tested)) {
+        if (!cov.tested %in% covnames) {
+          return(warning("cov.tested needs to specified the one of the covariates in the formula."))
         } else {
-          form <- which(form == covnames)
+          cov.tested <- which(cov.tested == covnames)
         }
       } else {
-        return(warning("form needs to be specified correctly."))
+        return(warning("cov.tested needs to be specified correctly."))
       }
     }
   }
@@ -424,7 +424,7 @@ afttest.aftsrr <- function(object, data, npath = 200, testType = "omni", eqType 
   # --- CALL THE INTERNAL WORKER FUNCTION ---
   # This function contains the core logic (the C++ calls)
   out <- .afttest_worker(b, time, delta, covariates, npath, testType,
-                         eqType, optimMethod, form, npathsave)
+                         eqType, optimMethod, cov.tested, npathsave)
   out$beta <- object$beta
   out$call <- scall
   # out$DF <- data
@@ -445,9 +445,9 @@ afttest.aftsrr <- function(object, data, npath = 200, testType = "omni", eqType 
 #' @param testType A character string specifying the type of the test.
 #'    The following are permitted:
 #'    \describe{
-#'      \item{\code{omni}}{an omnibus test}
+#'      \item{\code{omnibus}}{an omnibus test}
 #'      \item{\code{link}}{a link function test}
-#'      \item{\code{form}}{a functional form}
+#'      \item{\code{covform}}{a functional form of a covariate}
 #' }
 #' @param eqType A character string specifying the type of the 
 #'    estimating equation used to obtain the regression parameters.
@@ -459,10 +459,10 @@ afttest.aftsrr <- function(object, data, npath = 200, testType = "omni", eqType 
 #'      \item{\code{is}}{Regression parameters are estimated by directly solving 
 #'      the induced-smoothing estimating equations.}
 #' }
-#' @param form A character string specifying the covariate which will be tested.
-#'    The argument form is necessary only if \code{testType} is \code{form}.
-#'    The default option for \code{form} is given by "1", which represents the 
-#'    first covariate in the formula argument.
+#' @param cov.tested A character string specifying the covariate which will be tested.
+#'    The argument \code{cov.tested} is necessary only if \code{testType} is 
+#'    \code{covform}.The default option for \code{cov.tested} is given by "1", which 
+#'    represents the first covariate in the formula argument.
 #' @param npathsave An integer value specifies he number of paths saved among all the paths.
 #'    The default is given by 50. Note that it requires a lot of memory if save all
 #'    sampled paths (N by N matrix for each npath andso npath*N*N elements)
@@ -470,8 +470,8 @@ afttest.aftsrr <- function(object, data, npath = 200, testType = "omni", eqType 
 #' 
 #' @rdname afttest
 #' @export
-afttest.aftgee <- function(object, data, npath = 200, testType = "omni", eqType = "ls", 
-                           form = 1, npathsave = 50, ...) {
+afttest.aftgee <- function(object, data, npath = 200, testType = "omnibus", eqType = "ls", 
+                           cov.tested = 1, npathsave = 50, ...) {
   scall <- match.call()
   mf <- model.frame(object, data)
   Y <- mf[[1]]
@@ -545,10 +545,10 @@ afttest.aftgee <- function(object, data, npath = 200, testType = "omni", eqType 
   
   # testType
   if (length(testType) > 1){
-    return(warning("testType needs to be one of 'omni', 'link', or 'form'"))
+    return(warning("testType needs to be one of 'omnibus', 'link', or 'covform'"))
   } else {
-    if (!testType %in% c("omni","link","form")) {
-      testType <- "omni"
+    if (!testType %in% c("omnibus","link","covform")) {
+      testType <- "omnibus"
     }
   }
   
@@ -571,23 +571,23 @@ afttest.aftgee <- function(object, data, npath = 200, testType = "omni", eqType 
     }
   }
   
-  # form
-  if (testType == "form") {
-    if (length(form) > 1){
-      return(warning("the length if form needs to be exactly 1."))
+  # cov.tested
+  if (testType == "covform") {
+    if (length(cov.tested) > 1){
+      return(warning("the length if cov.tested needs to be exactly 1."))
     } else {
-      if (is.numeric(form)) {
-        if (form%%1 != 0 || form > cov.length) {
-          return(warning("form needs to be postivie integer and less than the lenght of covariates."))
+      if (is.numeric(cov.tested)) {
+        if (cov.tested %%1 != 0 || cov.tested > cov.length) {
+          return(warning("cov.tested needs to be postivie integer and less than the lenght of covariates."))
         }
-      } else if (is.character(form)) {
-        if (!form %in% covnames) {
-          return(warning("form needs to specified the one of the covariates in the formula."))
+      } else if (is.character(cov.tested)) {
+        if (!cov.tested %in% covnames) {
+          return(warning("cov.tested needs to specified the one of the covariates in the formula."))
         } else {
-          form <- which(form == covnames)
+          cov.tested <- which(cov.tested == covnames)
         }
       } else {
-        return(warning("form needs to be specified correctly."))
+        return(warning("cov.tested needs to be specified correctly."))
       }
     }
   }
@@ -598,7 +598,7 @@ afttest.aftgee <- function(object, data, npath = 200, testType = "omni", eqType 
   
   # This function contains the core logic (the C++ calls)
   out <- .afttest_worker(b, time, delta, covariates, npath, testType,
-                         eqType, optimMethod, form, npathsave)
+                         eqType, optimMethod, cov.tested, npathsave)
   out$beta <- object$coef.res[-1]
   out$call <- scall
   # out$DF <- data
@@ -612,42 +612,42 @@ afttest.aftgee <- function(object, data, npath = 200, testType = "omni", eqType 
 #' Internal worker function for afttest
 #' @noRd
 .afttest_worker <- function(b, time, delta, covariates, npath, testType,
-                            eqType, optimMethod, form, npathsave) {
+                            eqType, optimMethod, cov.tested, npathsave) {
   # C++ functions
   if (optimMethod != "DFSANE"){
     if (eqType=="ns"){
-      if (testType == "omni") {
+      if (testType == "omnibus") {
         out <- .Call(`_afttest_omni_mns_optim`, npath, b, time, delta, covariates, optimMethod, npathsave)
       } else if (testType == "link") {
         out <- .Call(`_afttest_link_mns_optim`, npath, b, time, delta, covariates, optimMethod, npathsave)
-      } else if (testType == "form") {
-        out <- .Call(`_afttest_form_mns_optim`, npath, b, time, delta, covariates, optimMethod, form, npathsave)
+      } else if (testType == "covform") {
+        out <- .Call(`_afttest_form_mns_optim`, npath, b, time, delta, covariates, optimMethod, cov.tested, npathsave)
       }
     } else if (eqType=="is"){
-      if (testType == "omni") {
+      if (testType == "omnibus") {
         out <- .Call(`_afttest_omni_mis_optim`, npath, b, time, delta, covariates, optimMethod, npathsave)
       } else if (testType == "link") {
         out <- .Call(`_afttest_link_mis_optim`, npath, b, time, delta, covariates, optimMethod, npathsave)
-      } else if (testType == "form") {
-        out <- .Call(`_afttest_form_mis_optim`, npath, b, time, delta, covariates, optimMethod, form, npathsave)
+      } else if (testType == "covform") {
+        out <- .Call(`_afttest_form_mis_optim`, npath, b, time, delta, covariates, optimMethod, cov.tested, npathsave)
       }
     }
   } else if (optimMethod == "DFSANE"){
     if (eqType=="ns"){
-      if (testType == "omni") {
+      if (testType == "omnibus") {
         out <- .Call(`_afttest_omni_mns_DFSANE`, npath, b, time, delta, covariates, npathsave)
       } else if (testType == "link") {
         out <- .Call(`_afttest_link_mns_DFSANE`, npath, b, time, delta, covariates, npathsave)
-      } else if (testType == "form") {
-        out <- .Call(`_afttest_form_mns_DFSANE`, npath, b, time, delta, covariates, form, npathsave)
+      } else if (testType == "covform") {
+        out <- .Call(`_afttest_form_mns_DFSANE`, npath, b, time, delta, covariates, cov.tested, npathsave)
       }
     } else if (eqType=="is"){
-      if (testType == "omni") {
+      if (testType == "omnibus") {
         out <- .Call(`_afttest_omni_mis_DFSANE`, npath, b, time, delta, covariates, npathsave)
       } else if (testType == "link") {
         out <- .Call(`_afttest_link_mis_DFSANE`, npath, b, time, delta, covariates, npathsave)
-      } else if (testType == "form") {
-        out <- .Call(`_afttest_form_mis_DFSANE`, npath, b, time, delta, covariates, form, npathsave)
+      } else if (testType == "covform") {
+        out <- .Call(`_afttest_form_mis_DFSANE`, npath, b, time, delta, covariates, cov.tested, npathsave)
       }
     }
   } else {
@@ -661,8 +661,8 @@ afttest.aftgee <- function(object, data, npath = 200, testType = "omni", eqType 
   out$testType <- testType
   out$optimMethod <- optimMethod
   out$npathsave <- npathsave
-  if (testType == "form") {
-    out$form <- form
+  if (testType == "covform") {
+    out$cov.tested <- cov.tested
   }
   
   return(out)

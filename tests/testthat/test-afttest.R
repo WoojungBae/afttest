@@ -12,12 +12,12 @@ test_that("test afttest", {
   simdata = datgen(n = 100)
   
   result = afttest(object = Surv(Time, status) ~ z1 + z2, data = simdata, 
-                   npath = 100, testType = "form", estMethod = "rr", 
-                   eqType = "ns",form = "z2", npathsave = 50)
+                   npath = 100, testType = "covform", estMethod = "rr", 
+                   eqType = "ns", cov.tested = "z2", npathsave = 50)
   
   expect_equal(result$p_value, 0.03, tolerance=5e-2)
   expect_equal(result$p_std_value, 0.05, tolerance=5e-2)
   
-  # plot(result, stdType = "std")
-  # plot(result, stdType = "unstd")
+  # plot(result, standardized = TRUE)
+  # plot(result, standardized = FALSE)
 })

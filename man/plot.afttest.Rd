@@ -4,16 +4,16 @@
 \alias{plot.afttest}
 \title{plot.afttest}
 \usage{
-\method{plot}{afttest}(x, npath = 50, stdType = NULL, quantile = NULL, ...)
+\method{plot}{afttest}(x, npath = 50, standardized = TRUE, quantile = NULL, ...)
 }
 \arguments{
 \item{x}{is a \code{afttest} fit}
 
-\item{npath}{A numeric value specifies the number of approximated processes plotted
+\item{npath}{A numeric value specifies the number of approximated processes plotted.
 The default is set to be 100.}
 
-\item{stdType}{A character string specifying if the graph is based on the 
-unstandardized test statistics or standardized test statistics
+\item{standardized}{A character string specifying if the graph is based on 
+the unstandardized test statistics or standardized test statistics
 The default is set to be "std".}
 
 \item{quantile}{A numeric vector specifies 5 of five quantiles within the range [0,1]. 
@@ -24,13 +24,13 @@ The default is set to be c(0.1,0.25,0.5,0.75,0.9).}
 \value{
 \code{plot.afttest} returns a plot based on the \code{testType}:
 \describe{
-   \item{omni}{an x of the omnibus test is the form of n by n matrix, 
+   \item{omnibus}{an x of the omnibus test is the form of n by n matrix, 
    some quantiles of x, which are used in weight, are plotted for graphs, 
    i.e. 0\%, 10\%, 25\%, 40\%, 50\%, 60\%, 75\%, 90\%, and 100\% are used.}
    \item{link}{an x of the link function test is the form of n by 1 matrix}
-   \item{form}{an x of the functional form test is the form of n by 1 matrix}
+   \item{covform}{an x of the functional form test is the form of n by 1 matrix}
 }
-   See the documentation of \pkg{ggplot2} and \pkg{gridExtra} for details.\
+   See the documentation of \pkg{ggplot2} and \pkg{gridExtra} for details.
 }
 \description{
 plot.afttest
@@ -52,7 +52,7 @@ simdata <- datgen(n = 20)
 result <- afttest(Surv(Time, status) ~ z1 + z2, data = simdata, npath = 200, 
                   testType = "link", estMethod = "rr", 
                   eqType = "ns", npathsave = 50)
-print(result)
-summary(result)
+# print(result)
+# summary(result)
 plot(result)
 }

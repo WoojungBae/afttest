@@ -14,6 +14,6 @@ simdata <- datgen(n = 20)
 result <- afttest(Surv(Time, status) ~ z1 + z2, data = simdata, npath = 200, 
                   testType = "link", estMethod = "rr", 
                   eqType = "ns", npathsave = 50)
-print(result)
-summary(result)
+# print(result)
+# summary(result)
 plot(result)

@@ -13,10 +13,10 @@ afttest(object, ...)
   object,
   data,
   npath = 200,
-  testType = "omni",
+  testType = "omnibus",
   estMethod = "rr",
   eqType = "ns",
-  form = 1,
+  cov.tested = 1,
   npathsave = 50,
   ...
 )
@@ -25,9 +25,9 @@ afttest(object, ...)
   object,
   data,
   npath = 200,
-  testType = "omni",
+  testType = "omnibus",
   eqType = "ns",
-  form = 1,
+  cov.tested = 1,
   npathsave = 50,
   ...
 )
@@ -36,9 +36,9 @@ afttest(object, ...)
   object,
   data,
   npath = 200,
-  testType = "omni",
+  testType = "omnibus",
   eqType = "ls",
-  form = 1,
+  cov.tested = 1,
   npathsave = 50,
   ...
 )
@@ -59,9 +59,9 @@ The default is given by 200.}
 \item{testType}{A character string specifying the type of the test.
    The following are permitted:
    \describe{
-     \item{\code{omni}}{an omnibus test}
+     \item{\code{omnibus}}{an omnibus test}
      \item{\code{link}}{a link function test}
-     \item{\code{form}}{a functional form}
+     \item{\code{covform}}{a functional form of a covariate}
 }}
 
 \item{estMethod}{A character string specifying the type of the estimator used.
@@ -84,10 +84,10 @@ The default is given by 200.}
      the induced-smoothing estimating equations.}
 }}
 
-\item{form}{A character string specifying the covariate which will be tested.
-The argument form is necessary only if \code{testType} is \code{form}.
-The default option for \code{form} is given by "1", which represents the 
-first covariate in the formula argument.}
+\item{cov.tested}{A character string specifying the covariate which will be tested.
+The argument \code{cov.tested} is necessary only if \code{testType} is 
+\code{covform}.The default option for \code{cov.tested} is given by "1", which 
+represents the first covariate in the formula argument.}
 
 \item{npathsave}{An integer value specifies he number of paths saved among all the paths.
 The default is given by 50. Note that it requires a lot of memory if save all
@@ -145,5 +145,5 @@ result <- afttest(Surv(Time, status) ~ z1 + z2, data = simdata, npath = 200,
                   eqType = "ns", npathsave = 50)
 print(result)
 summary(result)
-plot(result)
+# plot(result)
 }
