@@ -96,6 +96,7 @@ afttest <- function(object, ...) {
 afttest.formula <- function(object, data, npath = 200, testType = "omnibus", 
                             estMethod = "rr", eqType = "ns", 
                             cov.tested = 1, npathsave = 50, ...) {
+  
   # Extract variable names and dimensions
   # varnames <- noquote(all.vars(object))
   # var.length <- length(varnames)
@@ -425,7 +426,7 @@ afttest.aftsrr <- function(object, data, npath = 200, testType = "omnibus", eqTy
   # This function contains the core logic (the C++ calls)
   out <- .afttest_worker(b, time, delta, covariates, npath, testType,
                          eqType, optimMethod, cov.tested, npathsave)
-  out$beta <- object$beta
+  out$beta <- -object$beta
   out$call <- scall
   # out$DF <- data
   out$DF <- DF
@@ -599,7 +600,7 @@ afttest.aftgee <- function(object, data, npath = 200, testType = "omnibus", eqTy
   # This function contains the core logic (the C++ calls)
   out <- .afttest_worker(b, time, delta, covariates, npath, testType,
                          eqType, optimMethod, cov.tested, npathsave)
-  out$beta <- object$coef.res[-1]
+  out$beta <- -object$coef.res[-1]
   out$call <- scall
   # out$DF <- data
   out$DF <- DF

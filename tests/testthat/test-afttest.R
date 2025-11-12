@@ -18,6 +18,6 @@ test_that("test afttest", {
   expect_equal(result$p_value, 0.03, tolerance=5e-2)
   expect_equal(result$p_std_value, 0.05, tolerance=5e-2)
   
-  # plot(result, standardized = TRUE)
-  # plot(result, standardized = FALSE)
+  # plot(result, std = TRUE)
+  # plot(result, std = FALSE)
 })

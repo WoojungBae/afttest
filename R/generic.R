@@ -13,7 +13,7 @@
 print.afttest <- function(x, ...) {
   if (!inherits(x,"afttest")) stop("Must be afttest class")
   
-  cat("\n Call: \n")
+  cat("Call: \n")
   print(x$call)
   
   cat("\n p-values: \n")
@@ -29,18 +29,18 @@ print.afttest <- function(x, ...) {
     cat(paste0("\n     is correctly specified. \n"))
   } else if (x$testType == "covform") {
     cat(paste0("\n H0: The relationship between the log survival time and the specific "))
-    cat(paste0("\n     covariate chosen by the form argument is correctly specified. \n"))
+    cat(paste0("\n     covariate chosen by the cov.tested argument is correctly specified. \n"))
   }
   
-  if (x$estMethod=="ls"){
-    cat(paste0("\n Coefficients (estimated by aftgee::aftgee): \n"))
-  } else if (x$estMethod=="rr"){
-    cat(paste0("\n Coefficients (estimated by aftgee::aftsrr): \n"))
-  }
-  coefTAB <- data.frame(t(-x$beta))
-  rownames(coefTAB) <- ""
-  colnames(coefTAB) <- x$names[-c(1:2)]
-  print(coefTAB)
+  # if (x$estMethod=="ls"){
+  #   cat(paste0("\n Coefficients (estimated by aftgee::aftgee):"))
+  # } else if (x$estMethod=="rr"){
+  #   cat(paste0("\n Coefficients (estimated by aftgee::aftsrr):"))
+  # }
+  # coefTAB <- data.frame(t(-x$beta))
+  # rownames(coefTAB) <- ""
+  # colnames(coefTAB) <- x$names[-c(1:2)]
+  # print(coefTAB)
   
   invisible(x)
 }
@@ -66,7 +66,7 @@ print.afttest <- function(x, ...) {
 summary.afttest <- function(object, ...) {
   if (!inherits(object,"afttest")) stop("Must be afttest class")
   
-  cat("\n Call: \n")
+  cat("Call: \n")
   print(object$call)
   
   cat("\n p-values: \n")
@@ -82,18 +82,18 @@ summary.afttest <- function(object, ...) {
     cat(paste0("\n     is correctly specified. \n"))
   } else if (object$testType == "covform") {
     cat(paste0("\n H0: The relationship between the log survival time and the specific "))
-    cat(paste0("\n     covariate chosen by the form argument is correctly specified. \n"))
+    cat(paste0("\n     covariate chosen by the cov.tested argument is correctly specified. \n"))
   }
   
-  if (object$estMethod=="ls"){
-    cat(paste0("\n Coefficients (estimated by aftgee::aftgee): \n"))
-  } else if (object$estMethod=="rr"){
-    cat(paste0("\n Coefficients (estimated by aftgee::aftsrr): \n"))
-  }
-  coefTAB <- data.frame(t(-object$beta))
-  rownames(coefTAB) <- ""
-  colnames(coefTAB) <- object$names[-c(1:2)]
-  print(coefTAB)
+  # if (object$estMethod=="ls"){
+  #   cat(paste0("\n Coefficients (estimated by aftgee::aftgee):"))
+  # } else if (object$estMethod=="rr"){
+  #   cat(paste0("\n Coefficients (estimated by aftgee::aftsrr):"))
+  # }
+  # coefTAB <- data.frame(t(-object$beta))
+  # rownames(coefTAB) <- ""
+  # colnames(coefTAB) <- object$names[-c(1:2)]
+  # print(coefTAB)
   
   invisible(object)
 }
@@ -107,7 +107,7 @@ summary.afttest <- function(object, ...) {
 #' @param x is a \code{afttest} fit
 #' @param npath A numeric value specifies the number of approximated processes plotted.
 #'    The default is set to be 100.
-#' @param standardized A character string specifying if the graph is based on 
+#' @param std A character string specifying if the graph is based on 
 #'    the unstandardized test statistics or standardized test statistics
 #'    The default is set to be "std".
 #' @param quantile A numeric vector specifies 5 of five quantiles within the range [0,1]. 
@@ -129,7 +129,7 @@ summary.afttest <- function(object, ...) {
 #' 
 #' @example inst/examples/ex_plot.afttest.R
 #' @export
-plot.afttest <- function(x, npath = 50, standardized = TRUE, quantile = NULL, ...){
+plot.afttest <- function(x, npath = 50, std = TRUE, quantile = NULL, ...){
   
   # class
   if (!inherits(x,"afttest")) return(warning("Must be afttest class"))
@@ -139,11 +139,11 @@ plot.afttest <- function(x, npath = 50, standardized = TRUE, quantile = NULL, ..
   eqType <- x$eqType
   # testType
   testType <- x$testType
-  # standardized
-  if (isTRUE(standardized)) {
-    standardized <- "std"
-  } else if (!standardized %in% c(T, F)) {
-    return(warning("standardized needs to be logical."))
+  # std
+  if (isTRUE(std)) {
+    std <- "std"
+  } else if (!std %in% c(T, F)) {
+    return(warning("std needs to be logical."))
   }
   # npath
   if (!is.numeric(npath) || !(length(npath)==1)){
@@ -156,7 +156,7 @@ plot.afttest <- function(x, npath = 50, standardized = TRUE, quantile = NULL, ..
     }
   }
   
-  stdTypeQuote <- ifelse(standardized=="std","standardized","unstandardized")
+  stdTypeQuote <- ifelse(std=="std","standardized","unstandardized")
   testTypeQuote <- ifelse(eqType=="ns","non-smooth","induced-smoothed")
   
   x_axis <- 1:nrow(x$DF)
@@ -185,7 +185,7 @@ plot.afttest <- function(x, npath = 50, standardized = TRUE, quantile = NULL, ..
     
     Figure <- list(NA)
     for(k in 1:K){
-      if (standardized == "std") {
+      if (std == "std") {
         # DF_app
         DF_app=data.frame()
         for (group in 1:npath){
@@ -221,7 +221,8 @@ plot.afttest <- function(x, npath = 50, standardized = TRUE, quantile = NULL, ..
           geom_step(data=DF_app,aes(x=resid,y=app,group=group),colour="grey",alpha=0.5) +
           geom_step(data=DF_obs,aes(x=resid,y=obs),colour="tomato",lwd=0.25) +
           labs(y = NULL) + labs(x = NULL) +
-          ggtitle(paste0("Omnibus test ","(",stdTypeQuote,")"," with ",names(Q[k]), " percentile for z")) +
+          ggtitle(paste0("Omnibus test ","(",stdTypeQuote,")")) +
+          # ggtitle(paste0("Omnibus test ","(",stdTypeQuote,")"," with ",names(Q[k]), " percentile for z")) +
           scale_y_continuous(breaks = y_breaks, labels = y_labels) +
           theme(plot.title=element_text(hjust=0.5),
                 plot.margin = rep(unit(0,"null"),4),
@@ -254,7 +255,7 @@ plot.afttest <- function(x, npath = 50, standardized = TRUE, quantile = NULL, ..
     resid <- c(NA)
     app <- c(NA)
     obs <- c(NA)
-    if (standardized == "std"){
+    if (std == "std"){
       # DF_app
       DF_app <- data.frame()
       for (group in 1:npath){
@@ -296,7 +297,7 @@ plot.afttest <- function(x, npath = 50, standardized = TRUE, quantile = NULL, ..
     resid <- c(NA)
     app <- c(NA)
     obs <- c(NA)
-    if (standardized == "std"){
+    if (std == "std"){
       # DF_app
       DF_app <- data.frame()
       for (group in 1:npath){

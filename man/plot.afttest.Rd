@@ -4,7 +4,7 @@
 \alias{plot.afttest}
 \title{plot.afttest}
 \usage{
-\method{plot}{afttest}(x, npath = 50, standardized = TRUE, quantile = NULL, ...)
+\method{plot}{afttest}(x, npath = 50, std = TRUE, quantile = NULL, ...)
 }
 \arguments{
 \item{x}{is a \code{afttest} fit}
@@ -12,7 +12,7 @@
 \item{npath}{A numeric value specifies the number of approximated processes plotted.
 The default is set to be 100.}
 
-\item{standardized}{A character string specifying if the graph is based on 
+\item{std}{A character string specifying if the graph is based on 
 the unstandardized test statistics or standardized test statistics
 The default is set to be "std".}
 
