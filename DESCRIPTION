@@ -28,8 +28,9 @@ Description: A collection of model checking methods for semiparametric
     shape of the observed residual to a number of the approximated realizations 
     is provided. See the following references; A general model-checking 
     procedure for semiparametric accelerated failure time models, Statistics and 
-    Computing, 34 (3), 117; Diagnostics for semiparametric accelerated failure 
-    time models with R package afttest, arXiv, arxiv.org/abs/2511.09823.
+    Computing, 34 (3), 117 <doi:10.1007/s11222-024-10431-7>; Diagnostics for 
+    semiparametric accelerated failure time models with R package 'afttest', 
+    arXiv, <doi:10.48550/arXiv.2511.09823>.
 Imports: 
     survival, 
     aftgee, 

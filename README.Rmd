@@ -19,7 +19,7 @@ Thus, it can also be treated as one of the **Rcpp\** packages.
 
 ## Installation of CRAN Version
 You can install the released version from
-[CRAN](https://CRAN.R-project.org/package=afttest).
+[CRAN](CRAN.R-project.org/package=afttest).
 
 ``` r
 install.packages("afttest")
@@ -43,14 +43,14 @@ performance has thus been boosted.
 ## Reference 
 Bae, W., Choi, D., Yan, J., Kang, S. (2025). afttest: model diagnostics for 
 semiparametric accelerated failure time models in R. *arXiv*, 
-**https://arxiv.org/abs/2511.09823**.
+**arxiv.org/abs/2511.09823**.
 
 Choi, D., Bae, W., Yan, J., and Kang, S. (2024). A general model-checking 
 procedure for semiparametric accelerated failure time models. 
 *Statistics and Computing*, **34**(3) 117
 
 Bae, W., Choi, D., Yan, J., Kang, S. (2022). afttest: Model Diagnostics for 
-Accelerated Failure Time Models. *CRAN*, **https://CRAN.R-project.org/package=afttest**.
+Accelerated Failure Time Models. *CRAN*, **CRAN.R-project.org/package=afttest**.
 
 Chiou, S., Kang, S., and Yan, J. (2014).  Fitting accelerated failure time model 
 in routine survival analysis with R package aftgee. 
