@@ -64,6 +64,6 @@ bibentry(
     issue= "11",
     pages= "1-23",
     year = "2014",
-    doi = "doi.org/10.18637/jss.v061.i11",
+    doi = "10.18637/jss.v061.i11",
     publisher = "Foundation for Open Access Statistics"
 )
