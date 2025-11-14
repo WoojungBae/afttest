@@ -42,7 +42,7 @@ performance has thus been boosted.
 ## Reference 
 Bae, W., Choi, D., Yan, J., Kang, S. (2025). afttest: model diagnostics for 
 semiparametric accelerated failure time models in R. *arXiv*, 
-**will be updated soon**.
+**https://arxiv.org/abs/2511.09823**.
 
 Choi, D., Bae, W., Yan, J., and Kang, S. (2024). A general model-checking 
 procedure for semiparametric accelerated failure time models. 

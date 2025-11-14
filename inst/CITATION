@@ -9,8 +9,8 @@ bibentry(
         as.person("Sangwook Kang")
         ),
     journal = "arXiv",
-    year = "2025+",
-    doi = "10.32614/CRAN.package.afttest"
+    year = "2025",
+    url = "https://arxiv.org/abs/2511.09823"
 )
 
 bibentry(
