@@ -54,10 +54,9 @@ bibentry(
     bibtype = "article",
     title = "Fitting Accelerated Failure Time Models in Routine Survival Analysis with R Package aftgee",
     author = c(
-        as.person("WooJung Bae"),
-        as.person("Dongrak Choi"),
-        as.person("Jun Yan"),
-        as.person("Sangwook Kang")
+        as.person("Sy Han Chiou"),
+        as.person("Sangwook Kang"),
+        as.person("Jun Yan")
         ),
     journal = "Journal of Statistical Software",
     volume = "61",
