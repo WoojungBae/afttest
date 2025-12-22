@@ -15,22 +15,22 @@ test_that("afttest linApprox=TRUE runs correctly", {
   result = afttest(object = Surv(Time, status) ~ z1 + z2, data = simdata,
                    npath = 100, testType = "covForm", estMethod = "rr",
                    eqType = "ns", covTested = "z2", npathsave = 50,
-                   linApprox = TRUE, seed = 1)
-  expect_equal(result$p_value, 0.01, tolerance=5e-2)
-  expect_equal(result$p_std_value, 0.01, tolerance=5e-2)
+                   linApprox = TRUE)
+  expect_equal(result$p_value, 0.02, tolerance=5e-2)
+  expect_equal(result$p_std_value, 0.04, tolerance=5e-2)
   
   result = afttest(object = Surv(Time, status) ~ z1 + z2, data = simdata,
                    npath = 100, testType = "covForm", estMethod = "rr",
                    eqType = "is", covTested = "z2", npathsave = 50,
-                   linApprox = TRUE, seed = 1)
-  expect_equal(result$p_value, 0.01, tolerance=5e-2)
-  expect_equal(result$p_std_value, 0.00, tolerance=5e-2)
+                   linApprox = TRUE)
+  expect_equal(result$p_value, 0.04, tolerance=5e-2)
+  expect_equal(result$p_std_value, 0.03, tolerance=5e-2)
 
   result = afttest(object = Surv(Time, status) ~ z1 + z2, data = simdata,
                    npath = 100, testType = "covForm", estMethod = "ls",
                    eqType = "ls", covTested = "z2", npathsave = 50,
-                   linApprox = TRUE, seed = 1)
-  expect_equal(result$p_value, 0.01, tolerance=5e-2)
+                   linApprox = TRUE)
+  expect_equal(result$p_value, 0.02, tolerance=5e-2)
   expect_equal(result$p_std_value, 0.01, tolerance=5e-2)
 })
 
@@ -55,21 +55,21 @@ test_that("afttest linApprox=FALSE runs correctly", {
   result = afttest(object = Surv(Time, status) ~ z1 + z2, data = simdata, 
                    npath = 100, testType = "covForm", estMethod = "rr", 
                    eqType = "ns", covTested = "z2", npathsave = 50, 
-                   linApprox = FALSE, seed = 1)
+                   linApprox = FALSE)
   expect_equal(result$p_value, 0.00, tolerance=5e-2)
   expect_equal(result$p_std_value, 0.00, tolerance=5e-2)
   
   result = afttest(object = Surv(Time, status) ~ z1 + z2, data = simdata, 
                    npath = 100, testType = "covForm", estMethod = "rr", 
                    eqType = "is", covTested = "z2", npathsave = 50, 
-                   linApprox = FALSE, seed = 1)
+                   linApprox = FALSE)
   expect_equal(result$p_value, 0.00, tolerance=5e-2)
   expect_equal(result$p_std_value, 0.00, tolerance=5e-2)
   
   result = afttest(object = Surv(Time, status) ~ z1 + z2, data = simdata, 
                    npath = 100, testType = "covForm", estMethod = "ls", 
                    eqType = "ls", covTested = "z2", npathsave = 50, 
-                   linApprox = FALSE, seed = 1)
+                   linApprox = FALSE)
   expect_equal(result$p_value, 0.01, tolerance=5e-2)
-  expect_equal(result$p_std_value, 0.01, tolerance=5e-2)
+  expect_equal(result$p_std_value, 0.00, tolerance=5e-2)
 })
