@@ -62,7 +62,7 @@ afttest <- function(object, ...) {
 #'    \describe{
 #'      \item{\code{omnibus}}{an omnibus test}
 #'      \item{\code{link}}{a link function test}
-#'      \item{\code{covform}}{a functional form of a covariate}
+#'      \item{\code{covForm}}{a functional form of a covariate}
 #' }
 #' @param estMethod A character string specifying the type of the estimator used.
 #'    The readers are refered to the \pkg{aftgee} package for details.
@@ -82,26 +82,33 @@ afttest <- function(object, ...) {
 #'      \item{\code{is}}{Regression parameters are estimated by directly solving 
 #'      the induced-smoothing estimating equations.}
 #' }
-#' @param cov.tested A character string specifying the covariate which will be tested.
-#'    The argument \code{cov.tested} is necessary only if \code{testType} is 
-#'    \code{covform}.The default option for \code{cov.tested} is given by "1", which 
+#' @param covTested A character string specifying the covariate which will be tested.
+#'    The argument \code{covTested} is necessary only if \code{testType} is 
+#'    \code{covForm}.The default option for \code{covTested} is given by "1", which 
 #'    represents the first covariate in the formula argument.
 #' @param npathsave An integer value specifies he number of paths saved among all the paths.
 #'    The default is given by 50. Note that it requires a lot of memory if save all
 #'    sampled paths (N by N matrix for each npath andso npath*N*N elements)
+#' @param linApprox A logical value. If \code{TRUE}, the multiplier bootstrap is 
+#'    computed using the asymptotic linear approximation, which is significantly 
+#'    faster. If \code{FALSE}, the estimating equations are solved numerically for 
+#'    each bootstrap replication. Defaults to \code{TRUE}.
+#' @param seed An optional integer specifying the random seed for reproducibility.
 #' @param ... Other arguments passed to methods.
 #'  
 #' @rdname afttest
 #' @export
 afttest.formula <- function(object, data, npath = 200, testType = "omnibus", 
                             estMethod = "rr", eqType = "ns", 
-                            cov.tested = 1, npathsave = 50, ...) {
-  
-  # Extract variable names and dimensions
-  # varnames <- noquote(all.vars(object))
-  # var.length <- length(varnames)
-  # covnames <- varnames[3:var.length]
-  # cov.length <- length(covnames)
+                            covTested = 1, npathsave = 50, linApprox = TRUE,
+                            seed = NULL, ...) {
+  if (!is.null(seed)) {
+    if (exists(".Random.seed", envir = .GlobalEnv)) {
+      old_seed <- get(".Random.seed", envir = .GlobalEnv)
+      on.exit(assign(".Random.seed", old_seed, envir = .GlobalEnv))
+    }
+    set.seed(seed)
+  }
   
   scall <- match.call()
   mf <- model.frame(object, data)
@@ -121,7 +128,7 @@ afttest.formula <- function(object, data, npath = 200, testType = "omnibus",
   
   # check&delete NA, -Inf, Inf, ...
   missingmessage <- NA
-  DF[DF == "-Inf" | DF == "Inf"] <- NA
+  DF[is.infinite(as.matrix(DF))] <- NA
   whichNA_DF <- which(apply(is.na(DF), 1, sum) > 0)
   nNA_DF <- length(whichNA_DF)
   if (nNA_DF > 0) {
@@ -154,25 +161,9 @@ afttest.formula <- function(object, data, npath = 200, testType = "omnibus",
   covariates <- scale(as.matrix(DF[, -(1:2)]))
   DF <- data.frame(time = time, delta = delta, covariates)
   
-  # unique_Delta <- unique(delta)
-  # if (length(unique_Delta)==2){
-  #   if (any(c(0,1) == sort(unique_Delta))){
-  #     delta <- ifelse(delta == unique_Delta[1], 0, 1)
-  #     warning(paste0(unique_Delta[1], "=0 is assumed to be observed and ",
-  #                    unique_Delta[2], "=1 is assumed to be censored"))
-  #   } else {
-  #     return(warning("delta must have 2 statuses (0=observed and 1=censored)"))
-  #   }
-  # }
-  
   # eqType
   if (length(eqType) > 1){
     return(warning("testType needs to be one of 'ns' and 'is'"))
-  } else {
-    if (!eqType %in% c("ns","is")) {
-      print(warning("'ns' is used by default"))
-      eqType <- "ns"
-    }
   }
   
   # npath
@@ -188,22 +179,12 @@ afttest.formula <- function(object, data, npath = 200, testType = "omnibus",
   
   # testType
   if (length(testType) > 1){
-    return(warning("testType needs to be one of 'omnibus', 'link', or 'covform'"))
+    return(warning("testType needs to be one of 'omnibus', 'link', or 'covForm'"))
   } else {
-    if (!testType %in% c("omnibus","link","covform")) {
+    if (!testType %in% c("omnibus","link","covForm")) {
       testType <- "omnibus"
     }
   }
-  
-  optimMethod <- "DFSANE"
-  # # optimMethod
-  # if (length(optimMethod) > 1){
-  #   return(warning("optimMethod needs to be one of 'DFSANE', 'Nelder-Mead', 'BFGS', 'CG', 'L-BFGS-B', 'SANN', 'Brent'"))
-  # } else {
-  #   if (!optimMethod %in% c("DFSANE","Nelder-Mead","BFGS","CG","L-BFGS-B","SANN","Brent")) {
-  #     optimMethod <- "DFSANE"
-  #   }
-  # }
   
   # npathsave
   if (length(npathsave) > 1){
@@ -214,23 +195,34 @@ afttest.formula <- function(object, data, npath = 200, testType = "omnibus",
     }
   }
   
-  # cov.tested
-  if (testType == "covform") {
-    if (length(cov.tested) > 1){
-      return(warning("the length if cov.tested needs to be exactly 1."))
+  # linApprox
+  if (length(linApprox) > 1) {
+    warning("linApprox needs to be a single logical value (TRUE or FALSE). Using default (TRUE).")
+    linApprox <- TRUE
+  } else {
+    if (!is.logical(linApprox)) {
+      warning("linApprox needs to be logical (TRUE or FALSE). Using default (TRUE).")
+      linApprox <- TRUE
+    }
+  }
+  
+  # covTested
+  if (testType == "covForm") {
+    if (length(covTested) > 1){
+      return(warning("the length if covTested needs to be exactly 1."))
     } else {
-      if (is.numeric(cov.tested)) {
-        if (cov.tested %%1 != 0 || cov.tested > cov.length) {
-          return(warning("cov.tested needs to be postivie integer and less than the lenght of covariates."))
+      if (is.numeric(covTested)) {
+        if (covTested %%1 != 0 || covTested > cov.length) {
+          return(warning("covTested needs to be postivie integer and less than the lenght of covariates."))
         }
-      } else if (is.character(cov.tested)) {
-        if (!cov.tested %in% covnames) {
-          return(warning("cov.tested needs to specified the one of the covariates in the formula."))
+      } else if (is.character(covTested)) {
+        if (!covTested %in% covnames) {
+          return(warning("covTested needs to specified the one of the covariates in the formula."))
         } else {
-          cov.tested <- which(cov.tested == covnames)
+          covTested.num <- which(covTested == covnames)
         }
       } else {
-        return(warning("cov.tested needs to be specified correctly."))
+        return(warning("covTested needs to be specified correctly."))
       }
     }
   }
@@ -239,6 +231,9 @@ afttest.formula <- function(object, data, npath = 200, testType = "omnibus",
   formula <- stats::as.formula(paste0("Surv(time,delta)~",paste(covnames, collapse="+")))
   if (estMethod == "ls") {
     b <- - aftgee::aftgee(formula, data = DF)$coef.res[-1]
+    if (!eqType == "ls") {
+      warning("eqType must be 'ls' when estMethod is 'ls'")
+    }
   } else if (estMethod == "rr") {
     b <- - aftgee::aftsrr(formula, data = DF, eqType = eqType, rankWeights = "gehan")$beta
   } else {
@@ -247,19 +242,22 @@ afttest.formula <- function(object, data, npath = 200, testType = "omnibus",
   
   # This function contains the core logic (the C++ calls)
   out <- .afttest_worker(b, time, delta, covariates, npath, testType,
-                         eqType, optimMethod, cov.tested, npathsave)
-  
+                         eqType, covTested.num, npathsave, linApprox)
   out$call <- scall
   out$beta <- beta
   # out$DF <- data
   out$DF <- DF
+  out$seed <- seed
   out$estMethod <- estMethod # It's an aftsrr object
   out$missingmessage <- missingmessage
+  if (testType == "covForm") {
+    out$covTested <- covTested
+  }
   
   return(out)
 }
 
-#' @param object A formula expression, of the cov.tested \code{response ~ predictors}.
+#' @param object A formula expression, of the covTested \code{response ~ predictors}.
 #'    The \code{response} is a \code{Surv} object with right censoring.
 #'    See the documentation of \code{lm}, \code{coxph} and \code{formula} for details.
 #' @param data An optional data frame in which to interpret the variables occurring 
@@ -271,7 +269,7 @@ afttest.formula <- function(object, data, npath = 200, testType = "omnibus",
 #'    \describe{
 #'      \item{\code{omnibus}}{an omnibus test}
 #'      \item{\code{link}}{a link function test}
-#'      \item{\code{covform}}{a functional cov.tested of a covariate}
+#'      \item{\code{covForm}}{a functional covTested of a covariate}
 #' }
 #' @param eqType A character string specifying the type of the 
 #'    estimating equation used to obtain the regression parameters.
@@ -283,19 +281,33 @@ afttest.formula <- function(object, data, npath = 200, testType = "omnibus",
 #'      \item{\code{is}}{Regression parameters are estimated by directly solving 
 #'      the induced-smoothing estimating equations.}
 #' }
-#' @param cov.tested A character string specifying the covariate which will be tested.
-#'    The argument \code{cov.tested} is necessary only if \code{testType} is 
-#'    \code{covform}.The default option for \code{cov.tested} is given by "1", which 
+#' @param covTested A character string specifying the covariate which will be tested.
+#'    The argument \code{covTested} is necessary only if \code{testType} is 
+#'    \code{covForm}.The default option for \code{covTested} is given by "1", which 
 #'    represents the first covariate in the formula argument.
 #' @param npathsave An integer value specifies he number of paths saved among all the paths.
 #'    The default is given by 50. Note that it requires a lot of memory if save all
 #'    sampled paths (N by N matrix for each npath andso npath*N*N elements)
+#' @param linApprox A logical value. If \code{TRUE}, the multiplier bootstrap is 
+#'    computed using the asymptotic linear approximation, which is significantly 
+#'    faster. If \code{FALSE}, the estimating equations are solved numerically for 
+#'    each bootstrap replication. Defaults to \code{TRUE}.
+#' @param seed An optional integer specifying the random seed for reproducibility.
 #' @param ... Other arguments passed to methods. 
 #' 
 #' @rdname afttest
 #' @export
 afttest.aftsrr <- function(object, data, npath = 200, testType = "omnibus", eqType = "ns", 
-                           cov.tested = 1, npathsave = 50, ...) {
+                           covTested = 1, npathsave = 50, linApprox = TRUE,
+                           seed = NULL, ...) {
+  if (!is.null(seed)) {
+    if (exists(".Random.seed", envir = .GlobalEnv)) {
+      old_seed <- get(".Random.seed", envir = .GlobalEnv)
+      on.exit(assign(".Random.seed", old_seed, envir = .GlobalEnv))
+    }
+    set.seed(seed)
+  }
+  
   scall <- match.call()
   mf <- model.frame(object, data)
   Y <- mf[[1]]
@@ -314,7 +326,7 @@ afttest.aftsrr <- function(object, data, npath = 200, testType = "omnibus", eqTy
   
   # check&delete NA, -Inf, Inf, ...
   missingmessage <- NA
-  DF[DF == "-Inf" | DF == "Inf"] <- NA
+  DF[is.infinite(as.matrix(DF))] <- NA
   whichNA_DF <- which(apply(is.na(DF), 1, sum) > 0)
   nNA_DF <- length(whichNA_DF)
   if (nNA_DF > 0) {
@@ -337,25 +349,9 @@ afttest.aftsrr <- function(object, data, npath = 200, testType = "omnibus", eqTy
   covariates <- scale(as.matrix(DF[, -(1:2)]))
   DF <- data.frame(time = time, delta = delta, covariates)
   
-  # unique_Delta <- unique(delta)
-  # if (length(unique_Delta)==2){
-  #   if (any(c(0,1) == sort(unique_Delta))){
-  #     delta <- ifelse(delta == unique_Delta[1], 0, 1)
-  #     warning(paste0(unique_Delta[1], "=0 is assumed to be observed and ",
-  #                    unique_Delta[2], "=1 is assumed to be censored"))
-  #   } else {
-  #     return(warning("delta must have 2 statuses (0=observed and 1=censored)"))
-  #   }
-  # }
-  
   # eqType
   if (length(eqType) > 1){
     return(warning("testType needs to be one of 'ns' and 'is'"))
-  } else {
-    if (!eqType %in% c("ns","is")) {
-      print(warning("'ns' is used by default"))
-      eqType <- "ns"
-    }
   }
   
   # npath
@@ -371,22 +367,12 @@ afttest.aftsrr <- function(object, data, npath = 200, testType = "omnibus", eqTy
   
   # testType
   if (length(testType) > 1){
-    return(warning("testType needs to be one of 'omnibus', 'link', or 'covform'"))
+    return(warning("testType needs to be one of 'omnibus', 'link', or 'covForm'"))
   } else {
-    if (!testType %in% c("omnibus","link","covform")) {
+    if (!testType %in% c("omnibus","link","covForm")) {
       testType <- "omnibus"
     }
   }
-  
-  optimMethod <- "DFSANE"
-  # # optimMethod
-  # if (length(optimMethod) > 1){
-  #   return(warning("optimMethod needs to be one of 'DFSANE', 'Nelder-Mead', 'BFGS', 'CG', 'L-BFGS-B', 'SANN', 'Brent'"))
-  # } else {
-  #   if (!optimMethod %in% c("DFSANE","Nelder-Mead","BFGS","CG","L-BFGS-B","SANN","Brent")) {
-  #     optimMethod <- "DFSANE"
-  #   }
-  # }
   
   # npathsave
   if (length(npathsave) > 1){
@@ -397,23 +383,34 @@ afttest.aftsrr <- function(object, data, npath = 200, testType = "omnibus", eqTy
     }
   }
   
-  # cov.tested
-  if (testType == "covform") {
-    if (length(cov.tested) > 1){
-      return(warning("the length if cov.tested needs to be exactly 1."))
+  # linApprox
+  if (length(linApprox) > 1) {
+    warning("linApprox needs to be a single logical value (TRUE or FALSE). Using default (TRUE).")
+    linApprox <- TRUE
+  } else {
+    if (!is.logical(linApprox)) {
+      warning("linApprox needs to be logical (TRUE or FALSE). Using default (TRUE).")
+      linApprox <- TRUE
+    }
+  }
+  
+  # covTested
+  if (testType == "covForm") {
+    if (length(covTested) > 1){
+      return(warning("the length if covTested needs to be exactly 1."))
     } else {
-      if (is.numeric(cov.tested)) {
-        if (cov.tested %%1 != 0 || cov.tested > cov.length) {
-          return(warning("cov.tested needs to be postivie integer and less than the lenght of covariates."))
+      if (is.numeric(covTested)) {
+        if (covTested %%1 != 0 || covTested > cov.length) {
+          return(warning("covTested needs to be postivie integer and less than the lenght of covariates."))
         }
-      } else if (is.character(cov.tested)) {
-        if (!cov.tested %in% covnames) {
-          return(warning("cov.tested needs to specified the one of the covariates in the formula."))
+      } else if (is.character(covTested)) {
+        if (!covTested %in% covnames) {
+          return(warning("covTested needs to specified the one of the covariates in the formula."))
         } else {
-          cov.tested <- which(cov.tested == covnames)
+          covTested.num <- which(covTested == covnames)
         }
       } else {
-        return(warning("cov.tested needs to be specified correctly."))
+        return(warning("covTested needs to be specified correctly."))
       }
     }
   }
@@ -422,16 +419,19 @@ afttest.aftsrr <- function(object, data, npath = 200, testType = "omnibus", eqTy
   formula <- stats::as.formula(paste0("Surv(time,delta)~",paste(covnames, collapse="+")))
   b <- - aftgee::aftsrr(formula, data = DF, eqType = eqType, rankWeights = "gehan")$beta
   
-  # --- CALL THE INTERNAL WORKER FUNCTION ---
   # This function contains the core logic (the C++ calls)
   out <- .afttest_worker(b, time, delta, covariates, npath, testType,
-                         eqType, optimMethod, cov.tested, npathsave)
-  out$beta <- -object$beta
+                         eqType, covTested.num, npathsave, linApprox)
+  out$beta <- - object$beta
   out$call <- scall
   # out$DF <- data
   out$DF <- DF
+  out$seed <- seed
   out$estMethod <- "rr"
   out$missingmessage <- missingmessage
+  if (testType == "covForm") {
+    out$covTested <- covTested
+  }
   
   return(out)
 }
@@ -448,7 +448,7 @@ afttest.aftsrr <- function(object, data, npath = 200, testType = "omnibus", eqTy
 #'    \describe{
 #'      \item{\code{omnibus}}{an omnibus test}
 #'      \item{\code{link}}{a link function test}
-#'      \item{\code{covform}}{a functional form of a covariate}
+#'      \item{\code{covForm}}{a functional form of a covariate}
 #' }
 #' @param eqType A character string specifying the type of the 
 #'    estimating equation used to obtain the regression parameters.
@@ -460,19 +460,33 @@ afttest.aftsrr <- function(object, data, npath = 200, testType = "omnibus", eqTy
 #'      \item{\code{is}}{Regression parameters are estimated by directly solving 
 #'      the induced-smoothing estimating equations.}
 #' }
-#' @param cov.tested A character string specifying the covariate which will be tested.
-#'    The argument \code{cov.tested} is necessary only if \code{testType} is 
-#'    \code{covform}.The default option for \code{cov.tested} is given by "1", which 
+#' @param covTested A character string specifying the covariate which will be tested.
+#'    The argument \code{covTested} is necessary only if \code{testType} is 
+#'    \code{covForm}.The default option for \code{covTested} is given by "1", which 
 #'    represents the first covariate in the formula argument.
 #' @param npathsave An integer value specifies he number of paths saved among all the paths.
 #'    The default is given by 50. Note that it requires a lot of memory if save all
 #'    sampled paths (N by N matrix for each npath andso npath*N*N elements)
+#' @param linApprox A logical value. If \code{TRUE}, the multiplier bootstrap is 
+#'    computed using the asymptotic linear approximation, which is significantly 
+#'    faster. If \code{FALSE}, the estimating equations are solved numerically for 
+#'    each bootstrap replication. Defaults to \code{TRUE}.
+#' @param seed An optional integer specifying the random seed for reproducibility.
 #' @param ... Other arguments passed to methods. 
 #' 
 #' @rdname afttest
 #' @export
 afttest.aftgee <- function(object, data, npath = 200, testType = "omnibus", eqType = "ls", 
-                           cov.tested = 1, npathsave = 50, ...) {
+                           covTested = 1, npathsave = 50, linApprox = TRUE,
+                           seed = NULL, ...) {
+  if (!is.null(seed)) {
+    if (exists(".Random.seed", envir = .GlobalEnv)) {
+      old_seed <- get(".Random.seed", envir = .GlobalEnv)
+      on.exit(assign(".Random.seed", old_seed, envir = .GlobalEnv))
+    }
+    set.seed(seed)
+  }
+  
   scall <- match.call()
   mf <- model.frame(object, data)
   Y <- mf[[1]]
@@ -491,7 +505,7 @@ afttest.aftgee <- function(object, data, npath = 200, testType = "omnibus", eqTy
   
   # check&delete NA, -Inf, Inf, ...
   missingmessage <- NA
-  DF[DF == "-Inf" | DF == "Inf"] <- NA
+  DF[is.infinite(as.matrix(DF))] <- NA
   whichNA_DF <- which(apply(is.na(DF), 1, sum) > 0)
   nNA_DF <- length(whichNA_DF)
   if (nNA_DF > 0) {
@@ -514,24 +528,8 @@ afttest.aftgee <- function(object, data, npath = 200, testType = "omnibus", eqTy
   covariates <- scale(as.matrix(DF[, -(1:2)]))
   DF <- data.frame(time = time, delta = delta, covariates)
   
-  # unique_Delta <- unique(delta)
-  # if (length(unique_Delta)==2){
-  #   if (any(c(0,1) == sort(unique_Delta))){
-  #     delta <- ifelse(delta == unique_Delta[1], 0, 1)
-  #     warning(paste0(unique_Delta[1], "=0 is assumed to be observed and ",
-  #                    unique_Delta[2], "=1 is assumed to be censored"))
-  #   } else {
-  #     return(warning("delta must have 2 statuses (0=observed and 1=censored)"))
-  #   }
-  # }
-  
   # estMethod
   estMethod = "ls"
-  
-  # eqType
-  if (estMethod == "ls") {
-    eqType <- "ns"
-  }
   
   # npath
   if (length(npath) > 1){
@@ -546,22 +544,12 @@ afttest.aftgee <- function(object, data, npath = 200, testType = "omnibus", eqTy
   
   # testType
   if (length(testType) > 1){
-    return(warning("testType needs to be one of 'omnibus', 'link', or 'covform'"))
+    return(warning("testType needs to be one of 'omnibus', 'link', or 'covForm'"))
   } else {
-    if (!testType %in% c("omnibus","link","covform")) {
+    if (!testType %in% c("omnibus","link","covForm")) {
       testType <- "omnibus"
     }
   }
-  
-  optimMethod <- "DFSANE"
-  # # optimMethod
-  # if (length(optimMethod) > 1){
-  #   return(warning("optimMethod needs to be one of 'DFSANE', 'Nelder-Mead', 'BFGS', 'CG', 'L-BFGS-B', 'SANN', 'Brent'"))
-  # } else {
-  #   if (!optimMethod %in% c("DFSANE","Nelder-Mead","BFGS","CG","L-BFGS-B","SANN","Brent")) {
-  #     optimMethod <- "DFSANE"
-  #   }
-  # }
   
   # npathsave
   if (length(npathsave) > 1){
@@ -572,23 +560,34 @@ afttest.aftgee <- function(object, data, npath = 200, testType = "omnibus", eqTy
     }
   }
   
-  # cov.tested
-  if (testType == "covform") {
-    if (length(cov.tested) > 1){
-      return(warning("the length if cov.tested needs to be exactly 1."))
+  # linApprox
+  if (length(linApprox) > 1) {
+    warning("linApprox needs to be a single logical value (TRUE or FALSE). Using default (TRUE).")
+    linApprox <- TRUE
+  } else {
+    if (!is.logical(linApprox)) {
+      warning("linApprox needs to be logical (TRUE or FALSE). Using default (TRUE).")
+      linApprox <- TRUE
+    }
+  }
+  
+  # covTested
+  if (testType == "covForm") {
+    if (length(covTested) > 1){
+      return(warning("the length if covTested needs to be exactly 1."))
     } else {
-      if (is.numeric(cov.tested)) {
-        if (cov.tested %%1 != 0 || cov.tested > cov.length) {
-          return(warning("cov.tested needs to be postivie integer and less than the lenght of covariates."))
+      if (is.numeric(covTested)) {
+        if (covTested %%1 != 0 || covTested > cov.length) {
+          return(warning("covTested needs to be postivie integer and less than the lenght of covariates."))
         }
-      } else if (is.character(cov.tested)) {
-        if (!cov.tested %in% covnames) {
-          return(warning("cov.tested needs to specified the one of the covariates in the formula."))
+      } else if (is.character(covTested)) {
+        if (!covTested %in% covnames) {
+          return(warning("covTested needs to specified the one of the covariates in the formula."))
         } else {
-          cov.tested <- which(cov.tested == covnames)
+          covTested.num <- which(covTested == covnames)
         }
       } else {
-        return(warning("cov.tested needs to be specified correctly."))
+        return(warning("covTested needs to be specified correctly."))
       }
     }
   }
@@ -599,13 +598,17 @@ afttest.aftgee <- function(object, data, npath = 200, testType = "omnibus", eqTy
   
   # This function contains the core logic (the C++ calls)
   out <- .afttest_worker(b, time, delta, covariates, npath, testType,
-                         eqType, optimMethod, cov.tested, npathsave)
-  out$beta <- -object$coef.res[-1]
+                         eqType, covTested.num, npathsave, linApprox)
+  out$beta <- - object$coef.res[-1]
   out$call <- scall
   # out$DF <- data
   out$DF <- DF
+  out$seed <- seed
   out$estMethod <- "ls"
   out$missingmessage <- missingmessage
+  if (testType == "covForm") {
+    out$covTested <- covTested
+  }
   
   return(out)
 }
@@ -613,46 +616,34 @@ afttest.aftgee <- function(object, data, npath = 200, testType = "omnibus", eqTy
 #' Internal worker function for afttest
 #' @noRd
 .afttest_worker <- function(b, time, delta, covariates, npath, testType,
-                            eqType, optimMethod, cov.tested, npathsave) {
-  # C++ functions
-  if (optimMethod != "DFSANE"){
-    if (eqType=="ns"){
-      if (testType == "omnibus") {
-        out <- .Call(`_afttest_omni_mns_optim`, npath, b, time, delta, covariates, optimMethod, npathsave)
-      } else if (testType == "link") {
-        out <- .Call(`_afttest_link_mns_optim`, npath, b, time, delta, covariates, optimMethod, npathsave)
-      } else if (testType == "covform") {
-        out <- .Call(`_afttest_form_mns_optim`, npath, b, time, delta, covariates, optimMethod, cov.tested, npathsave)
-      }
-    } else if (eqType=="is"){
-      if (testType == "omnibus") {
-        out <- .Call(`_afttest_omni_mis_optim`, npath, b, time, delta, covariates, optimMethod, npathsave)
-      } else if (testType == "link") {
-        out <- .Call(`_afttest_link_mis_optim`, npath, b, time, delta, covariates, optimMethod, npathsave)
-      } else if (testType == "covform") {
-        out <- .Call(`_afttest_form_mis_optim`, npath, b, time, delta, covariates, optimMethod, cov.tested, npathsave)
-      }
-    }
-  } else if (optimMethod == "DFSANE"){
-    if (eqType=="ns"){
-      if (testType == "omnibus") {
-        out <- .Call(`_afttest_omni_mns_DFSANE`, npath, b, time, delta, covariates, npathsave)
-      } else if (testType == "link") {
-        out <- .Call(`_afttest_link_mns_DFSANE`, npath, b, time, delta, covariates, npathsave)
-      } else if (testType == "covform") {
-        out <- .Call(`_afttest_form_mns_DFSANE`, npath, b, time, delta, covariates, cov.tested, npathsave)
-      }
-    } else if (eqType=="is"){
-      if (testType == "omnibus") {
-        out <- .Call(`_afttest_omni_mis_DFSANE`, npath, b, time, delta, covariates, npathsave)
-      } else if (testType == "link") {
-        out <- .Call(`_afttest_link_mis_DFSANE`, npath, b, time, delta, covariates, npathsave)
-      } else if (testType == "covform") {
-        out <- .Call(`_afttest_form_mis_DFSANE`, npath, b, time, delta, covariates, cov.tested, npathsave)
-      }
-    }
+                            eqType, covTested, npathsave, linApprox) {
+  
+  if (linApprox) {
+    sigma_est <- diag(ncol(covariates)) 
+    omega_res <- getOmega(beta = b, 
+                          Y = time, 
+                          X = covariates, 
+                          delta = delta, 
+                          weights = NULL,
+                          gw = NULL,
+                          eqType = eqType, 
+                          sigma = sigma_est, 
+                          B = 500)
+    invOmega <- omega_res$invOmega
   } else {
-    return(warning("Check your code"))
+    invOmega <-  matrix(NA)
+  }
+  
+  # C++ functions
+  if (testType == "omnibus") {
+    out <- .Call("_afttest_omni_cpp", npath, b, time, delta, covariates, 
+                 npathsave, eqType, linApprox, invOmega)
+  } else if (testType == "link") {
+    out <- .Call("_afttest_link_cpp", npath, b, time, delta, covariates, 
+                 npathsave, eqType, linApprox, invOmega)
+  } else if (testType == "covForm") {
+    out <- .Call("_afttest_form_cpp", npath, b, time, delta, covariates, covTested, 
+                 npathsave, eqType, linApprox, invOmega)
   }
   
   class(out) <- c("afttest", "htest")
@@ -660,11 +651,81 @@ afttest.aftgee <- function(object, data, npath = 200, testType = "omnibus", eqTy
   out$npath <- npath
   out$eqType <- eqType
   out$testType <- testType
-  out$optimMethod <- optimMethod
   out$npathsave <- npathsave
-  if (testType == "covform") {
-    out$cov.tested <- cov.tested
-  }
+  out$linApprox <- linApprox
   
   return(out)
 }
+
+#' Internal worker function for linApprox = TRUE
+#' @noRd
+#' @importFrom stats rexp rnorm var
+getOmega <- function(beta, Y, X, delta, weights = NULL, gw = NULL,
+                     eqType = "is", sigma = diag(ncol(X)), B = 1e3) {
+  
+  X <- as.matrix(X); p <- ncol(X); n <- nrow(X)
+  if (is.null(weights)) weights <- rep(1, n)
+  if (is.null(gw)) gw <- rep(1, n)
+  
+  viEmp <- function(beta, Y, delta, X, id, weights = rep(1, nrow(X)), B = 1e3,
+                    mb = TRUE, zbeta = FALSE, smooth = TRUE,
+                    rankWeights = "gehan", gw = NULL,
+                    sigma = diag(ncol(X))) {
+    
+    X <- as.matrix(X); p <- ncol(X); n <- nrow(X)
+    if (is.null(gw)) gw <- rep(1, n)
+    
+    UnV <- matrix(0, ncol = B, nrow = p)
+    zmat <- matrix(0, ncol = B, nrow = p)
+    
+    for (i in 1:B) {
+      if (mb) Z <- rexp(n) else Z <- rep(1, n)
+      
+      if (zbeta) {
+        zb <- rnorm(p)
+        # Perturbation scale is n^-0.5
+        newbeta <- beta + (n^(-0.5)) * zb
+        zmat[, i] <- zb
+      } else {
+        newbeta <- beta
+      }
+      
+      total_weights <- gw * Z
+      
+      if (smooth) {
+        score_vec <- .Call("_afttest_score_gehan_is_cpp", newbeta, Y, X, delta, sigma, total_weights)
+      } else {
+        score_vec <- .Call("_afttest_score_gehan_ns_cpp", newbeta, Y, X, delta, total_weights)
+      }
+      UnV[, i] <- score_vec
+    }
+    vi <- var(t(UnV))
+    return(list(vi = vi, zmat = zmat, UnV = UnV))
+  }
+  
+  if (eqType == "is") {
+    # Method 1: Induced Smoothing
+    Omega <- .Call("_afttest_abar_gehan_cpp", beta, Y, X, delta, sigma, weights, gw) * n
+  } else if (eqType == "ns") {
+    # Method 2: Non-Smooth Resampling
+    resamp <- viEmp(beta, Y, delta, X, id = 1:n, weights = weights, 
+                    B = B, mb = FALSE, zbeta = TRUE, smooth = FALSE, 
+                    rankWeights = "gehan", gw = gw)
+    UnV <- resamp$UnV
+    zmat <- resamp$zmat
+    ZZt <- tcrossprod(zmat)        
+    UZt <- tcrossprod(UnV, zmat)
+    
+    Omega <- UZt %*% .Call("_afttest_inv_cpp", ZZt) * n
+  } else if (eqType == "ls") {
+    X_weighted <- X * sqrt(weights)
+    Omega <- - crossprod(X_weighted)
+  } else {
+    stop("Invalid eqType")
+  }
+  
+  invOmega <- .Call("_afttest_inv_cpp", Omega)
+  
+  return(list(Omega = Omega, invOmega = invOmega))
+}
+

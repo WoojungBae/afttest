@@ -28,7 +28,7 @@ The default is set to be c(0.1,0.25,0.5,0.75,0.9).}
    some quantiles of x, which are used in weight, are plotted for graphs, 
    i.e. 0\%, 10\%, 25\%, 40\%, 50\%, 60\%, 75\%, 90\%, and 100\% are used.}
    \item{link}{an x of the link function test is the form of n by 1 matrix}
-   \item{covform}{an x of the functional form test is the form of n by 1 matrix}
+   \item{covForm}{an x of the functional form test is the form of n by 1 matrix}
 }
    See the documentation of \pkg{ggplot2} and \pkg{gridExtra} for details.
 }
@@ -36,23 +36,83 @@ The default is set to be c(0.1,0.25,0.5,0.75,0.9).}
 plot.afttest
 }
 \examples{
-## Simulate data from an AFT model
-library(afttest)
 datgen <- function(n = 100) {
   z1 <- rbinom(n, 1, 0.5)
   z2 <- rnorm(n)
   e <- rnorm(n)
-  tt <- exp(2 + z1 + z2 + e)
+  tt <- exp(2 + z1 + z2 + 0.5*z2^{2}+ e)
   cen <- runif(n, 0, 100)
   data.frame(Time = pmin(tt, cen), status = 1 * (tt < cen),
              z1 = z1, z2 = z2, id = 1:n)
 }
-set.seed(0)
-simdata <- datgen(n = 20)
-result <- afttest(Surv(Time, status) ~ z1 + z2, data = simdata, npath = 200, 
-                  testType = "link", estMethod = "rr", 
-                  eqType = "ns", npathsave = 50)
+set.seed(1)
+simdata = datgen()
+
+# linApprox = TRUE
+result = afttest(object = Surv(Time, status) ~ z1 + z2, data = simdata,
+                 npath = 100, testType = "covForm", estMethod = "rr",
+                 eqType = "ns", covTested = "z2", npathsave = 50,
+                 linApprox = TRUE, seed = 1)
+result$p_value
+result$p_std_value
+print(result)
+summary(result)
+plot(result, std = FALSE)
+plot(result, std = TRUE)
+
+# result = afttest(object = Surv(Time, status) ~ z1 + z2, data = simdata, 
+#                  npath = 100, testType = "covForm", estMethod = "rr", 
+#                  eqType = "is", covTested = "z2", npathsave = 50, 
+#                  linApprox = TRUE, seed = 1)
+# result$p_value
+# result$p_std_value
 # print(result)
 # summary(result)
-plot(result)
+# plot(result, std = FALSE)
+# plot(result, std = TRUE)
+# 
+# result = afttest(object = Surv(Time, status) ~ z1 + z2, data = simdata, 
+#                  npath = 100, testType = "covForm", estMethod = "ls", 
+#                  eqType = "ls", covTested = "z2", npathsave = 50, 
+#                  linApprox = TRUE, seed = 1)
+# result$p_value
+# result$p_std_value
+# print(result)
+# summary(result)
+# plot(result, std = FALSE)
+# plot(result, std = TRUE)
+# 
+# # linApprox = FALSE
+# result = afttest(object = Surv(Time, status) ~ z1 + z2, data = simdata, 
+#                  npath = 100, testType = "covForm", estMethod = "rr", 
+#                  eqType = "ns", covTested = "z2", npathsave = 50, 
+#                  linApprox = FALSE, seed = 1)
+# result$p_value
+# result$p_std_value
+# print(result)
+# summary(result)
+# plot(result, std = FALSE)
+# plot(result, std = TRUE)
+# 
+# result = afttest(object = Surv(Time, status) ~ z1 + z2, data = simdata, 
+#                  npath = 100, testType = "covForm", estMethod = "rr", 
+#                  eqType = "is", covTested = "z2", npathsave = 50, 
+#                  linApprox = FALSE, seed = 1)
+# result$p_value
+# result$p_std_value
+# print(result)
+# summary(result)
+# plot(result, std = FALSE)
+# plot(result, std = TRUE)
+# 
+# result = afttest(object = Surv(Time, status) ~ z1 + z2, data = simdata, 
+#                  npath = 100, testType = "covForm", estMethod = "ls", 
+#                  eqType = "ls", covTested = "z2", npathsave = 50, 
+#                  linApprox = FALSE, seed = 1)
+# result$p_value
+# result$p_std_value
+# print(result)
+# summary(result)
+# plot(result, std = FALSE)
+# plot(result, std = TRUE)
 }
