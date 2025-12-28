@@ -676,10 +676,12 @@ using namespace Rcpp;
        }
        tempvec_p = invOmega * ((tempmat_np.t() * S_0_t) - (S_1_t.t() * tempvec_n));
        
+       // D (t, z; beta)
        mat term3 = zero_mat_nn;
        for (int it=0; it<p; it++) {
-         tempmat_nn += as<mat>(term2(it)) * tempvec_p(it)/sqrtn;
+         tempmat_nn += as<mat>(term2(it)) * tempvec_p(it);
        }
+       term3 /= sqrtn;
        
        tempmat_nn = zero_mat_nn;
        for(int it=0; it<n; it++){

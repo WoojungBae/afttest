@@ -629,8 +629,10 @@ afttest.aftgee <- function(object, data, npath = 200, testType = "omnibus", eqTy
                           eqType = eqType, 
                           sigma = sigma_est, 
                           B = 500)
+    Omega <- omega_res$Omega
     invOmega <- omega_res$invOmega
   } else {
+    Omega <-  matrix(NA)
     invOmega <-  matrix(NA)
   }
   
@@ -653,6 +655,8 @@ afttest.aftgee <- function(object, data, npath = 200, testType = "omnibus", eqTy
   out$testType <- testType
   out$npathsave <- npathsave
   out$linApprox <- linApprox
+  out$Omega <- Omega
+  out$invOmega <- invOmega
   
   return(out)
 }
@@ -705,7 +709,7 @@ getOmega <- function(beta, Y, X, delta, weights = NULL, gw = NULL,
   
   if (eqType == "is") {
     # Method 1: Induced Smoothing
-    Omega <- .Call("_afttest_abar_gehan_cpp", beta, Y, X, delta, sigma, weights, gw) * n
+    Omega <- .Call("_afttest_abar_gehan_cpp", beta, Y, X, delta, sigma, weights, gw) * sqrt(n) # * n
   } else if (eqType == "ns") {
     # Method 2: Non-Smooth Resampling
     resamp <- viEmp(beta, Y, delta, X, id = 1:n, weights = weights, 
@@ -716,10 +720,10 @@ getOmega <- function(beta, Y, X, delta, weights = NULL, gw = NULL,
     ZZt <- tcrossprod(zmat)        
     UZt <- tcrossprod(UnV, zmat)
     
-    Omega <- UZt %*% .Call("_afttest_inv_cpp", ZZt) * n
+    Omega <- UZt %*% .Call("_afttest_inv_cpp", ZZt) * sqrt(n) # * n
   } else if (eqType == "ls") {
     X_weighted <- X * sqrt(weights)
-    Omega <- - crossprod(X_weighted)
+    Omega <- - crossprod(X_weighted) / sqrt(n)
   } else {
     stop("Invalid eqType")
   }
