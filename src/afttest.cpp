@@ -395,7 +395,7 @@ using namespace Rcpp;
    // Stop tol_f <= (e_a * sqrt(n) + e_r * tol_0)^{2}
    // double e_a = 1e-6; double e_r = 1e-5;
    double e_a = 1e-5; double e_r = 1e-4;
-   double optim_tol = pow(e_a * sqrt(n) + e_r * sqrt(tol_0),2);
+   double optim_tol = pow(e_a * sqrt(n) + e_r * sqrt(tol_0), 2);
    
    double tolerance=tol_f+1; double tau_min=0.1; double tau_max=0.5; 
    double sig_min=0.1; double sig_max=0.5; double alp_p=1; double alp_m=1; double gam=1e-4; 
@@ -681,7 +681,6 @@ using namespace Rcpp;
        for (int it=0; it<p; it++) {
          tempmat_nn += as<mat>(term2(it)) * tempvec_p(it);
        }
-       term3 /= sqrtn;
        
        tempmat_nn = zero_mat_nn;
        for(int it=0; it<n; it++){
@@ -689,7 +688,22 @@ using namespace Rcpp;
        }
        mat U_pi_phi_t_z = cumsum(tempmat_nn);
        
-       app_npath(itt) = (U_pi_phi_t_z - term3)/sqrtn;
+       app_npath(itt) = U_pi_phi_t_z/sqrtn - term3;
+       
+       // // D (t, z; beta)
+       // mat term3 = zero_mat_nn;
+       // for (int it=0; it<p; it++) {
+       //   tempmat_nn += as<mat>(term2(it)) * tempvec_p(it);
+       // }
+       // term3 /= sqrtn;
+       // 
+       // tempmat_nn = zero_mat_nn;
+       // for(int it=0; it<n; it++){
+       //   tempmat_nn += ((as<vec>(dMhat_i_t(it)))*phi_i(it))%(as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col();
+       // }
+       // mat U_pi_phi_t_z = cumsum(tempmat_nn);
+       // 
+       // app_npath(itt) = (U_pi_phi_t_z - term3)/sqrtn;
      }
    } else {
      // -----------------------------------------------------------
@@ -1013,7 +1027,7 @@ using namespace Rcpp;
          tempvec_n += dM_phi;
          tempmat_np += dM_phi * covariates.row(i);
        }
-       mat term3 = term2 * ((tempmat_np.t() * S_0_t) - (S_1_t.t() * tempvec_n))/sqrtn;
+       mat term3 = term2 * ((tempmat_np.t() * S_0_t) - (S_1_t.t() * tempvec_n));
        
        tempmat_nn = zero_mat_nn;
        for(int it=0; it<n; it++){
@@ -1021,7 +1035,24 @@ using namespace Rcpp;
        }
        mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
        
-       app_npath(itt) = (U_pi_phi_inf_z - term3)/sqrtn;
+       app_npath(itt) = U_pi_phi_inf_z/sqrtn - term3;
+       
+       // tempvec_n = zero_vec_n; 
+       // tempmat_np = zero_mat_np;
+       // for(int i=0; i<n; i++){
+       //   vec dM_phi = as<vec>(dMhat_i_t(i)) * phi_i(i);
+       //   tempvec_n += dM_phi;
+       //   tempmat_np += dM_phi * covariates.row(i);
+       // }
+       // mat term3 = term2 * ((tempmat_np.t() * S_0_t) - (S_1_t.t() * tempvec_n))/sqrtn;
+       // 
+       // tempmat_nn = zero_mat_nn;
+       // for(int it=0; it<n; it++){
+       //   tempmat_nn += ((as<vec>(dMhat_i_t(it)))*phi_i(it))%(as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col();
+       // }
+       // mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
+       // 
+       // app_npath(itt) = (U_pi_phi_inf_z - term3)/sqrtn;
      }
    } else {
      // -----------------------------------------------------------
@@ -1336,6 +1367,7 @@ using namespace Rcpp;
      for(int itt=0; itt<npath; itt++){
        vec phi_i = randg(n) - one_vec_n; // randn(n);
        
+       
        tempvec_n = zero_vec_n; 
        tempmat_np = zero_mat_np;
        for(int i=0; i<n; i++){
@@ -1343,7 +1375,7 @@ using namespace Rcpp;
          tempvec_n += dM_phi;
          tempmat_np += dM_phi * covariates.row(i);
        }
-       mat term3 = term2 * ((tempmat_np.t() * S_0_t) - (S_1_t.t() * tempvec_n))/sqrtn;
+       mat term3 = term2 * ((tempmat_np.t() * S_0_t) - (S_1_t.t() * tempvec_n));
        
        tempmat_nn = zero_mat_nn;
        for(int it=0; it<n; it++){
@@ -1351,7 +1383,24 @@ using namespace Rcpp;
        }
        mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
        
-       app_npath(itt) = (U_pi_phi_inf_z - term3)/sqrtn;
+       app_npath(itt) = U_pi_phi_inf_z/sqrtn - term3;
+       
+       // tempvec_n = zero_vec_n; 
+       // tempmat_np = zero_mat_np;
+       // for(int i=0; i<n; i++){
+       //   vec dM_phi = as<vec>(dMhat_i_t(i)) * phi_i(i);
+       //   tempvec_n += dM_phi;
+       //   tempmat_np += dM_phi * covariates.row(i);
+       // }
+       // mat term3 = term2 * ((tempmat_np.t() * S_0_t) - (S_1_t.t() * tempvec_n))/sqrtn;
+       // 
+       // tempmat_nn = zero_mat_nn;
+       // for(int it=0; it<n; it++){
+       //   tempmat_nn += ((as<vec>(dMhat_i_t(it)))*phi_i(it))%(as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col();
+       // }
+       // mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
+       // 
+       // app_npath(itt) = (U_pi_phi_inf_z - term3)/sqrtn;
      }
    } else {
      // -----------------------------------------------------------

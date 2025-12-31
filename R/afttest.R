@@ -709,7 +709,7 @@ getOmega <- function(beta, Y, X, delta, weights = NULL, gw = NULL,
   
   if (eqType == "is") {
     # Method 1: Induced Smoothing
-    Omega <- .Call("_afttest_abar_gehan_cpp", beta, Y, X, delta, sigma, weights, gw) * sqrt(n) # * n
+    Omega <- .Call("_afttest_abar_gehan_cpp", beta, Y, X, delta, sigma, weights, gw) * n^{1.5}
   } else if (eqType == "ns") {
     # Method 2: Non-Smooth Resampling
     resamp <- viEmp(beta, Y, delta, X, id = 1:n, weights = weights, 
@@ -720,10 +720,10 @@ getOmega <- function(beta, Y, X, delta, weights = NULL, gw = NULL,
     ZZt <- tcrossprod(zmat)        
     UZt <- tcrossprod(UnV, zmat)
     
-    Omega <- UZt %*% .Call("_afttest_inv_cpp", ZZt) * sqrt(n) # * n
+    Omega <- UZt %*% .Call("_afttest_inv_cpp", ZZt) * n^{1.5}
   } else if (eqType == "ls") {
     X_weighted <- X * sqrt(weights)
-    Omega <- - crossprod(X_weighted) / sqrt(n)
+    Omega <- - crossprod(X_weighted) * n^{1.5}
   } else {
     stop("Invalid eqType")
   }
