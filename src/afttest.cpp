@@ -312,7 +312,7 @@ using namespace Rcpp;
  }
  
  vec target_score_is(vec b, vec time, vec delta, mat covariates, 
-                      vec targetvector, vec weights, int n, int p, double sqrtn){
+                     vec targetvector, vec weights, int n, int p, double sqrtn){
    
    vec resid = log(time) + covariates*b;
    uvec index_resid = sort_index(resid);
@@ -338,7 +338,7 @@ using namespace Rcpp;
  }
  
  vec target_score_ns(vec b, vec time, vec delta, mat covariates, 
-                      vec targetvector, vec weights, int n, int p, double sqrtn){
+                     vec targetvector, vec weights, int n, int p, double sqrtn){
    
    vec resid = log(time) + covariates*b;
    
@@ -391,11 +391,11 @@ using namespace Rcpp;
    double tol_y = dot(y_k, y_k);
    double tol_f = dot(F_new, F_new);
    
-   // Stop sqrt(tol_f)/sqrt(n) <= e_a + e_r * sqrt(tol_0)/sqrt(n)
-   // Stop tol_f <= (e_a * sqrt(n) + e_r * tol_0)^{2}
+   // Stop sqrt(tol_f)/sqrtn <= e_a + e_r * sqrt(tol_0)/sqrtn
+   // Stop tol_f <= (e_a * sqrtn + e_r * tol_0)^{2}
    // double e_a = 1e-6; double e_r = 1e-5;
    double e_a = 1e-5; double e_r = 1e-4;
-   double optim_tol = pow(e_a * sqrt(n) + e_r * sqrt(tol_0), 2);
+   double optim_tol = pow(e_a * sqrtn + e_r * sqrt(tol_0), 2);
    
    double tolerance=tol_f+1; double tau_min=0.1; double tau_max=0.5; 
    double sig_min=0.1; double sig_max=0.5; double alp_p=1; double alp_m=1; double gam=1e-4; 
@@ -502,8 +502,8 @@ using namespace Rcpp;
  // -----------------------------------------------------------
  // -----------------------------------------------------------
  List omni_cpp(int npath, vec b, vec time, vec delta, mat covariates, 
-                  int npathsave, std::string eqType, 
-                  bool fast_boot, mat invOmega){
+               int npathsave, std::string eqType, 
+               bool linApprox, mat invOmega){
    
    int n = covariates.n_rows;
    int p = covariates.n_cols;
@@ -642,19 +642,19 @@ using namespace Rcpp;
    }
    
    List app_npath(npath);
-   if (fast_boot) {
+   if (linApprox) {
      // -----------------------------------------------------------
      // --------------------------dkappa_t-------------------------
      // -----------------------------------------------------------
      vec lambda_hat_0_t = fhat_0_t / Shat_0_e;
      lambda_hat_0_t.replace(datum::nan, 0);
      lambda_hat_0_t.replace(datum::inf, 0);
-
+     
      vec lambda_hat_0_tTIMESt = lambda_hat_0_t % pred_data;
      vec dlambda_hat_0_tTIMESt = diff(join_cols(zero_vec_1, lambda_hat_0_tTIMESt));
      mat dkappa_t = - S_1_t;
      dkappa_t.each_col() %= dlambda_hat_0_tTIMESt/S_0_t;
-
+     
      List term2(p);
      for(int it=0; it<p; it++){
        term2(it) = (as<mat>(fhat_t_z(it)) +
@@ -679,7 +679,7 @@ using namespace Rcpp;
        // D (t, z; beta)
        mat term3 = zero_mat_nn;
        for (int it=0; it<p; it++) {
-         tempmat_nn += as<mat>(term2(it)) * tempvec_p(it);
+         term3 += as<mat>(term2(it)) * tempvec_p(it);
        }
        
        tempmat_nn = zero_mat_nn;
@@ -688,22 +688,7 @@ using namespace Rcpp;
        }
        mat U_pi_phi_t_z = cumsum(tempmat_nn);
        
-       app_npath(itt) = U_pi_phi_t_z/sqrtn - term3;
-       
-       // // D (t, z; beta)
-       // mat term3 = zero_mat_nn;
-       // for (int it=0; it<p; it++) {
-       //   tempmat_nn += as<mat>(term2(it)) * tempvec_p(it);
-       // }
-       // term3 /= sqrtn;
-       // 
-       // tempmat_nn = zero_mat_nn;
-       // for(int it=0; it<n; it++){
-       //   tempmat_nn += ((as<vec>(dMhat_i_t(it)))*phi_i(it))%(as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col();
-       // }
-       // mat U_pi_phi_t_z = cumsum(tempmat_nn);
-       // 
-       // app_npath(itt) = (U_pi_phi_t_z - term3)/sqrtn;
+       app_npath(itt) = U_pi_phi_t_z/sqrtn - term3; // (U_pi_phi_t_z - term3)/sqrtn;
      }
    } else {
      // -----------------------------------------------------------
@@ -808,6 +793,13 @@ using namespace Rcpp;
    // mat_se_boot.replace(0, min_mat_se_boot); 
    // mat se_boot = reshape(mat_se_boot,n,n);
    
+   // if (!linApprox) {
+   //   double censoring = 1-sum(delta)/n;
+   //   vec kappa = {sqrt(censoring), 1};
+   //   kappa = quantile(mat_se_boot, kappa);
+   //   mat_se_boot.clamp(kappa(0),kappa(1));
+   //   // if (kappa(0)<0.1){kappa(0) = 0.1;}
+   // }
    double censoring = 1-sum(delta)/n;
    vec kappa = {sqrt(censoring), 1};
    kappa = quantile(mat_se_boot, kappa);
@@ -854,8 +846,8 @@ using namespace Rcpp;
  }
  
  List link_cpp(int npath, vec b, vec time, vec delta, mat covariates, 
-                  int npathsave, std::string eqType, 
-                  bool fast_boot, mat invOmega){
+               int npathsave, std::string eqType, 
+               bool linApprox, mat invOmega){
    
    int n = covariates.n_rows;
    int p = covariates.n_cols;
@@ -993,7 +985,7 @@ using namespace Rcpp;
    }
    
    List app_npath(npath);
-   if (fast_boot) {
+   if (linApprox) {
      // -----------------------------------------------------------
      // --------------------------dkappa_t-------------------------
      // -----------------------------------------------------------
@@ -1035,7 +1027,7 @@ using namespace Rcpp;
        }
        mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
        
-       app_npath(itt) = U_pi_phi_inf_z/sqrtn - term3;
+       app_npath(itt) = U_pi_phi_inf_z/sqrtn - term3; // (U_pi_phi_inf_z - term3)/sqrtn;
        
        // tempvec_n = zero_vec_n; 
        // tempmat_np = zero_mat_np;
@@ -1156,6 +1148,13 @@ using namespace Rcpp;
    // double min_se_boot = se_boot(find(se_boot > 0)).min();
    // se_boot.replace(0, min_se_boot); 
    
+   // if (!linApprox) {
+   //   double censoring = 1-sum(delta)/n;
+   //   vec kappa = {censoring, 1};
+   //   kappa = quantile(se_boot, kappa);
+   //   // if (kappa(0)<0.1){kappa(0) = 0.1;}
+   //   se_boot.clamp(kappa(0),kappa(1));
+   // }
    double censoring = 1-sum(delta)/n;
    vec kappa = {censoring, 1};
    kappa = quantile(se_boot, kappa);
@@ -1201,8 +1200,8 @@ using namespace Rcpp;
  }
  
  List form_cpp(int npath, vec b, vec time, vec delta, mat covariates, 
-                  int covTested, int npathsave, std::string eqType, 
-                  bool fast_boot, mat invOmega){
+               int covTested, int npathsave, std::string eqType, 
+               bool linApprox, mat invOmega){
    
    int n = covariates.n_rows;
    int p = covariates.n_cols;
@@ -1340,7 +1339,7 @@ using namespace Rcpp;
    }
    
    List app_npath(npath);
-   if (fast_boot) {
+   if (linApprox) {
      // -----------------------------------------------------------
      // --------------------------dkappa_t-------------------------
      // -----------------------------------------------------------
@@ -1367,7 +1366,6 @@ using namespace Rcpp;
      for(int itt=0; itt<npath; itt++){
        vec phi_i = randg(n) - one_vec_n; // randn(n);
        
-       
        tempvec_n = zero_vec_n; 
        tempmat_np = zero_mat_np;
        for(int i=0; i<n; i++){
@@ -1383,7 +1381,7 @@ using namespace Rcpp;
        }
        mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
        
-       app_npath(itt) = U_pi_phi_inf_z/sqrtn - term3;
+       app_npath(itt) = U_pi_phi_inf_z/sqrtn - term3; // (U_pi_phi_inf_z - term3)/sqrtn;
        
        // tempvec_n = zero_vec_n; 
        // tempmat_np = zero_mat_np;
@@ -1503,7 +1501,13 @@ using namespace Rcpp;
    
    // double min_se_boot = se_boot(find(se_boot > 0)).min();
    // se_boot.replace(0, min_se_boot); 
-   
+   // if (!linApprox) {
+   //   double censoring = 1-sum(delta)/n;
+   //   vec kappa = {censoring, 1};
+   //   kappa = quantile(se_boot, kappa);
+   //   // if (kappa(0)<0.1){kappa(0) = 0.1;}
+   //   se_boot.clamp(kappa(0),kappa(1));
+   // }
    double censoring = 1-sum(delta)/n;
    vec kappa = {censoring, 1};
    kappa = quantile(se_boot, kappa);
@@ -1623,8 +1627,8 @@ using namespace Rcpp;
    END_RCPP
  }
  // omni_cpp
- List omni_cpp(int npath, vec b, vec time, vec delta, mat covariates, int npathsave, std::string eqType, bool fast_boot, mat invOmega);
- RcppExport SEXP _afttest_omni_cpp(SEXP npathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP npathsaveSEXP, SEXP eqTypeSEXP, SEXP fast_bootSEXP, SEXP invOmegaSEXP) {
+ List omni_cpp(int npath, vec b, vec time, vec delta, mat covariates, int npathsave, std::string eqType, bool linApprox, mat invOmega);
+ RcppExport SEXP _afttest_omni_cpp(SEXP npathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP npathsaveSEXP, SEXP eqTypeSEXP, SEXP linApproxSEXP, SEXP invOmegaSEXP) {
    BEGIN_RCPP
    Rcpp::RObject rcpp_result_gen;
    Rcpp::RNGScope rcpp_rngScope_gen;
@@ -1635,15 +1639,15 @@ using namespace Rcpp;
    Rcpp::traits::input_parameter< mat >::type covariates(CovariSEXP);
    Rcpp::traits::input_parameter< int >::type npathsave(npathsaveSEXP);
    Rcpp::traits::input_parameter< std::string >::type eqType(eqTypeSEXP);
-   Rcpp::traits::input_parameter< bool >::type fast_boot(fast_bootSEXP);
+   Rcpp::traits::input_parameter< bool >::type linApprox(linApproxSEXP);
    Rcpp::traits::input_parameter< mat >::type invOmega(invOmegaSEXP);
-   rcpp_result_gen = Rcpp::wrap(omni_cpp(npath, b, time, delta, covariates, npathsave, eqType, fast_boot, invOmega));
+   rcpp_result_gen = Rcpp::wrap(omni_cpp(npath, b, time, delta, covariates, npathsave, eqType, linApprox, invOmega));
    return rcpp_result_gen;
    END_RCPP
  }
  // link_cpp
- List link_cpp(int npath, vec b, vec time, vec delta, mat covariates, int npathsave, std::string eqType, bool fast_boot, mat invOmega);
- RcppExport SEXP _afttest_link_cpp(SEXP npathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP npathsaveSEXP, SEXP eqTypeSEXP, SEXP fast_bootSEXP, SEXP invOmegaSEXP) {
+ List link_cpp(int npath, vec b, vec time, vec delta, mat covariates, int npathsave, std::string eqType, bool linApprox, mat invOmega);
+ RcppExport SEXP _afttest_link_cpp(SEXP npathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP npathsaveSEXP, SEXP eqTypeSEXP, SEXP linApproxSEXP, SEXP invOmegaSEXP) {
    BEGIN_RCPP
    Rcpp::RObject rcpp_result_gen;
    Rcpp::RNGScope rcpp_rngScope_gen;
@@ -1654,15 +1658,15 @@ using namespace Rcpp;
    Rcpp::traits::input_parameter< mat >::type covariates(CovariSEXP);
    Rcpp::traits::input_parameter< int >::type npathsave(npathsaveSEXP);
    Rcpp::traits::input_parameter< std::string >::type eqType(eqTypeSEXP);
-   Rcpp::traits::input_parameter< bool >::type fast_boot(fast_bootSEXP);
+   Rcpp::traits::input_parameter< bool >::type linApprox(linApproxSEXP);
    Rcpp::traits::input_parameter< mat >::type invOmega(invOmegaSEXP);
-   rcpp_result_gen = Rcpp::wrap(link_cpp(npath, b, time, delta, covariates, npathsave, eqType, fast_boot, invOmega));
+   rcpp_result_gen = Rcpp::wrap(link_cpp(npath, b, time, delta, covariates, npathsave, eqType, linApprox, invOmega));
    return rcpp_result_gen;
    END_RCPP
  }
  // form_cpp
- List form_cpp(int npath, vec b, vec time, vec delta, mat covariates, int covTested, int npathsave, std::string eqType, bool fast_boot, mat invOmega);
- RcppExport SEXP _afttest_form_cpp(SEXP npathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP cov_testedSEXP, SEXP npathsaveSEXP, SEXP eqTypeSEXP, SEXP fast_bootSEXP, SEXP invOmegaSEXP) {
+ List form_cpp(int npath, vec b, vec time, vec delta, mat covariates, int covTested, int npathsave, std::string eqType, bool linApprox, mat invOmega);
+ RcppExport SEXP _afttest_form_cpp(SEXP npathSEXP, SEXP bSEXP, SEXP TimeSEXP, SEXP DeltaSEXP, SEXP CovariSEXP, SEXP cov_testedSEXP, SEXP npathsaveSEXP, SEXP eqTypeSEXP, SEXP linApproxSEXP, SEXP invOmegaSEXP) {
    BEGIN_RCPP
    Rcpp::RObject rcpp_result_gen;
    Rcpp::RNGScope rcpp_rngScope_gen;
@@ -1674,9 +1678,9 @@ using namespace Rcpp;
    Rcpp::traits::input_parameter< int >::type covTested(cov_testedSEXP);
    Rcpp::traits::input_parameter< int >::type npathsave(npathsaveSEXP);
    Rcpp::traits::input_parameter< std::string >::type eqType(eqTypeSEXP);
-   Rcpp::traits::input_parameter< bool >::type fast_boot(fast_bootSEXP);
+   Rcpp::traits::input_parameter< bool >::type linApprox(linApproxSEXP);
    Rcpp::traits::input_parameter< mat >::type invOmega(invOmegaSEXP);
-   rcpp_result_gen = Rcpp::wrap(form_cpp(npath, b, time, delta, covariates, covTested, npathsave, eqType, fast_boot, invOmega));
+   rcpp_result_gen = Rcpp::wrap(form_cpp(npath, b, time, delta, covariates, covTested, npathsave, eqType, linApprox, invOmega));
    return rcpp_result_gen;
    END_RCPP
  }
