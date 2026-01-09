@@ -530,6 +530,7 @@ using namespace Rcpp;
    delta = delta(index_resid);
    covariates = covariates.rows(index_resid);
    resid = resid(index_resid);
+   vec resid_star = impute_residuals_weighted(resid, delta, one_vec_n);
    
    // -----------------------------------------------------------
    List pi_i_z(n); List N_i_t(n); List Y_i_t(n);
@@ -576,6 +577,7 @@ using namespace Rcpp;
    // -----------------------------------------------------------
    double bw_base = pow((n*3/4),-0.2);
    vec pred_data = exp(resid);
+   vec pred_data_star = exp(resid_star);
    
    // -----------------------------g0----------------------------
    // vec given_data_g = exp(resid);
@@ -607,7 +609,7 @@ using namespace Rcpp;
    vec fhat_0_t = zero_vec_n;
    for(int it=0; it<n; it++){
      for(int itt=0; itt<n; itt++){
-       fhat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn) * dFhat_0_e(itt);
+       fhat_0_t(it) += normpdf(pred_data_star(it),given_data_g(itt),bw_gn) * dFhat_0_e(itt);
      }
    }
    
@@ -623,7 +625,7 @@ using namespace Rcpp;
    // vec fhat_0_t = zero_vec_n;
    // for(int it=0; it<n; it++){
    //   for(int itt=0; itt<n; itt++){
-   //     fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_fn);
+   //     fhat_0_t(it) += normpdf(pred_data_star(it),given_data_f(itt),bw_fn);
    //   }
    // }
    // fhat_0_t /= n;
@@ -649,6 +651,8 @@ using namespace Rcpp;
      vec lambda_hat_0_t = fhat_0_t / Shat_0_e;
      lambda_hat_0_t.replace(datum::nan, 0);
      lambda_hat_0_t.replace(datum::inf, 0);
+     
+     // impute_residuals_weighted(vec e, vec delta, vec weights)
      
      vec lambda_hat_0_tTIMESt = lambda_hat_0_t % pred_data;
      vec dlambda_hat_0_tTIMESt = diff(join_cols(zero_vec_1, lambda_hat_0_tTIMESt));
@@ -697,7 +701,6 @@ using namespace Rcpp;
      mat U_inf_ls;
      if (eqType == "ls") {
        mat E_t = S_1_t.each_col()/S_0_t;
-       vec resid_star = impute_residuals_weighted(resid, delta, one_vec_n);
        rowvec X_bar = mean(covariates, 0);
        mat Xc = covariates;
        Xc.each_row() -= X_bar;
@@ -874,6 +877,7 @@ using namespace Rcpp;
    delta = delta(index_resid);
    covariates = covariates.rows(index_resid);
    resid = resid(index_resid);
+   vec resid_star = impute_residuals_weighted(resid, delta, one_vec_n);
    
    // -----------------------------------------------------------
    List pi_i_z(n); List N_i_t(n); List Y_i_t(n);
@@ -919,6 +923,7 @@ using namespace Rcpp;
    // -----------------------------------------------------------
    double bw_base = pow((n*3/4),-0.2);
    vec pred_data = exp(resid);
+   vec pred_data_star = exp(resid_star);
    
    // -----------------------------g0----------------------------
    // vec given_data_g = exp(resid);
@@ -950,7 +955,7 @@ using namespace Rcpp;
    vec fhat_0_t = zero_vec_n;
    for(int it=0; it<n; it++){
      for(int itt=0; itt<n; itt++){
-       fhat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn) * dFhat_0_e(itt);
+       fhat_0_t(it) += normpdf(pred_data_star(it),given_data_g(itt),bw_gn) * dFhat_0_e(itt);
      }
    }
    
@@ -966,7 +971,7 @@ using namespace Rcpp;
    // vec fhat_0_t = zero_vec_n;
    // for(int it=0; it<n; it++){
    //   for(int itt=0; itt<n; itt++){
-   //     fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_fn);
+   //     fhat_0_t(it) += normpdf(pred_data_star(it),given_data_f(itt),bw_fn);
    //   }
    // }
    // fhat_0_t /= n;
@@ -1053,7 +1058,6 @@ using namespace Rcpp;
      mat U_inf_ls;
      if (eqType == "ls") {
        mat E_t = S_1_t.each_col()/S_0_t;
-       vec resid_star = impute_residuals_weighted(resid, delta, one_vec_n);
        rowvec X_bar = mean(covariates, 0);
        mat Xc = covariates;
        Xc.each_row() -= X_bar;
@@ -1228,6 +1232,7 @@ using namespace Rcpp;
    delta = delta(index_resid);
    covariates = covariates.rows(index_resid);
    resid = resid(index_resid);
+   vec resid_star = impute_residuals_weighted(resid, delta, one_vec_n);
    
    // -----------------------------------------------------------
    List pi_i_z(n); List N_i_t(n); List Y_i_t(n);
@@ -1274,6 +1279,7 @@ using namespace Rcpp;
    // -----------------------------------------------------------
    double bw_base = pow((n*3/4),-0.2);
    vec pred_data = exp(resid);
+   vec pred_data_star = exp(resid_star);
    
    // -----------------------------g0----------------------------
    // vec given_data_g = exp(resid);
@@ -1305,7 +1311,7 @@ using namespace Rcpp;
    vec fhat_0_t = zero_vec_n;
    for(int it=0; it<n; it++){
      for(int itt=0; itt<n; itt++){
-       fhat_0_t(it) += normpdf(pred_data(it),given_data_g(itt),bw_gn) * dFhat_0_e(itt);
+       fhat_0_t(it) += normpdf(pred_data_star(it),given_data_g(itt),bw_gn) * dFhat_0_e(itt);
      }
    }
    // vec Condi_Ehat = zero_vec_n;
@@ -1320,7 +1326,7 @@ using namespace Rcpp;
    // vec fhat_0_t = zero_vec_n;
    // for(int it=0; it<n; it++){
    //   for(int itt=0; itt<n; itt++){
-   //     fhat_0_t(it) += normpdf(pred_data(it),given_data_f(itt),bw_fn);
+   //     fhat_0_t(it) += normpdf(pred_data_star(it),given_data_f(itt),bw_fn);
    //   }
    // }
    // fhat_0_t /= n;
@@ -1407,7 +1413,6 @@ using namespace Rcpp;
      mat U_inf_ls;
      if (eqType == "ls") {
        mat E_t = S_1_t.each_col()/S_0_t;
-       vec resid_star = impute_residuals_weighted(resid, delta, one_vec_n);
        rowvec X_bar = mean(covariates, 0);
        mat Xc = covariates;
        Xc.each_row() -= X_bar;
