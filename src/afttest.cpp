@@ -646,13 +646,29 @@ using namespace Rcpp;
    List app_npath(npath);
    if (linApprox) {
      // -----------------------------------------------------------
+     // OPTIMIZATION: Pre-convert Lists to Matrices (Move O(N^2) outside the loop)
+     // -----------------------------------------------------------
+     
+     // 1. dM_all: (N x N) matrix where Column i is the vector dMhat_i_t(i)
+     // Rows = Time t, Cols = Subject i
+     mat dM_all = zeros<mat>(n, n);
+     for(int i=0; i<n; i++){
+       dM_all.col(i) = as<vec>(dMhat_i_t(i));
+     }
+     
+     // 2. Pi_all: (N x N) matrix where Row i is the vector pi_i_z(i)
+     // Rows = Subject i, Cols = Covariate value z
+     mat Pi_all = zeros<mat>(n, n);
+     for(int i=0; i<n; i++){
+       Pi_all.row(i) = as<rowvec>(pi_i_z(i));
+     }
+     
+     // -----------------------------------------------------------
      // --------------------------dkappa_t-------------------------
      // -----------------------------------------------------------
      vec lambda_hat_0_t = fhat_0_t / Shat_0_e;
      lambda_hat_0_t.replace(datum::nan, 0);
      lambda_hat_0_t.replace(datum::inf, 0);
-     
-     // impute_residuals_weighted(vec e, vec delta, vec weights)
      
      vec lambda_hat_0_tTIMESt = lambda_hat_0_t % pred_data;
      vec dlambda_hat_0_tTIMESt = diff(join_cols(zero_vec_1, lambda_hat_0_tTIMESt));
@@ -667,32 +683,48 @@ using namespace Rcpp;
      }
      
      // -----------------------------------------------------------
-     // ------------------------Sample Path------------------------
+     // ------------------------Sample Path (Vectorized)-----------
      // -----------------------------------------------------------
      for(int itt=0; itt<npath; itt++){
-       vec phi_i = randg(n) - one_vec_n; // randn(n);
+       vec phi_i = randg(n) - one_vec_n; 
        
-       tempvec_n = zero_vec_n; tempmat_np = zero_mat_np;
-       for(int i=0; i<n; i++){
-         vec dM_phi = as<vec>(dMhat_i_t(i)) * phi_i(i);
-         tempvec_n += dM_phi;
-         tempmat_np += dM_phi * covariates.row(i);
-       }
-       tempvec_p = invOmega * ((tempmat_np.t() * S_0_t) - (S_1_t.t() * tempvec_n));
+       // A. Perturb dM matrix
+       // Multiply each column i of dM_all by phi_i
+       mat dM_phi = dM_all;
+       dM_phi.each_row() %= phi_i.t(); 
        
-       // D (t, z; beta)
-       mat term3 = zero_mat_nn;
+       // B. Calculate Sums
+       // dM_phi_sum is the vector sum over subjects i (rows remain time t)
+       vec dM_phi_sum = sum(dM_phi, 1); 
+       
+       // C. Calculate U_pi_phi_t_z using Matrix Multiplication
+       // Instead of looping N times, we do (N x N) * (N x N) once.
+       // Term 1: sum_i (dM_i * phi_i * pi_i(z))
+       mat Term1 = dM_phi * Pi_all; 
+       
+       // Term 2: (sum_i dM_i * phi_i) * E[pi(t,z)]
+       mat Term2 = E_pi_t_z;
+       Term2.each_col() %= dM_phi_sum;
+       
+       mat U_pi_phi_t_z = cumsum(Term1 - Term2);
+       
+       // D. Calculate Beta Correction (term3)
+       // tempmat_np = sum_i (dM_i * phi_i * X_i) -> dM_phi * X
+       mat tempmat_np = dM_phi * covariates;
+       
+       // Vectorized calculation for the bracketed term
+       // (tempmat_np.t() * S_0_t) - (S_1_t.t() * tempvec_n)
+       // Note: tempvec_n in your original code IS exactly dM_phi_sum
+       vec bracket_term = (tempmat_np.t() * S_0_t) - (S_1_t.t() * dM_phi_sum);
+       
+       vec tempvec_p_final = invOmega * bracket_term;
+       
+       mat term3_mat = zero_mat_nn;
        for (int it=0; it<p; it++) {
-         term3 += as<mat>(term2(it)) * tempvec_p(it);
+         term3_mat += as<mat>(term2(it)) * tempvec_p_final(it);
        }
        
-       tempmat_nn = zero_mat_nn;
-       for(int it=0; it<n; it++){
-         tempmat_nn += ((as<vec>(dMhat_i_t(it)))*phi_i(it))%(as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col();
-       }
-       mat U_pi_phi_t_z = cumsum(tempmat_nn);
-       
-       app_npath(itt) = U_pi_phi_t_z/sqrtn - term3; // (U_pi_phi_t_z - term3)/sqrtn;
+       app_npath(itt) = U_pi_phi_t_z/sqrtn - term3_mat;
      }
    } else {
      // -----------------------------------------------------------
@@ -992,6 +1024,22 @@ using namespace Rcpp;
    List app_npath(npath);
    if (linApprox) {
      // -----------------------------------------------------------
+     // OPTIMIZATION: Pre-convert Lists to Matrices
+     // -----------------------------------------------------------
+     
+     // 1. dM_all: (N x N) matrix where Col i is vector dMhat_i_t(i)
+     mat dM_all = zeros<mat>(n, n);
+     for(int i=0; i<n; i++){
+       dM_all.col(i) = as<vec>(dMhat_i_t(i));
+     }
+     
+     // 2. Pi_all: (N x N) matrix where Row i is vector pi_i_z(i)
+     mat Pi_all = zeros<mat>(n, n);
+     for(int i=0; i<n; i++){
+       Pi_all.row(i) = as<rowvec>(pi_i_z(i));
+     }
+     
+     // -----------------------------------------------------------
      // --------------------------dkappa_t-------------------------
      // -----------------------------------------------------------
      vec lambda_hat_0_t = fhat_0_t / Shat_0_e;
@@ -1012,44 +1060,39 @@ using namespace Rcpp;
      term2 = term2 * invOmega;
      
      // -----------------------------------------------------------
-     // ------------------------Sample Path------------------------
+     // ------------------------Sample Path (Vectorized)-----------
      // -----------------------------------------------------------
      for(int itt=0; itt<npath; itt++){
-       vec phi_i = randg(n) - one_vec_n; // randn(n);
+       vec phi_i = randg(n) - one_vec_n; 
        
-       tempvec_n = zero_vec_n; 
-       tempmat_np = zero_mat_np;
-       for(int i=0; i<n; i++){
-         vec dM_phi = as<vec>(dMhat_i_t(i)) * phi_i(i);
-         tempvec_n += dM_phi;
-         tempmat_np += dM_phi * covariates.row(i);
-       }
-       mat term3 = term2 * ((tempmat_np.t() * S_0_t) - (S_1_t.t() * tempvec_n));
+       // A. Perturb dM matrix
+       mat dM_phi = dM_all;
+       dM_phi.each_row() %= phi_i.t(); 
        
-       tempmat_nn = zero_mat_nn;
-       for(int it=0; it<n; it++){
-         tempmat_nn += ((as<vec>(dMhat_i_t(it)))*phi_i(it))%(as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col();
-       }
-       mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
+       // B. Vector sums
+       vec dM_phi_sum = sum(dM_phi, 1); 
        
-       app_npath(itt) = U_pi_phi_inf_z/sqrtn - term3; // (U_pi_phi_inf_z - term3)/sqrtn;
+       // C. Matrix Mult for U_pi_phi_inf_z (The bottleneck)
+       // Term 1: dM_phi * Pi_all (N x N)
+       mat Term1 = dM_phi * Pi_all;
        
-       // tempvec_n = zero_vec_n; 
-       // tempmat_np = zero_mat_np;
-       // for(int i=0; i<n; i++){
-       //   vec dM_phi = as<vec>(dMhat_i_t(i)) * phi_i(i);
-       //   tempvec_n += dM_phi;
-       //   tempmat_np += dM_phi * covariates.row(i);
-       // }
-       // mat term3 = term2 * ((tempmat_np.t() * S_0_t) - (S_1_t.t() * tempvec_n))/sqrtn;
-       // 
-       // tempmat_nn = zero_mat_nn;
-       // for(int it=0; it<n; it++){
-       //   tempmat_nn += ((as<vec>(dMhat_i_t(it)))*phi_i(it))%(as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col();
-       // }
-       // mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
-       // 
-       // app_npath(itt) = (U_pi_phi_inf_z - term3)/sqrtn;
+       // Term 2: E_pi_t_z scaled by dM_phi_sum
+       mat Term2 = E_pi_t_z;
+       Term2.each_col() %= dM_phi_sum;
+       
+       // Sum over time (rows) to get Process over Z (columns)
+       // Transpose to match dimensions (N x 1)
+       mat U_pi_phi_inf_z = sum(Term1 - Term2, 0).t();
+       
+       // D. Beta Correction Term
+       // dM_phi * Covariates gives sum_i(dM_i * phi_i * X_i)
+       mat tempmat_np = dM_phi * covariates;
+       
+       vec bracket_term = (tempmat_np.t() * S_0_t) - (S_1_t.t() * dM_phi_sum);
+       
+       vec term3 = term2 * bracket_term;
+       
+       app_npath(itt) = U_pi_phi_inf_z/sqrtn - term3;
      }
    } else {
      // -----------------------------------------------------------
@@ -1347,6 +1390,22 @@ using namespace Rcpp;
    List app_npath(npath);
    if (linApprox) {
      // -----------------------------------------------------------
+     // OPTIMIZATION: Pre-convert Lists to Matrices
+     // -----------------------------------------------------------
+     
+     // 1. dM_all
+     mat dM_all = zeros<mat>(n, n);
+     for(int i=0; i<n; i++){
+       dM_all.col(i) = as<vec>(dMhat_i_t(i));
+     }
+     
+     // 2. Pi_all
+     mat Pi_all = zeros<mat>(n, n);
+     for(int i=0; i<n; i++){
+       Pi_all.row(i) = as<rowvec>(pi_i_z(i));
+     }
+     
+     // -----------------------------------------------------------
      // --------------------------dkappa_t-------------------------
      // -----------------------------------------------------------
      vec lambda_hat_0_t = fhat_0_t / Shat_0_e;
@@ -1367,44 +1426,33 @@ using namespace Rcpp;
      term2 = term2 * invOmega;
      
      // -----------------------------------------------------------
-     // ------------------------Sample Path------------------------
+     // ------------------------Sample Path (Vectorized)-----------
      // -----------------------------------------------------------
      for(int itt=0; itt<npath; itt++){
-       vec phi_i = randg(n) - one_vec_n; // randn(n);
+       vec phi_i = randg(n) - one_vec_n; 
        
-       tempvec_n = zero_vec_n; 
-       tempmat_np = zero_mat_np;
-       for(int i=0; i<n; i++){
-         vec dM_phi = as<vec>(dMhat_i_t(i)) * phi_i(i);
-         tempvec_n += dM_phi;
-         tempmat_np += dM_phi * covariates.row(i);
-       }
-       mat term3 = term2 * ((tempmat_np.t() * S_0_t) - (S_1_t.t() * tempvec_n));
+       // A. Perturb dM matrix
+       mat dM_phi = dM_all;
+       dM_phi.each_row() %= phi_i.t(); 
        
-       tempmat_nn = zero_mat_nn;
-       for(int it=0; it<n; it++){
-         tempmat_nn += ((as<vec>(dMhat_i_t(it)))*phi_i(it))%(as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col();
-       }
-       mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
+       // B. Vector sums
+       vec dM_phi_sum = sum(dM_phi, 1); 
        
-       app_npath(itt) = U_pi_phi_inf_z/sqrtn - term3; // (U_pi_phi_inf_z - term3)/sqrtn;
+       // C. Matrix Mult for U_pi_phi_inf_z
+       mat Term1 = dM_phi * Pi_all;
+       mat Term2 = E_pi_t_z;
+       Term2.each_col() %= dM_phi_sum;
        
-       // tempvec_n = zero_vec_n; 
-       // tempmat_np = zero_mat_np;
-       // for(int i=0; i<n; i++){
-       //   vec dM_phi = as<vec>(dMhat_i_t(i)) * phi_i(i);
-       //   tempvec_n += dM_phi;
-       //   tempmat_np += dM_phi * covariates.row(i);
-       // }
-       // mat term3 = term2 * ((tempmat_np.t() * S_0_t) - (S_1_t.t() * tempvec_n))/sqrtn;
-       // 
-       // tempmat_nn = zero_mat_nn;
-       // for(int it=0; it<n; it++){
-       //   tempmat_nn += ((as<vec>(dMhat_i_t(it)))*phi_i(it))%(as<rowvec>(pi_i_z(it))-E_pi_t_z.each_row()).each_col();
-       // }
-       // mat U_pi_phi_inf_z = (sum(tempmat_nn)).t();
-       // 
-       // app_npath(itt) = (U_pi_phi_inf_z - term3)/sqrtn;
+       // Sum over time (rows), transpose to (N x 1)
+       mat U_pi_phi_inf_z = sum(Term1 - Term2, 0).t();
+       
+       // D. Beta Correction Term
+       mat tempmat_np = dM_phi * covariates;
+       vec bracket_term = (tempmat_np.t() * S_0_t) - (S_1_t.t() * dM_phi_sum);
+       
+       vec term3 = term2 * bracket_term;
+       
+       app_npath(itt) = U_pi_phi_inf_z/sqrtn - term3;
      }
    } else {
      // -----------------------------------------------------------
