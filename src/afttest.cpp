@@ -645,27 +645,15 @@ using namespace Rcpp;
    
    List app_npath(npath);
    if (linApprox) {
-     // -----------------------------------------------------------
-     // OPTIMIZATION: Pre-convert Lists to Matrices (Move O(N^2) outside the loop)
-     // -----------------------------------------------------------
-     
-     // 1. dM_all: (N x N) matrix where Column i is the vector dMhat_i_t(i)
-     // Rows = Time t, Cols = Subject i
+     // 1. Pre-convert
      mat dM_all = zeros<mat>(n, n);
-     for(int i=0; i<n; i++){
-       dM_all.col(i) = as<vec>(dMhat_i_t(i));
-     }
-     
-     // 2. Pi_all: (N x N) matrix where Row i is the vector pi_i_z(i)
-     // Rows = Subject i, Cols = Covariate value z
      mat Pi_all = zeros<mat>(n, n);
      for(int i=0; i<n; i++){
+       dM_all.col(i) = as<vec>(dMhat_i_t(i));
        Pi_all.row(i) = as<rowvec>(pi_i_z(i));
      }
      
-     // -----------------------------------------------------------
-     // --------------------------dkappa_t-------------------------
-     // -----------------------------------------------------------
+     // Pre-calc Term 2 vectors
      vec lambda_hat_0_t = fhat_0_t / Shat_0_e;
      lambda_hat_0_t.replace(datum::nan, 0);
      lambda_hat_0_t.replace(datum::inf, 0);
@@ -682,44 +670,32 @@ using namespace Rcpp;
          cumsum((S_pi_t_z.each_col()) % (dkappa_t.col(it)))/n);
      }
      
-     // -----------------------------------------------------------
-     // ------------------------Sample Path (Vectorized)-----------
-     // -----------------------------------------------------------
+     // 2. Loop
      for(int itt=0; itt<npath; itt++){
        vec phi_i = randg(n) - one_vec_n; 
        
-       // A. Perturb dM matrix
-       // Multiply each column i of dM_all by phi_i
+       // A. Scale dM by phi (N x N)
        mat dM_phi = dM_all;
        dM_phi.each_row() %= phi_i.t(); 
        
-       // B. Calculate Sums
-       // dM_phi_sum is the vector sum over subjects i (rows remain time t)
+       // B. Sum over subjects (N x 1)
        vec dM_phi_sum = sum(dM_phi, 1); 
        
-       // C. Calculate U_pi_phi_t_z using Matrix Multiplication
-       // Instead of looping N times, we do (N x N) * (N x N) once.
-       // Term 1: sum_i (dM_i * phi_i * pi_i(z))
+       // C. Matrix Multiplication (The Workhorse)
+       // dM_phi * Pi_all replaces the manual loop
        mat Term1 = dM_phi * Pi_all; 
        
-       // Term 2: (sum_i dM_i * phi_i) * E[pi(t,z)]
        mat Term2 = E_pi_t_z;
        Term2.each_col() %= dM_phi_sum;
        
        mat U_pi_phi_t_z = cumsum(Term1 - Term2);
        
-       // D. Calculate Beta Correction (term3)
-       // tempmat_np = sum_i (dM_i * phi_i * X_i) -> dM_phi * X
+       // D. Beta Correction
        mat tempmat_np = dM_phi * covariates;
-       
-       // Vectorized calculation for the bracketed term
-       // (tempmat_np.t() * S_0_t) - (S_1_t.t() * tempvec_n)
-       // Note: tempvec_n in your original code IS exactly dM_phi_sum
        vec bracket_term = (tempmat_np.t() * S_0_t) - (S_1_t.t() * dM_phi_sum);
-       
        vec tempvec_p_final = invOmega * bracket_term;
        
-       mat term3_mat = zero_mat_nn;
+       mat term3_mat = zeros<mat>(n, n);
        for (int it=0; it<p; it++) {
          term3_mat += as<mat>(term2(it)) * tempvec_p_final(it);
        }
@@ -1024,24 +1000,32 @@ using namespace Rcpp;
    List app_npath(npath);
    if (linApprox) {
      // -----------------------------------------------------------
-     // OPTIMIZATION: Pre-convert Lists to Matrices
+     // 1. PRE-COMPUTATION (O(N^3) ONCE)
      // -----------------------------------------------------------
-     
-     // 1. dM_all: (N x N) matrix where Col i is vector dMhat_i_t(i)
-     mat dM_all = zeros<mat>(n, n);
+     mat dM_all = zeros<mat>(n, n); // Rows=Time, Cols=Subject
+     mat Pi_all = zeros<mat>(n, n); // Rows=Subject, Cols=Z
      for(int i=0; i<n; i++){
        dM_all.col(i) = as<vec>(dMhat_i_t(i));
-     }
-     
-     // 2. Pi_all: (N x N) matrix where Row i is vector pi_i_z(i)
-     mat Pi_all = zeros<mat>(n, n);
-     for(int i=0; i<n; i++){
        Pi_all.row(i) = as<rowvec>(pi_i_z(i));
      }
      
-     // -----------------------------------------------------------
-     // --------------------------dkappa_t-------------------------
-     // -----------------------------------------------------------
+     // A. Pre-integrate dM over Time for Term 1
+     // D_i = sum_t (dM_it).  Result: (N x 1) vector
+     vec D_i = sum(dM_all, 0).t(); 
+     
+     // B. Pre-integrate interaction of dM and E for Term 2
+     // ME_mat(i, z) = sum_t (dM_it * E_tz)
+     // dM_all.t() is (Subj x Time), E_pi_t_z is (Time x Z)
+     // Result: (Subj x Z) matrix
+     mat ME_mat = dM_all.t() * E_pi_t_z;
+     
+     // C. Pre-calculate Beta Correction Parts (Optional but cleaner)
+     // This avoids large matrix mults inside the loop for the bracket term
+     // Part1: X_i^T * dM_i^T * S0.  (N x P)
+     // Part2: S1^T * dM_i.        (P x N) -> Transpose to (N x P)
+     // We stick to the standard vectorization for Beta as it is O(N*P), already fast.
+     
+     // D. Term 2 Drift (Standard)
      vec lambda_hat_0_t = fhat_0_t / Shat_0_e;
      lambda_hat_0_t.replace(datum::nan, 0);
      lambda_hat_0_t.replace(datum::inf, 0);
@@ -1051,45 +1035,45 @@ using namespace Rcpp;
      mat dkappa_t = - S_1_t;
      dkappa_t.each_col() %= dlambda_hat_0_tTIMESt/S_0_t;
      
-     mat term2 = zero_mat_np;
+     mat term2 = zeros<mat>(n, p);
      for(int it=0; it<p; it++){
-       term2.col(it) = (as<vec>(fhat_inf_z(it)) +
-         sum((as<mat>(ghat_t_z(it)).each_col()) % dLambdahat_0_t).t() +
-         sum((S_pi_t_z.each_col()) % (dkappa_t.col(it))).t()/n);
+       vec col_p1 = as<vec>(fhat_inf_z(it));
+       vec col_p2 = sum((as<mat>(ghat_t_z(it)).each_col()) % dLambdahat_0_t, 0).t();
+       vec col_p3 = sum((S_pi_t_z.each_col()) % (dkappa_t.col(it)), 0).t()/n;
+       term2.col(it) = col_p1 + col_p2 + col_p3;
      }
      term2 = term2 * invOmega;
      
      // -----------------------------------------------------------
-     // ------------------------Sample Path (Vectorized)-----------
+     // 2. RESAMPLING LOOP (O(N^2) FAST)
      // -----------------------------------------------------------
      for(int itt=0; itt<npath; itt++){
        vec phi_i = randg(n) - one_vec_n; 
        
-       // A. Perturb dM matrix
+       // --- Process Calculation (Optimized) ---
+       
+       // Term 1: sum_i (phi_i * D_i * pi_iz)
+       // (phi_i % D_i) scales the pre-summed residuals by perturbation
+       // .t() * Pi_all does the weighted sum over subjects
+       // (1 x N) * (N x N) -> (1 x N)
+       rowvec Term1_z = (phi_i % D_i).t() * Pi_all;
+       
+       // Term 2: sum_i (phi_i * sum_t(dM_it * E_tz))
+       // phi_i * ME_mat
+       // (1 x N) * (N x N) -> (1 x N)
+       rowvec Term2_z = phi_i.t() * ME_mat;
+       
+       // Result: (N x 1) vector over Z
+       vec U_pi_phi_inf_z = (Term1_z - Term2_z).t();
+       
+       // --- Beta Correction (Standard Vectorized) ---
+       // Re-create dM_phi only for this part (O(N^2))
        mat dM_phi = dM_all;
-       dM_phi.each_row() %= phi_i.t(); 
+       dM_phi.each_row() %= phi_i.t();
+       vec dM_phi_sum = sum(dM_phi, 1);
        
-       // B. Vector sums
-       vec dM_phi_sum = sum(dM_phi, 1); 
-       
-       // C. Matrix Mult for U_pi_phi_inf_z (The bottleneck)
-       // Term 1: dM_phi * Pi_all (N x N)
-       mat Term1 = dM_phi * Pi_all;
-       
-       // Term 2: E_pi_t_z scaled by dM_phi_sum
-       mat Term2 = E_pi_t_z;
-       Term2.each_col() %= dM_phi_sum;
-       
-       // Sum over time (rows) to get Process over Z (columns)
-       // Transpose to match dimensions (N x 1)
-       mat U_pi_phi_inf_z = sum(Term1 - Term2, 0).t();
-       
-       // D. Beta Correction Term
-       // dM_phi * Covariates gives sum_i(dM_i * phi_i * X_i)
        mat tempmat_np = dM_phi * covariates;
-       
        vec bracket_term = (tempmat_np.t() * S_0_t) - (S_1_t.t() * dM_phi_sum);
-       
        vec term3 = term2 * bracket_term;
        
        app_npath(itt) = U_pi_phi_inf_z/sqrtn - term3;
@@ -1390,24 +1374,32 @@ using namespace Rcpp;
    List app_npath(npath);
    if (linApprox) {
      // -----------------------------------------------------------
-     // OPTIMIZATION: Pre-convert Lists to Matrices
+     // 1. PRE-COMPUTATION (O(N^3) ONCE)
      // -----------------------------------------------------------
-     
-     // 1. dM_all
-     mat dM_all = zeros<mat>(n, n);
+     mat dM_all = zeros<mat>(n, n); // Rows=Time, Cols=Subject
+     mat Pi_all = zeros<mat>(n, n); // Rows=Subject, Cols=Z
      for(int i=0; i<n; i++){
        dM_all.col(i) = as<vec>(dMhat_i_t(i));
-     }
-     
-     // 2. Pi_all
-     mat Pi_all = zeros<mat>(n, n);
-     for(int i=0; i<n; i++){
        Pi_all.row(i) = as<rowvec>(pi_i_z(i));
      }
      
-     // -----------------------------------------------------------
-     // --------------------------dkappa_t-------------------------
-     // -----------------------------------------------------------
+     // A. Pre-integrate dM over Time for Term 1
+     // D_i = sum_t (dM_it).  Result: (N x 1) vector
+     vec D_i = sum(dM_all, 0).t(); 
+     
+     // B. Pre-integrate interaction of dM and E for Term 2
+     // ME_mat(i, z) = sum_t (dM_it * E_tz)
+     // dM_all.t() is (Subj x Time), E_pi_t_z is (Time x Z)
+     // Result: (Subj x Z) matrix
+     mat ME_mat = dM_all.t() * E_pi_t_z;
+     
+     // C. Pre-calculate Beta Correction Parts (Optional but cleaner)
+     // This avoids large matrix mults inside the loop for the bracket term
+     // Part1: X_i^T * dM_i^T * S0.  (N x P)
+     // Part2: S1^T * dM_i.        (P x N) -> Transpose to (N x P)
+     // We stick to the standard vectorization for Beta as it is O(N*P), already fast.
+     
+     // D. Term 2 Drift (Standard)
      vec lambda_hat_0_t = fhat_0_t / Shat_0_e;
      lambda_hat_0_t.replace(datum::nan, 0);
      lambda_hat_0_t.replace(datum::inf, 0);
@@ -1417,39 +1409,45 @@ using namespace Rcpp;
      mat dkappa_t = - S_1_t;
      dkappa_t.each_col() %= dlambda_hat_0_tTIMESt/S_0_t;
      
-     mat term2 = zero_mat_np;
+     mat term2 = zeros<mat>(n, p);
      for(int it=0; it<p; it++){
-       term2.col(it) = (as<vec>(fhat_inf_z(it)) +
-         sum((as<mat>(ghat_t_z(it)).each_col()) % dLambdahat_0_t).t() +
-         sum((S_pi_t_z.each_col()) % (dkappa_t.col(it))).t()/n);
+       vec col_p1 = as<vec>(fhat_inf_z(it));
+       vec col_p2 = sum((as<mat>(ghat_t_z(it)).each_col()) % dLambdahat_0_t, 0).t();
+       vec col_p3 = sum((S_pi_t_z.each_col()) % (dkappa_t.col(it)), 0).t()/n;
+       term2.col(it) = col_p1 + col_p2 + col_p3;
      }
      term2 = term2 * invOmega;
      
      // -----------------------------------------------------------
-     // ------------------------Sample Path (Vectorized)-----------
+     // 2. RESAMPLING LOOP (O(N^2) FAST)
      // -----------------------------------------------------------
      for(int itt=0; itt<npath; itt++){
        vec phi_i = randg(n) - one_vec_n; 
        
-       // A. Perturb dM matrix
+       // --- Process Calculation (Optimized) ---
+       
+       // Term 1: sum_i (phi_i * D_i * pi_iz)
+       // (phi_i % D_i) scales the pre-summed residuals by perturbation
+       // .t() * Pi_all does the weighted sum over subjects
+       // (1 x N) * (N x N) -> (1 x N)
+       rowvec Term1_z = (phi_i % D_i).t() * Pi_all;
+       
+       // Term 2: sum_i (phi_i * sum_t(dM_it * E_tz))
+       // phi_i * ME_mat
+       // (1 x N) * (N x N) -> (1 x N)
+       rowvec Term2_z = phi_i.t() * ME_mat;
+       
+       // Result: (N x 1) vector over Z
+       vec U_pi_phi_inf_z = (Term1_z - Term2_z).t();
+       
+       // --- Beta Correction (Standard Vectorized) ---
+       // Re-create dM_phi only for this part (O(N^2))
        mat dM_phi = dM_all;
-       dM_phi.each_row() %= phi_i.t(); 
+       dM_phi.each_row() %= phi_i.t();
+       vec dM_phi_sum = sum(dM_phi, 1);
        
-       // B. Vector sums
-       vec dM_phi_sum = sum(dM_phi, 1); 
-       
-       // C. Matrix Mult for U_pi_phi_inf_z
-       mat Term1 = dM_phi * Pi_all;
-       mat Term2 = E_pi_t_z;
-       Term2.each_col() %= dM_phi_sum;
-       
-       // Sum over time (rows), transpose to (N x 1)
-       mat U_pi_phi_inf_z = sum(Term1 - Term2, 0).t();
-       
-       // D. Beta Correction Term
        mat tempmat_np = dM_phi * covariates;
        vec bracket_term = (tempmat_np.t() * S_0_t) - (S_1_t.t() * dM_phi_sum);
-       
        vec term3 = term2 * bracket_term;
        
        app_npath(itt) = U_pi_phi_inf_z/sqrtn - term3;
