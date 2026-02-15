@@ -9,6 +9,9 @@ on:
 name: R-CMD-check
 
 jobs:
+  # ---------------------------------------------------------
+  # JOB 1: Standard Matrix (Windows, macOS, Ubuntu)
+  # ---------------------------------------------------------
   R-CMD-check:
     runs-on: ${{ matrix.config.os }}
 
@@ -48,3 +51,37 @@ jobs:
       - uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: true
+
+  # ---------------------------------------------------------
+  # JOB 2: CRAN Debian + Clang Check (via Docker Container)
+  # ---------------------------------------------------------
+  Debian-Clang-check:
+    runs-on: ubuntu-latest
+    name: debian-clang (devel)
+    
+    # This spins up the exact environment CRAN uses for Debian Clang
+    container:
+      image: rhub/debian-clang-devel:latest
+
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      R_KEEP_PKG_SOURCE: yes
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install system dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends qpdf pandoc libcurl4-openssl-dev libssl-dev zlib1g-dev default-jdk
+
+      - name: Install R dependencies
+        run: |
+          install.packages(c("remotes", "rcmdcheck"))
+          remotes::install_deps(dependencies = TRUE)
+        shell: Rscript {0}
+
+      - name: Run R-CMD-check
+        run: |
+          rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran"), error_on = "warning")
+        shell: Rscript {0}

@@ -205,7 +205,7 @@ using namespace Rcpp;
    
    for(int it=0; it<n; it++){
      // If new time point found (and not the first iteration)
-     if (abs(e_sorted(it) - current_t) > 1e-9) {
+     if (std::abs(e_sorted(it) - current_t) > 1e-9) {
        t_unique_std.push_back(current_t);
        w_event_std.push_back(block_w_event);
        w_risk_std.push_back(sum_w_risk);
