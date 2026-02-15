@@ -57,11 +57,10 @@ jobs:
   # ---------------------------------------------------------
   Debian-Clang-check:
     runs-on: ubuntu-latest
-    name: debian-clang (devel)
+    name: debian-clang
     
-    # This spins up the exact environment CRAN uses for Debian Clang
-    container:
-      image: rhub/debian-clang-devel:latest
+    # The official R Debian image
+    container: rocker/r-base:latest
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -70,18 +69,27 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Install system dependencies
+      - name: Install system dependencies & Clang
         run: |
           apt-get update
-          apt-get install -y --no-install-recommends qpdf pandoc libcurl4-openssl-dev libssl-dev zlib1g-dev default-jdk
+          apt-get install -y --no-install-recommends \
+            clang qpdf pandoc libcurl4-openssl-dev libssl-dev zlib1g-dev
+
+      - name: Force R to use Clang (Replicating CRAN)
+        run: |
+          mkdir -p ~/.R
+          echo "CC = clang" > ~/.R/Makevars
+          echo "CXX = clang++" >> ~/.R/Makevars
+          echo "CXX11 = clang++" >> ~/.R/Makevars
+          echo "CXX14 = clang++" >> ~/.R/Makevars
+          echo "CXX17 = clang++" >> ~/.R/Makevars
+          echo "CXX20 = clang++" >> ~/.R/Makevars
 
       - name: Install R dependencies
         run: |
-          install.packages(c("remotes", "rcmdcheck"))
-          remotes::install_deps(dependencies = TRUE)
-        shell: Rscript {0}
+          Rscript -e 'install.packages(c("remotes", "rcmdcheck"))'
+          Rscript -e 'remotes::install_deps(dependencies = TRUE)'
 
       - name: Run R-CMD-check
         run: |
-          rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran"), error_on = "warning")
-        shell: Rscript {0}
+          Rscript -e 'rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran"), error_on = "warning")'
