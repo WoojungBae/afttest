@@ -14,7 +14,6 @@ package to the base package **aftgee**.
 In addition to the R interface, **afttest** provides a C++ header-only library 
 integrated with **Rcpp**, which allows the construction of spline basis 
 functions directly in C++ with the help of **Rcpp** and **RcppArmadillo**. 
-Thus, it can also be treated as one of the **Rcpp\** packages. 
 
 ## Installation of CRAN Version
 You can install the released version from
