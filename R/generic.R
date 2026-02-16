@@ -138,31 +138,41 @@ plot.afttest <- function(x, npath = 50, std = TRUE, quantile = NULL, ...){
   testType <- x$testType
   
   # std
-  if (isTRUE(std)) {
+  if (isFALSE(std)) {
+    std <- "unstd"
+  } else if (isTRUE(std)) {
     std <- "std"
-  } else if (!std %in% c(T, F)) {
-    return(warning("std needs to be logical."))
+  } else {
+    warning("Argument 'std' must be a logical value (TRUE or FALSE). Defaulting to TRUE.")
+    std <- "std"
   }
   
   # npathsave
   if (is.null(x$npathsave) || x$npathsave == 0) {
-    stop("Plot cannot be created: 'afttest' was conducted with npathsave=0. No paths were stored.")
+    stop("Cannot create plot: 'afttest' was conducted with npathsave = 0. Please rerun the model with npathsave > 0 to generate paths.")
   }
   
   # npath
-  if (!is.numeric(npath) || !(length(npath)==1 || npath <= 0)){
-    return(warning("Argument 'npath' must be a single positive integer."))
+  if (!is.numeric(npath) || length(npath) != 1 || npath <= 0) {
+    stop("Argument 'npath' must be a single positive integer.")
   }
   npath <- as.integer(npath)
   if (npath > x$npathsave) {
-    # Ideally, warn the user that we are capping their request
     warning(sprintf("Requested npath (%d) exceeds stored paths (%d). Plotting all %d available paths.", 
                     npath, x$npathsave, x$npathsave))
     npath <- x$npathsave
   }
   
+  # eqType
+  if (eqType=="ns") {
+    testTypeQuote <- "non-smooth"
+  } else if (eqType=="ns") {
+    testTypeQuote <- "induced-smoothed"
+  } else if (eqType=="ns") {
+    testTypeQuote <- "least-squares"
+  }
+  
   stdTypeQuote <- ifelse(std=="std","standardized","unstandardized")
-  testTypeQuote <- ifelse(eqType=="ns","non-smooth","induced-smoothed")
   
   x_axis <- 1:nrow(x$DF)
   
