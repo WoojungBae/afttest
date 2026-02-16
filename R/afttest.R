@@ -187,12 +187,11 @@ afttest.formula <- function(object, data, npath = 200, testType = "omnibus",
   }
   
   # npathsave
-  if (length(npathsave) > 1){
-    return(warning("npathsave needs to be an integer."))
+  if (!is.numeric(npathsave) || length(npathsave) != 1) {
+    warning("'npathsave' must be a single numeric integer. Defaulting to npathsave = 50.")
+    npathsave <- 50L
   } else {
-    if (!is.numeric(npathsave)) {
-      npathsave <- 50
-    }
+    npathsave <- as.integer(npathsave)
   }
   
   # linApprox
@@ -375,12 +374,11 @@ afttest.aftsrr <- function(object, data, npath = 200, testType = "omnibus", eqTy
   }
   
   # npathsave
-  if (length(npathsave) > 1){
-    return(warning("npathsave needs to be an integer."))
+  if (!is.numeric(npathsave) || length(npathsave) != 1) {
+    warning("'npathsave' must be a single numeric integer. Defaulting to npathsave = 50.")
+    npathsave <- 50L
   } else {
-    if (!is.numeric(npathsave)) {
-      npathsave <- 50
-    }
+    npathsave <- as.integer(npathsave)
   }
   
   # linApprox
@@ -552,12 +550,11 @@ afttest.aftgee <- function(object, data, npath = 200, testType = "omnibus", eqTy
   }
   
   # npathsave
-  if (length(npathsave) > 1){
-    return(warning("npathsave needs to be an integer."))
+  if (!is.numeric(npathsave) || length(npathsave) != 1) {
+    warning("'npathsave' must be a single numeric integer. Defaulting to npathsave = 50.")
+    npathsave <- 50L
   } else {
-    if (!is.numeric(npathsave)) {
-      npathsave <- 50
-    }
+    npathsave <- as.integer(npathsave)
   }
   
   # linApprox
