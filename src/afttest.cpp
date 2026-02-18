@@ -672,7 +672,7 @@ using namespace Rcpp;
      
      // 2. Loop
      for(int itt=0; itt<npath; itt++){
-       vec phi_i = randg(n) - one_vec_n; 
+       vec phi_i = as<vec>(Rcpp::rexp(n, 1.0)) - one_vec_n; 
        
        // A. Scale dM by phi (N x N)
        mat dM_phi = dM_all;
@@ -733,7 +733,7 @@ using namespace Rcpp;
        
        vec phi_i(n); vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
        while(tolerance>tol){
-         phi_i = randg(n) - one_vec_n; // randn(n);
+         phi_i = as<vec>(Rcpp::rexp(n, 1.0)) - one_vec_n; // randn(n);
          
          vec U_phi_inf(n); 
          if (eqType == "ls") {
@@ -1048,7 +1048,7 @@ using namespace Rcpp;
      // 2. RESAMPLING LOOP (O(N^2) FAST)
      // -----------------------------------------------------------
      for(int itt=0; itt<npath; itt++){
-       vec phi_i = randg(n) - one_vec_n; 
+       vec phi_i = as<vec>(Rcpp::rexp(n, 1.0)) - one_vec_n; 
        
        // --- Process Calculation (Optimized) ---
        
@@ -1109,7 +1109,7 @@ using namespace Rcpp;
        
        vec phi_i(n); vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
        while(tolerance>tol){
-         phi_i = randg(n) - one_vec_n; // randn(n);
+         phi_i = as<vec>(Rcpp::rexp(n, 1.0)) - one_vec_n; // randn(n);
          
          vec U_phi_inf(n); 
          if (eqType == "ls") {
@@ -1422,7 +1422,7 @@ using namespace Rcpp;
      // 2. RESAMPLING LOOP (O(N^2) FAST)
      // -----------------------------------------------------------
      for(int itt=0; itt<npath; itt++){
-       vec phi_i = randg(n) - one_vec_n; 
+       vec phi_i = as<vec>(Rcpp::rexp(n, 1.0)) - one_vec_n; 
        
        // --- Process Calculation (Optimized) ---
        
@@ -1483,7 +1483,7 @@ using namespace Rcpp;
        
        vec phi_i(n); vec b_s(p); double tol = pow(p,2); double tolerance = tol+1;
        while(tolerance>tol){
-         phi_i = randg(n) - one_vec_n; // randn(n);
+         phi_i = as<vec>(Rcpp::rexp(n, 1.0)) - one_vec_n; // randn(n);
          
          vec U_phi_inf(n); 
          if (eqType == "ls") {
