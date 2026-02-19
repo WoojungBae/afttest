@@ -44,7 +44,7 @@ bibentry(
         as.person("Sangwook Kang")
         ),
     year = "2022",
-    note = "R package version 4.5.2.1",
+    note = "R package",
     url = "https://CRAN.R-project.org/package=afttest",
     doi = "10.32614/CRAN.package.afttest"
 )
