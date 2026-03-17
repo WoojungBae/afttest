@@ -2,11 +2,11 @@
 ## print
 ##############################################################################
 
-#' print.afttest
+#' Print Method for Semiparametric AFT Model Diagnostics
 #'
-#' @param x is a \code{afttest} fit.
-#' @param ... other options.
-#' @return \code{print.afttest} returns a summary of a \code{afttest} fit:
+#' @param x An object of class \code{afttest}.
+#' @param ... Other arguments passed to methods.
+#' @return \code{print.afttest} returns a summary of an \code{afttest} fit.
 #'
 #' @example inst/examples/ex_afttest.R
 #' @export
@@ -43,11 +43,11 @@ print.afttest <- function(x, ...) {
 ## summary
 ##############################################################################
 
-#' summary.afttest
+#' Summary Method for Semiparametric AFT Model Diagnostics
 #'
-#' @param object is a \code{afttest} fit.
-#' @param ... other options.
-#' @return \code{summary.afttest} returns a summary of a \code{afttest} fit:
+#' @param object An object of class \code{afttest}.
+#' @param ... Other arguments passed to methods.
+#' @return \code{summary.afttest} returns a detailed summary of an \code{afttest} fit.
 #'
 #' @example inst/examples/ex_afttest.R
 #' @export
@@ -73,7 +73,7 @@ summary.afttest <- function(object, ...) {
   cat(paste("Test Type:       ", object$testType, "\n"))
   cat(paste("Bootstrap:       ", ifelse(object$linApprox, "Linear Approximation", "Standard Resampling"), "\n"))
   cat(paste("Resampling Paths:", object$npath, "\n"))
-  cat(paste("Random Seed:     ", object$seed, "\n"))
+  cat(paste("Random Seed:     ", ifelse(is.null(object$seed), "Not Specified", object$seed), "\n"))
   
   cat("\n--- p-values ---\n")
   p_vals <- c(object$p_value, object$p_std_value)
@@ -103,22 +103,22 @@ summary.afttest <- function(object, ...) {
 ## plot
 ##############################################################################
 
-#' plot.afttest
+#' Plotting Method for Semiparametric AFT Model Diagnostics
 #'
-#' @param x is a \code{afttest} fit
-#' @param npath A numeric value specifies the number of approximated processes plotted.
-#'    The default is set to be 100.
-#' @param std A character string specifying if the graph is based on 
-#'    the unstandardized test statistics or standardized test statistics
-#'    The default is set to be "std".
-#' @param quantile A numeric vector specifies 5 of five quantiles within the range [0,1]. 
-#'    The default is set to be c(0.1,0.25,0.5,0.75,0.9).
-#' @param ... for future extension
+#' @param x An object of class \code{afttest}.
+#' @param npath A numeric value specifying the number of approximated processes to plot.
+#'    The default is set to 50.
+#' @param std A logical value specifying if the graph is based on 
+#'    the standardized test statistics (\code{TRUE}) or unstandardized (\code{FALSE}).
+#'    The default is \code{TRUE}.
+#' @param quantile A numeric vector specifying 5 quantiles within the range [0,1]. 
+#'    The default is set to \code{c(0.1, 0.25, 0.5, 0.75, 0.9)}.
+#' @param ... Other arguments passed to methods for future extension.
 #' @return \code{plot.afttest} returns a plot based on the \code{testType}:
 #' \describe{
 #'    \item{omnibus}{an x of the omnibus test is the form of n by n matrix, 
 #'    some quantiles of x, which are used in weight, are plotted for graphs, 
-#'    i.e. 0\%, 10\%, 25\%, 40\%, 50\%, 60\%, 75\%, 90\%, and 100\% are used.}
+#'    i.e. 10\%, 25\%, 50\%, 75\%, and 90\% are used by default.}
 #'    \item{link}{an x of the link function test is the form of n by 1 matrix}
 #'    \item{covForm}{an x of the functional form test is the form of n by 1 matrix}
 #' }
@@ -369,4 +369,5 @@ plot.afttest <- function(x, npath = 50, std = TRUE, quantile = NULL, ...){
 #' @name export_Surv
 #' @aliases Surv 
 #' @export Surv
+#' @keywords internal
 NULL

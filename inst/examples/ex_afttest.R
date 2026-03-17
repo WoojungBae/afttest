@@ -1,79 +1,55 @@
+library(survival)
+library(aftgee)
+
 datgen <- function(n = 100) {
   z1 <- rbinom(n, 1, 0.5)
   z2 <- rnorm(n)
   e <- rnorm(n)
-  tt <- exp(2 + z1 + z2 + 0.5*z2^{2}+ e)
+  tt <- exp(2 + z1 + z2 + 0.5 * z2^2 + e)
   cen <- runif(n, 0, 100)
   data.frame(Time = pmin(tt, cen), status = 1 * (tt < cen),
              z1 = z1, z2 = z2, id = 1:n)
 }
 set.seed(1)
-simdata = datgen(300)
+simdata <- datgen(300)
 
-# linApprox = TRUE
-result = afttest(object = Surv(Time, status) ~ z1 + z2, data = simdata,
-                 npath = 100, testType = "covForm", estMethod = "rr",
-                 eqType = "ns", covTested = "z2", npathsave = 50,
-                 linApprox = TRUE, seed = 1)
-result$p_value
-result$p_std_value
-print(result)
-summary(result)
-plot(result, std = FALSE)
-plot(result, std = TRUE)
+# --------------------------------------------------
+# Method 1: Formula (Runs quickly for CRAN tests)
+# --------------------------------------------------
+result_form <- afttest(Surv(Time, status) ~ z1 + z2, data = simdata,
+                       npath = 50, testType = "covForm", estMethod = "rr",
+                       eqType = "ns", covTested = "z2", npathsave = 50,
+                       linApprox = TRUE, seed = 1)
+print(result_form)
+plot(result_form, std = TRUE)
 
-# result = afttest(object = Surv(Time, status) ~ z1 + z2, data = simdata,
-#                  npath = 100, testType = "covForm", estMethod = "rr",
-#                  eqType = "is", covTested = "z2", npathsave = 50,
-#                  linApprox = TRUE, seed = 1)
-# result$p_value
-# result$p_std_value
-# print(result)
-# summary(result)
-# plot(result, std = FALSE)
-# plot(result, std = TRUE)
-#
-# result = afttest(object = Surv(Time, status) ~ z1 + z2, data = simdata,
-#                  npath = 100, testType = "covForm", estMethod = "ls",
-#                  eqType = "ls", covTested = "z2", npathsave = 50,
-#                  linApprox = TRUE, seed = 1)
-# result$p_value
-# result$p_std_value
-# print(result)
-# summary(result)
-# plot(result, std = FALSE)
-# plot(result, std = TRUE)
-#
-# # linApprox = FALSE
-# result = afttest(object = Surv(Time, status) ~ z1 + z2, data = simdata,
-#                  npath = 100, testType = "covForm", estMethod = "rr",
-#                  eqType = "ns", covTested = "z2", npathsave = 50,
-#                  linApprox = FALSE, seed = 1)
-# result$p_value
-# result$p_std_value
-# print(result)
-# summary(result)
-# plot(result, std = FALSE)
-# plot(result, std = TRUE)
-#
-# result = afttest(object = Surv(Time, status) ~ z1 + z2, data = simdata,
-#                  npath = 100, testType = "covForm", estMethod = "rr",
-#                  eqType = "is", covTested = "z2", npathsave = 50,
-#                  linApprox = FALSE, seed = 1)
-# result$p_value
-# result$p_std_value
-# print(result)
-# summary(result)
-# plot(result, std = FALSE)
-# plot(result, std = TRUE)
-#
-# result = afttest(object = Surv(Time, status) ~ z1 + z2, data = simdata,
-#                  npath = 100, testType = "covForm", estMethod = "ls",
-#                  eqType = "ls", covTested = "z2", npathsave = 50,
-#                  linApprox = FALSE, seed = 1)
-# result$p_value
-# result$p_std_value
-# print(result)
-# summary(result)
-# plot(result, std = FALSE)
-# plot(result, std = TRUE)
+\donttest{
+  # --------------------------------------------------
+  # Method 2: Fitted aftsrr object (Induced Smoothing)
+  # --------------------------------------------------
+  fit_srr <- aftsrr(Surv(Time, status) ~ z1 + z2, data = simdata, 
+                    eqType = "is", rankWeights = "gehan")
+  result_srr <- afttest(fit_srr, data = simdata, npath = 100, testType = "covForm", 
+                        covTested = "z2", npathsave = 50, 
+                        linApprox = TRUE, seed = 1)
+  summary(result_srr)
+  plot(result_srr, std = FALSE)
+  
+  # --------------------------------------------------
+  # Method 3: Fitted aftgee object (Least Squares)
+  # --------------------------------------------------
+  fit_gee <- aftgee(Surv(Time, status) ~ z1 + z2, data = simdata)
+  result_gee <- afttest(fit_gee, data = simdata, npath = 100, testType = "covForm", 
+                        covTested = "z2", npathsave = 50, 
+                        linApprox = TRUE, seed = 1)
+  print(result_gee)
+  
+  # --------------------------------------------------
+  # Method 4: Standard Resampling (linApprox = FALSE)
+  # --------------------------------------------------
+  result_resamp <- afttest(Surv(Time, status) ~ z1 + z2, data = simdata,
+                           npath = 100, testType = "covForm", estMethod = "rr",
+                           eqType = "ns", covTested = "z2", npathsave = 50,
+                           linApprox = FALSE, seed = 1)
+  summary(result_resamp)
+}

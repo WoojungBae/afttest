@@ -7,38 +7,38 @@
 #' @description
 #' Performs model-checking procedures for a semiparametric AFT model.
 #' This is a generic function with methods for formulas and fitted objects
-#' from the `aftgee` package.
+#' from the \pkg{aftgee} package.
 #'
-#' @param object A formula or a fitted model object (e.g., from `aftsrr` or `aftgee`).
+#' @param object A formula or a fitted model object (e.g., from \code{aftsrr} or \code{aftgee}).
 #' @param ... Other arguments passed to methods. See the documentation for
-#'   `afttest.formula` and `afttest.aftsrr` for details.
+#'   \code{afttest.formula} and \code{afttest.aftsrr} for details.
 #'
 #' @return An object of class \code{afttest} or \code{htest}.
-#'    An object is a list containing at least the following components:
+#'   An object is a list containing at least the following components:
 #' \describe{
-#'    \item{beta}{a vector of beta estimates based on \code{estMethod}}
-#'    \item{hypothesis}{null hypothesis for each \code{testType}}
-#'    \item{SE_process}{estimated standard error of the observed process}
-#'    \item{obs_process}{observed process}
-#'    \item{apprx_process}{approximated process}
-#'    \item{obs_std_process}{standardized observed process}
-#'    \item{apprx_std_process}{standardized approximated processes}
-#'    \item{p_value}{obtained by the unstandardized test}
-#'    \item{p_std_value}{obtained by the standardized test}
-#'    \item{DF}{a data frame of observed failure time, right censoring indicator, covariates (scaled), 
-#'    time-transformed residual based on beta estimates}
-#'    \item{npath}{the number of sample paths}
-#'    \item{testType}{testType}
-#'    \item{eqType}{eqType}
-#'    \item{estMethod}{estMethod}
-#'    \item{npathsave}{npathsave}
+#'   \item{beta}{a vector of beta estimates based on \code{estMethod}}
+#'   \item{hypothesis}{null hypothesis for each \code{testType}}
+#'   \item{SE_process}{estimated standard error of the observed process}
+#'   \item{obs_process}{observed process}
+#'   \item{apprx_process}{approximated process}
+#'   \item{obs_std_process}{standardized observed process}
+#'   \item{apprx_std_process}{standardized approximated processes}
+#'   \item{p_value}{obtained by the unstandardized test}
+#'   \item{p_std_value}{obtained by the standardized test}
+#'   \item{DF}{a data frame of observed failure time, right censoring indicator, covariates (scaled), 
+#'   time-transformed residual based on beta estimates}
+#'   \item{npath}{the number of sample paths}
+#'   \item{testType}{testType}
+#'   \item{eqType}{eqType}
+#'   \item{estMethod}{estMethod}
+#'   \item{npathsave}{npathsave}
 #' }
 #' 
-#'    For an omnibus test, the observed process and the realizations are composed of the 
-#'    n by n matrix that rows represent the t and columns represent the x in the 
-#'    time-transformed residual order.The observed process and the simulated processes
-#'    for checking a functional form and a link function are given by the n by 1 vector
-#'    which is a function of x in the time-transformed residual order. 
+#'   For an omnibus test, the observed process and the realizations are composed of the 
+#'   n by n matrix where rows represent the t and columns represent the x in the 
+#'   time-transformed residual order. The observed process and the simulated processes
+#'   for checking a functional form and a link function are given by the n by 1 vector
+#'   which is a function of x in the time-transformed residual order. 
 #' 
 #' @importFrom stats optim get_all_vars as.formula model.matrix model.frame
 #' @importFrom aftgee aftsrr aftgee
@@ -50,62 +50,68 @@ afttest <- function(object, ...) {
   UseMethod("afttest")
 }
 
+#' Model Diagnostics for AFT Models using Formulas
+#'
 #' @param object A formula expression, of the form \code{response ~ predictors}.
-#'    The \code{response} is a \code{Surv} object with right censoring.
-#'    See the documentation of \code{lm}, \code{coxph} and \code{formula} for details.
+#'   The \code{response} is a \code{Surv} object with right censoring.
+#'   See the documentation of \code{lm}, \code{coxph} and \code{formula} for details.
 #' @param data An optional data frame in which to interpret the variables occurring 
-#'    in the formula.
-#' @param npath An integer value specifies the number of approximated processes.
-#'    The default is given by 200.
+#'   in the formula.
+#' @param npath An integer value specifying the number of approximated processes.
+#'   The default is given by 200.
 #' @param testType A character string specifying the type of the test.
-#'    The following are permitted:
-#'    \describe{
-#'      \item{\code{omnibus}}{an omnibus test}
-#'      \item{\code{link}}{a link function test}
-#'      \item{\code{covForm}}{a functional form of a covariate}
+#'   The following are permitted:
+#'   \describe{
+#'     \item{\code{omnibus}}{an omnibus test}
+#'     \item{\code{link}}{a link function test}
+#'     \item{\code{covForm}}{a functional form of a covariate}
 #' }
 #' @param estMethod A character string specifying the type of the estimator used.
-#'    The readers are refered to the \pkg{aftgee} package for details.
-#'    The following are permitted:
-#'    \describe{
-#'      \item{\code{ls}}{Least-Squares Approach for Accelerated Failure Time 
-#'      with Generalized Estimating Equation}
-#'      \item{\code{rr}}{Accelerated Failure Time with Smooth Rank Regression}
+#'   The readers are referred to the \pkg{aftgee} package for details.
+#'   The following are permitted:
+#'   \describe{
+#'     \item{\code{ls}}{Least-Squares Approach for Accelerated Failure Time 
+#'     with Generalized Estimating Equation}
+#'     \item{\code{rr}}{Accelerated Failure Time with Smooth Rank Regression}
 #' }
 #' @param eqType A character string specifying the type of the 
-#'    estimating equation used to obtain the regression parameters.
-#'    The readers are refered to the \pkg{aftgee} package for details.
-#'    The following are permitted:
-#'    \describe{
-#'      \item{\code{ns}}{Regression parameters are estimated by directly solving 
-#'      the nonsmooth estimating equations.}
-#'      \item{\code{is}}{Regression parameters are estimated by directly solving 
-#'      the induced-smoothing estimating equations.}
+#'   estimating equation used to obtain the regression parameters.
+#'   The readers are referred to the \pkg{aftgee} package for details.
+#'   The following are permitted:
+#'   \describe{
+#'     \item{\code{ns}}{Regression parameters are estimated by directly solving 
+#'     the nonsmooth estimating equations.}
+#'     \item{\code{is}}{Regression parameters are estimated by directly solving 
+#'     the induced-smoothing estimating equations.}
 #' }
 #' @param covTested A character string specifying the covariate which will be tested.
-#'    The argument \code{covTested} is necessary only if \code{testType} is 
-#'    \code{covForm}.The default option for \code{covTested} is given by "1", which 
-#'    represents the first covariate in the formula argument.
-#' @param npathsave An integer value specifies he number of paths saved among all the paths.
-#'    The default is given by 50. Note that it requires a lot of memory if save all
-#'    sampled paths (N by N matrix for each npath andso npath*N*N elements)
+#'   The argument \code{covTested} is necessary only if \code{testType} is 
+#'   \code{covForm}. The default option for \code{covTested} is given by "1", which 
+#'   represents the first covariate in the formula argument.
+#' @param npathsave An integer value specifying the number of paths saved among all the paths.
+#'   The default is given by 50. Note that it requires a lot of memory if saving all
+#'   sampled paths (N by N matrix for each npath, and so npath*N*N elements).
 #' @param linApprox A logical value. If \code{TRUE}, the multiplier bootstrap is 
-#'    computed using the asymptotic linear approximation, which is significantly 
-#'    faster. If \code{FALSE}, the estimating equations are solved numerically for 
-#'    each bootstrap replication. Defaults to \code{TRUE}.
+#'   computed using the asymptotic linear approximation, which is significantly 
+#'   faster. If \code{FALSE}, the estimating equations are solved numerically for 
+#'   each bootstrap replication. Defaults to \code{TRUE}.
 #' @param seed An optional integer specifying the random seed for reproducibility.
 #' @param ... Other arguments passed to methods.
 #'  
-#' @rdname afttest
 #' @export
 afttest.formula <- function(object, data, npath = 200, testType = "omnibus", 
                             estMethod = "rr", eqType = "ns", 
                             covTested = 1, npathsave = 50, linApprox = TRUE,
                             seed = NULL, ...) {
   if (!is.null(seed)) {
+    if (!is.numeric(seed) || length(seed) != 1) {
+      stop("Argument 'seed' must be a single numeric value.")
+    }
     if (exists(".Random.seed", envir = .GlobalEnv)) {
       old_seed <- get(".Random.seed", envir = .GlobalEnv)
-      on.exit(assign(".Random.seed", old_seed, envir = .GlobalEnv))
+      on.exit(assign(".Random.seed", old_seed, envir = .GlobalEnv), add = TRUE)
+    } else {
+      on.exit(rm(".Random.seed", envir = .GlobalEnv), add = TRUE)
     }
     set.seed(seed)
   }
@@ -256,53 +262,57 @@ afttest.formula <- function(object, data, npath = 200, testType = "omnibus",
   return(out)
 }
 
-#' @param object A formula expression, of the covTested \code{response ~ predictors}.
-#'    The \code{response} is a \code{Surv} object with right censoring.
-#'    See the documentation of \code{lm}, \code{coxph} and \code{formula} for details.
+#' Model Diagnostics for Smooth Rank Regression (aftsrr) Objects
+#'
+#' @param object A fitted model object of class \code{aftsrr} from the \pkg{aftgee} package.
 #' @param data An optional data frame in which to interpret the variables occurring 
-#'    in the formula.
-#' @param npath An integer value specifies the number of approximated processes.
-#'    The default is given by 200.
+#'   in the formula.
+#' @param npath An integer value specifying the number of approximated processes.
+#'   The default is given by 200.
 #' @param testType A character string specifying the type of the test.
-#'    The following are permitted:
-#'    \describe{
-#'      \item{\code{omnibus}}{an omnibus test}
-#'      \item{\code{link}}{a link function test}
-#'      \item{\code{covForm}}{a functional covTested of a covariate}
+#'   The following are permitted:
+#'   \describe{
+#'     \item{\code{omnibus}}{an omnibus test}
+#'     \item{\code{link}}{a link function test}
+#'     \item{\code{covForm}}{a functional form of a covariate}
 #' }
 #' @param eqType A character string specifying the type of the 
-#'    estimating equation used to obtain the regression parameters.
-#'    The readers are refered to the \pkg{aftgee} package for details.
-#'    The following are permitted:
-#'    \describe{
-#'      \item{\code{ns}}{Regression parameters are estimated by directly solving 
-#'      the nonsmooth estimating equations.}
-#'      \item{\code{is}}{Regression parameters are estimated by directly solving 
-#'      the induced-smoothing estimating equations.}
+#'   estimating equation used to obtain the regression parameters.
+#'   The readers are referred to the \pkg{aftgee} package for details.
+#'   The following are permitted:
+#'   \describe{
+#'     \item{\code{ns}}{Regression parameters are estimated by directly solving 
+#'     the nonsmooth estimating equations.}
+#'     \item{\code{is}}{Regression parameters are estimated by directly solving 
+#'     the induced-smoothing estimating equations.}
 #' }
 #' @param covTested A character string specifying the covariate which will be tested.
-#'    The argument \code{covTested} is necessary only if \code{testType} is 
-#'    \code{covForm}.The default option for \code{covTested} is given by "1", which 
-#'    represents the first covariate in the formula argument.
-#' @param npathsave An integer value specifies he number of paths saved among all the paths.
-#'    The default is given by 50. Note that it requires a lot of memory if save all
-#'    sampled paths (N by N matrix for each npath andso npath*N*N elements)
+#'   The argument \code{covTested} is necessary only if \code{testType} is 
+#'   \code{covForm}. The default option for \code{covTested} is given by "1", which 
+#'   represents the first covariate in the formula argument.
+#' @param npathsave An integer value specifying the number of paths saved among all the paths.
+#'   The default is given by 50. Note that it requires a lot of memory if saving all
+#'   sampled paths (N by N matrix for each npath, and so npath*N*N elements).
 #' @param linApprox A logical value. If \code{TRUE}, the multiplier bootstrap is 
-#'    computed using the asymptotic linear approximation, which is significantly 
-#'    faster. If \code{FALSE}, the estimating equations are solved numerically for 
-#'    each bootstrap replication. Defaults to \code{TRUE}.
+#'   computed using the asymptotic linear approximation, which is significantly 
+#'   faster. If \code{FALSE}, the estimating equations are solved numerically for 
+#'   each bootstrap replication. Defaults to \code{TRUE}.
 #' @param seed An optional integer specifying the random seed for reproducibility.
 #' @param ... Other arguments passed to methods. 
 #' 
-#' @rdname afttest
 #' @export
 afttest.aftsrr <- function(object, data, npath = 200, testType = "omnibus", eqType = "ns", 
                            covTested = 1, npathsave = 50, linApprox = TRUE,
                            seed = NULL, ...) {
   if (!is.null(seed)) {
+    if (!is.numeric(seed) || length(seed) != 1) {
+      stop("Argument 'seed' must be a single numeric value.")
+    }
     if (exists(".Random.seed", envir = .GlobalEnv)) {
       old_seed <- get(".Random.seed", envir = .GlobalEnv)
-      on.exit(assign(".Random.seed", old_seed, envir = .GlobalEnv))
+      on.exit(assign(".Random.seed", old_seed, envir = .GlobalEnv), add = TRUE)
+    } else {
+      on.exit(rm(".Random.seed", envir = .GlobalEnv), add = TRUE)
     }
     set.seed(seed)
   }
@@ -434,53 +444,57 @@ afttest.aftsrr <- function(object, data, npath = 200, testType = "omnibus", eqTy
   return(out)
 }
 
-#' @param object A formula expression, of the form \code{response ~ predictors}.
-#'    The \code{response} is a \code{Surv} object with right censoring.
-#'    See the documentation of \code{lm}, \code{coxph} and \code{formula} for details.
+#' Model Diagnostics for Generalized Estimating Equation (aftgee) Objects
+#'
+#' @param object A fitted model object of class \code{aftgee} from the \pkg{aftgee} package.
 #' @param data An optional data frame in which to interpret the variables occurring 
-#'    in the formula.
-#' @param npath An integer value specifies the number of approximated processes.
-#'    The default is given by 200.
+#'   in the formula.
+#' @param npath An integer value specifying the number of approximated processes.
+#'   The default is given by 200.
 #' @param testType A character string specifying the type of the test.
-#'    The following are permitted:
-#'    \describe{
-#'      \item{\code{omnibus}}{an omnibus test}
-#'      \item{\code{link}}{a link function test}
-#'      \item{\code{covForm}}{a functional form of a covariate}
+#'   The following are permitted:
+#'   \describe{
+#'     \item{\code{omnibus}}{an omnibus test}
+#'     \item{\code{link}}{a link function test}
+#'     \item{\code{covForm}}{a functional form of a covariate}
 #' }
 #' @param eqType A character string specifying the type of the 
-#'    estimating equation used to obtain the regression parameters.
-#'    The readers are refered to the \pkg{aftgee} package for details.
-#'    The following are permitted:
-#'    \describe{
-#'      \item{\code{ns}}{Regression parameters are estimated by directly solving 
-#'      the nonsmooth estimating equations.}
-#'      \item{\code{is}}{Regression parameters are estimated by directly solving 
-#'      the induced-smoothing estimating equations.}
+#'   estimating equation used to obtain the regression parameters.
+#'   The readers are referred to the \pkg{aftgee} package for details.
+#'   The following are permitted:
+#'   \describe{
+#'     \item{\code{ns}}{Regression parameters are estimated by directly solving 
+#'     the nonsmooth estimating equations.}
+#'     \item{\code{is}}{Regression parameters are estimated by directly solving 
+#'     the induced-smoothing estimating equations.}
 #' }
 #' @param covTested A character string specifying the covariate which will be tested.
-#'    The argument \code{covTested} is necessary only if \code{testType} is 
-#'    \code{covForm}.The default option for \code{covTested} is given by "1", which 
-#'    represents the first covariate in the formula argument.
-#' @param npathsave An integer value specifies he number of paths saved among all the paths.
-#'    The default is given by 50. Note that it requires a lot of memory if save all
-#'    sampled paths (N by N matrix for each npath andso npath*N*N elements)
+#'   The argument \code{covTested} is necessary only if \code{testType} is 
+#'   \code{covForm}. The default option for \code{covTested} is given by "1", which 
+#'   represents the first covariate in the formula argument.
+#' @param npathsave An integer value specifying the number of paths saved among all the paths.
+#'   The default is given by 50. Note that it requires a lot of memory if saving all
+#'   sampled paths (N by N matrix for each npath, and so npath*N*N elements).
 #' @param linApprox A logical value. If \code{TRUE}, the multiplier bootstrap is 
-#'    computed using the asymptotic linear approximation, which is significantly 
-#'    faster. If \code{FALSE}, the estimating equations are solved numerically for 
-#'    each bootstrap replication. Defaults to \code{TRUE}.
+#'   computed using the asymptotic linear approximation, which is significantly 
+#'   faster. If \code{FALSE}, the estimating equations are solved numerically for 
+#'   each bootstrap replication. Defaults to \code{TRUE}.
 #' @param seed An optional integer specifying the random seed for reproducibility.
 #' @param ... Other arguments passed to methods. 
 #' 
-#' @rdname afttest
 #' @export
 afttest.aftgee <- function(object, data, npath = 200, testType = "omnibus", eqType = "ls", 
                            covTested = 1, npathsave = 50, linApprox = TRUE,
                            seed = NULL, ...) {
   if (!is.null(seed)) {
+    if (!is.numeric(seed) || length(seed) != 1) {
+      stop("Argument 'seed' must be a single numeric value.")
+    }
     if (exists(".Random.seed", envir = .GlobalEnv)) {
       old_seed <- get(".Random.seed", envir = .GlobalEnv)
-      on.exit(assign(".Random.seed", old_seed, envir = .GlobalEnv))
+      on.exit(assign(".Random.seed", old_seed, envir = .GlobalEnv), add = TRUE)
+    } else {
+      on.exit(rm(".Random.seed", envir = .GlobalEnv), add = TRUE)
     }
     set.seed(seed)
   }

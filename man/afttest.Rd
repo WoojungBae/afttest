@@ -2,221 +2,103 @@
 % Please edit documentation in R/afttest.R
 \name{afttest}
 \alias{afttest}
-\alias{afttest.formula}
-\alias{afttest.aftsrr}
-\alias{afttest.aftgee}
 \title{Model Diagnostics for Semiparametric AFT Models}
 \usage{
 afttest(object, ...)
-
-\method{afttest}{formula}(
-  object,
-  data,
-  npath = 200,
-  testType = "omnibus",
-  estMethod = "rr",
-  eqType = "ns",
-  covTested = 1,
-  npathsave = 50,
-  linApprox = TRUE,
-  seed = NULL,
-  ...
-)
-
-\method{afttest}{aftsrr}(
-  object,
-  data,
-  npath = 200,
-  testType = "omnibus",
-  eqType = "ns",
-  covTested = 1,
-  npathsave = 50,
-  linApprox = TRUE,
-  seed = NULL,
-  ...
-)
-
-\method{afttest}{aftgee}(
-  object,
-  data,
-  npath = 200,
-  testType = "omnibus",
-  eqType = "ls",
-  covTested = 1,
-  npathsave = 50,
-  linApprox = TRUE,
-  seed = NULL,
-  ...
-)
 }
 \arguments{
-\item{object}{A formula expression, of the form \code{response ~ predictors}.
-The \code{response} is a \code{Surv} object with right censoring.
-See the documentation of \code{lm}, \code{coxph} and \code{formula} for details.}
+\item{object}{A formula or a fitted model object (e.g., from \code{aftsrr} or \code{aftgee}).}
 
-\item{...}{Other arguments passed to methods.}
-
-\item{data}{An optional data frame in which to interpret the variables occurring 
-in the formula.}
-
-\item{npath}{An integer value specifies the number of approximated processes.
-The default is given by 200.}
-
-\item{testType}{A character string specifying the type of the test.
-   The following are permitted:
-   \describe{
-     \item{\code{omnibus}}{an omnibus test}
-     \item{\code{link}}{a link function test}
-     \item{\code{covForm}}{a functional form of a covariate}
-}}
-
-\item{estMethod}{A character string specifying the type of the estimator used.
-   The readers are refered to the \pkg{aftgee} package for details.
-   The following are permitted:
-   \describe{
-     \item{\code{ls}}{Least-Squares Approach for Accelerated Failure Time 
-     with Generalized Estimating Equation}
-     \item{\code{rr}}{Accelerated Failure Time with Smooth Rank Regression}
-}}
-
-\item{eqType}{A character string specifying the type of the 
-   estimating equation used to obtain the regression parameters.
-   The readers are refered to the \pkg{aftgee} package for details.
-   The following are permitted:
-   \describe{
-     \item{\code{ns}}{Regression parameters are estimated by directly solving 
-     the nonsmooth estimating equations.}
-     \item{\code{is}}{Regression parameters are estimated by directly solving 
-     the induced-smoothing estimating equations.}
-}}
-
-\item{covTested}{A character string specifying the covariate which will be tested.
-The argument \code{covTested} is necessary only if \code{testType} is 
-\code{covForm}.The default option for \code{covTested} is given by "1", which 
-represents the first covariate in the formula argument.}
-
-\item{npathsave}{An integer value specifies he number of paths saved among all the paths.
-The default is given by 50. Note that it requires a lot of memory if save all
-sampled paths (N by N matrix for each npath andso npath*N*N elements)}
-
-\item{linApprox}{A logical value. If \code{TRUE}, the multiplier bootstrap is 
-computed using the asymptotic linear approximation, which is significantly 
-faster. If \code{FALSE}, the estimating equations are solved numerically for 
-each bootstrap replication. Defaults to \code{TRUE}.}
-
-\item{seed}{An optional integer specifying the random seed for reproducibility.}
+\item{...}{Other arguments passed to methods. See the documentation for
+\code{afttest.formula} and \code{afttest.aftsrr} for details.}
 }
 \value{
 An object of class \code{afttest} or \code{htest}.
-   An object is a list containing at least the following components:
+  An object is a list containing at least the following components:
 \describe{
-   \item{beta}{a vector of beta estimates based on \code{estMethod}}
-   \item{hypothesis}{null hypothesis for each \code{testType}}
-   \item{SE_process}{estimated standard error of the observed process}
-   \item{obs_process}{observed process}
-   \item{apprx_process}{approximated process}
-   \item{obs_std_process}{standardized observed process}
-   \item{apprx_std_process}{standardized approximated processes}
-   \item{p_value}{obtained by the unstandardized test}
-   \item{p_std_value}{obtained by the standardized test}
-   \item{DF}{a data frame of observed failure time, right censoring indicator, covariates (scaled), 
-   time-transformed residual based on beta estimates}
-   \item{npath}{the number of sample paths}
-   \item{testType}{testType}
-   \item{eqType}{eqType}
-   \item{estMethod}{estMethod}
-   \item{npathsave}{npathsave}
+  \item{beta}{a vector of beta estimates based on \code{estMethod}}
+  \item{hypothesis}{null hypothesis for each \code{testType}}
+  \item{SE_process}{estimated standard error of the observed process}
+  \item{obs_process}{observed process}
+  \item{apprx_process}{approximated process}
+  \item{obs_std_process}{standardized observed process}
+  \item{apprx_std_process}{standardized approximated processes}
+  \item{p_value}{obtained by the unstandardized test}
+  \item{p_std_value}{obtained by the standardized test}
+  \item{DF}{a data frame of observed failure time, right censoring indicator, covariates (scaled), 
+  time-transformed residual based on beta estimates}
+  \item{npath}{the number of sample paths}
+  \item{testType}{testType}
+  \item{eqType}{eqType}
+  \item{estMethod}{estMethod}
+  \item{npathsave}{npathsave}
 }
 
-   For an omnibus test, the observed process and the realizations are composed of the 
-   n by n matrix that rows represent the t and columns represent the x in the 
-   time-transformed residual order.The observed process and the simulated processes
-   for checking a functional form and a link function are given by the n by 1 vector
-   which is a function of x in the time-transformed residual order.
+  For an omnibus test, the observed process and the realizations are composed of the 
+  n by n matrix where rows represent the t and columns represent the x in the 
+  time-transformed residual order. The observed process and the simulated processes
+  for checking a functional form and a link function are given by the n by 1 vector
+  which is a function of x in the time-transformed residual order.
 }
 \description{
 Performs model-checking procedures for a semiparametric AFT model.
 This is a generic function with methods for formulas and fitted objects
-from the `aftgee` package.
+from the \pkg{aftgee} package.
 }
 \examples{
+library(survival)
+library(aftgee)
+
 datgen <- function(n = 100) {
   z1 <- rbinom(n, 1, 0.5)
   z2 <- rnorm(n)
   e <- rnorm(n)
-  tt <- exp(2 + z1 + z2 + 0.5*z2^{2}+ e)
+  tt <- exp(2 + z1 + z2 + 0.5 * z2^2 + e)
   cen <- runif(n, 0, 100)
   data.frame(Time = pmin(tt, cen), status = 1 * (tt < cen),
              z1 = z1, z2 = z2, id = 1:n)
 }
 set.seed(1)
-simdata = datgen(300)
+simdata <- datgen(300)
 
-# linApprox = TRUE
-result = afttest(object = Surv(Time, status) ~ z1 + z2, data = simdata,
-                 npath = 100, testType = "covForm", estMethod = "rr",
-                 eqType = "ns", covTested = "z2", npathsave = 50,
-                 linApprox = TRUE, seed = 1)
-result$p_value
-result$p_std_value
-print(result)
-summary(result)
-plot(result, std = FALSE)
-plot(result, std = TRUE)
+# --------------------------------------------------
+# Method 1: Formula (Runs quickly for CRAN tests)
+# --------------------------------------------------
+result_form <- afttest(Surv(Time, status) ~ z1 + z2, data = simdata,
+                       npath = 50, testType = "covForm", estMethod = "rr",
+                       eqType = "ns", covTested = "z2", npathsave = 50,
+                       linApprox = TRUE, seed = 1)
+print(result_form)
+plot(result_form, std = TRUE)
 
-# result = afttest(object = Surv(Time, status) ~ z1 + z2, data = simdata,
-#                  npath = 100, testType = "covForm", estMethod = "rr",
-#                  eqType = "is", covTested = "z2", npathsave = 50,
-#                  linApprox = TRUE, seed = 1)
-# result$p_value
-# result$p_std_value
-# print(result)
-# summary(result)
-# plot(result, std = FALSE)
-# plot(result, std = TRUE)
-#
-# result = afttest(object = Surv(Time, status) ~ z1 + z2, data = simdata,
-#                  npath = 100, testType = "covForm", estMethod = "ls",
-#                  eqType = "ls", covTested = "z2", npathsave = 50,
-#                  linApprox = TRUE, seed = 1)
-# result$p_value
-# result$p_std_value
-# print(result)
-# summary(result)
-# plot(result, std = FALSE)
-# plot(result, std = TRUE)
-#
-# # linApprox = FALSE
-# result = afttest(object = Surv(Time, status) ~ z1 + z2, data = simdata,
-#                  npath = 100, testType = "covForm", estMethod = "rr",
-#                  eqType = "ns", covTested = "z2", npathsave = 50,
-#                  linApprox = FALSE, seed = 1)
-# result$p_value
-# result$p_std_value
-# print(result)
-# summary(result)
-# plot(result, std = FALSE)
-# plot(result, std = TRUE)
-#
-# result = afttest(object = Surv(Time, status) ~ z1 + z2, data = simdata,
-#                  npath = 100, testType = "covForm", estMethod = "rr",
-#                  eqType = "is", covTested = "z2", npathsave = 50,
-#                  linApprox = FALSE, seed = 1)
-# result$p_value
-# result$p_std_value
-# print(result)
-# summary(result)
-# plot(result, std = FALSE)
-# plot(result, std = TRUE)
-#
-# result = afttest(object = Surv(Time, status) ~ z1 + z2, data = simdata,
-#                  npath = 100, testType = "covForm", estMethod = "ls",
-#                  eqType = "ls", covTested = "z2", npathsave = 50,
-#                  linApprox = FALSE, seed = 1)
-# result$p_value
-# result$p_std_value
-# print(result)
-# summary(result)
-# plot(result, std = FALSE)
-# plot(result, std = TRUE)
+\donttest{
+  # --------------------------------------------------
+  # Method 2: Fitted aftsrr object (Induced Smoothing)
+  # --------------------------------------------------
+  fit_srr <- aftsrr(Surv(Time, status) ~ z1 + z2, data = simdata, 
+                    eqType = "is", rankWeights = "gehan")
+  result_srr <- afttest(fit_srr, data = simdata, npath = 100, testType = "covForm", 
+                        covTested = "z2", npathsave = 50, 
+                        linApprox = TRUE, seed = 1)
+  summary(result_srr)
+  plot(result_srr, std = FALSE)
+  
+  # --------------------------------------------------
+  # Method 3: Fitted aftgee object (Least Squares)
+  # --------------------------------------------------
+  fit_gee <- aftgee(Surv(Time, status) ~ z1 + z2, data = simdata)
+  result_gee <- afttest(fit_gee, data = simdata, npath = 100, testType = "covForm", 
+                        covTested = "z2", npathsave = 50, 
+                        linApprox = TRUE, seed = 1)
+  print(result_gee)
+  
+  # --------------------------------------------------
+  # Method 4: Standard Resampling (linApprox = FALSE)
+  # --------------------------------------------------
+  result_resamp <- afttest(Surv(Time, status) ~ z1 + z2, data = simdata,
+                           npath = 100, testType = "covForm", estMethod = "rr",
+                           eqType = "ns", covTested = "z2", npathsave = 50,
+                           linApprox = FALSE, seed = 1)
+  summary(result_resamp)
+}
 }

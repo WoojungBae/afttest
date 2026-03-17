@@ -8,3 +8,4 @@
 This function is imported from the \code{survival} package. See
 \code{\link[survival]{Surv}}.
 }
+\keyword{internal}
