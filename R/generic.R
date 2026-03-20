@@ -357,17 +357,16 @@ plot.afttest <- function(x, npath = 50, std = TRUE, quantile = NULL, ...){
   }
 }
 
-##############################################################################
-## Surv
-##############################################################################
-#' \code{Surv} function imported from \code{survival}
-#'
-#' This function is imported from the \code{survival} package. See
-#' \code{\link[survival]{Surv}}.
-#'
-#' @importFrom survival Surv
-#' @name export_Surv
-#' @aliases Surv 
-#' @export Surv
-#' @keywords internal
-NULL
+#' ##############################################################################
+#' ## Surv
+#' ##############################################################################
+#' #' \code{Surv} function imported from \code{survival}
+#' #'
+#' #' This function is imported from the \code{survival} package. See
+#' #' \code{\link[survival]{Surv}}.
+#' #'
+#' #' @importFrom survival Surv
+#' #' @name Surv
+#' #' @aliases Surv 
+#' #' @export Surv
+#' NULL

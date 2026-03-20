@@ -25,8 +25,8 @@ An object of class \code{afttest} or \code{htest}.
   \item{apprx_std_process}{standardized approximated processes}
   \item{p_value}{obtained by the unstandardized test}
   \item{p_std_value}{obtained by the standardized test}
-  \item{DF}{a data frame of observed failure time, right censoring indicator, covariates (scaled), 
-  time-transformed residual based on beta estimates}
+  \item{DF}{a data frame of observed failure time, right censoring indicator, 
+  covariates (scaled), time-transformed residual based on beta estimates}
   \item{npath}{the number of sample paths}
   \item{testType}{testType}
   \item{eqType}{eqType}
@@ -34,11 +34,12 @@ An object of class \code{afttest} or \code{htest}.
   \item{npathsave}{npathsave}
 }
 
-  For an omnibus test, the observed process and the realizations are composed of the 
-  n by n matrix where rows represent the t and columns represent the x in the 
-  time-transformed residual order. The observed process and the simulated processes
-  for checking a functional form and a link function are given by the n by 1 vector
-  which is a function of x in the time-transformed residual order.
+  For an omnibus test, the observed process and the realizations are composed 
+  of the n by n matrix where rows represent the t and columns represent the x 
+  in the time-transformed residual order. The observed process and the 
+  simulated processesfor checking a functional form and a link function are 
+  given by the n by 1 vectorwhich is a function of x in the time-transformed 
+  residual order.
 }
 \description{
 Performs model-checking procedures for a semiparametric AFT model.
@@ -48,6 +49,7 @@ from the \pkg{aftgee} package.
 \examples{
 library(survival)
 library(aftgee)
+library(afttest)
 
 datgen <- function(n = 100) {
   z1 <- rbinom(n, 1, 0.5)
@@ -72,33 +74,33 @@ print(result_form)
 plot(result_form, std = TRUE)
 
 \donttest{
-  # --------------------------------------------------
-  # Method 2: Fitted aftsrr object (Induced Smoothing)
-  # --------------------------------------------------
-  fit_srr <- aftsrr(Surv(Time, status) ~ z1 + z2, data = simdata, 
-                    eqType = "is", rankWeights = "gehan")
-  result_srr <- afttest(fit_srr, data = simdata, npath = 100, testType = "covForm", 
-                        covTested = "z2", npathsave = 50, 
-                        linApprox = TRUE, seed = 1)
-  summary(result_srr)
-  plot(result_srr, std = FALSE)
-  
-  # --------------------------------------------------
-  # Method 3: Fitted aftgee object (Least Squares)
-  # --------------------------------------------------
-  fit_gee <- aftgee(Surv(Time, status) ~ z1 + z2, data = simdata)
-  result_gee <- afttest(fit_gee, data = simdata, npath = 100, testType = "covForm", 
-                        covTested = "z2", npathsave = 50, 
-                        linApprox = TRUE, seed = 1)
-  print(result_gee)
-  
-  # --------------------------------------------------
-  # Method 4: Standard Resampling (linApprox = FALSE)
-  # --------------------------------------------------
-  result_resamp <- afttest(Surv(Time, status) ~ z1 + z2, data = simdata,
-                           npath = 100, testType = "covForm", estMethod = "rr",
-                           eqType = "ns", covTested = "z2", npathsave = 50,
-                           linApprox = FALSE, seed = 1)
-  summary(result_resamp)
+# --------------------------------------------------
+# Method 2: Fitted aftsrr object (Induced Smoothing)
+# --------------------------------------------------
+fit_srr <- aftsrr(Surv(Time, status) ~ z1 + z2, data = simdata, 
+                  eqType = "is", rankWeights = "gehan")
+result_srr <- afttest(fit_srr, data = simdata, npath = 100, testType = "covForm", 
+                      covTested = "z2", npathsave = 50, 
+                      linApprox = TRUE, seed = 1)
+summary(result_srr)
+plot(result_srr, std = FALSE)
+
+# --------------------------------------------------
+# Method 3: Fitted aftgee object (Least Squares)
+# --------------------------------------------------
+fit_gee <- aftgee(Surv(Time, status) ~ z1 + z2, data = simdata)
+result_gee <- afttest(fit_gee, data = simdata, npath = 100, testType = "covForm", 
+                      covTested = "z2", npathsave = 50, 
+                      linApprox = TRUE, seed = 1)
+print(result_gee)
+
+# --------------------------------------------------
+# Method 4: Standard Resampling (linApprox = FALSE)
+# --------------------------------------------------
+result_resamp <- afttest(Surv(Time, status) ~ z1 + z2, data = simdata,
+                         npath = 100, testType = "covForm", estMethod = "rr",
+                         eqType = "ns", covTested = "z2", npathsave = 50,
+                         linApprox = FALSE, seed = 1)
+summary(result_resamp)
 }
 }

@@ -25,8 +25,8 @@
 #'   \item{apprx_std_process}{standardized approximated processes}
 #'   \item{p_value}{obtained by the unstandardized test}
 #'   \item{p_std_value}{obtained by the standardized test}
-#'   \item{DF}{a data frame of observed failure time, right censoring indicator, covariates (scaled), 
-#'   time-transformed residual based on beta estimates}
+#'   \item{DF}{a data frame of observed failure time, right censoring indicator, 
+#'   covariates (scaled), time-transformed residual based on beta estimates}
 #'   \item{npath}{the number of sample paths}
 #'   \item{testType}{testType}
 #'   \item{eqType}{eqType}
@@ -34,11 +34,12 @@
 #'   \item{npathsave}{npathsave}
 #' }
 #' 
-#'   For an omnibus test, the observed process and the realizations are composed of the 
-#'   n by n matrix where rows represent the t and columns represent the x in the 
-#'   time-transformed residual order. The observed process and the simulated processes
-#'   for checking a functional form and a link function are given by the n by 1 vector
-#'   which is a function of x in the time-transformed residual order. 
+#'   For an omnibus test, the observed process and the realizations are composed 
+#'   of the n by n matrix where rows represent the t and columns represent the x 
+#'   in the time-transformed residual order. The observed process and the 
+#'   simulated processesfor checking a functional form and a link function are 
+#'   given by the n by 1 vectorwhich is a function of x in the time-transformed 
+#'   residual order. 
 #' 
 #' @importFrom stats optim get_all_vars as.formula model.matrix model.frame
 #' @importFrom aftgee aftsrr aftgee
@@ -152,7 +153,7 @@ afttest.formula <- function(object, data, npath = 200, testType = "omnibus",
   }
   
   # beta coefficients from aftsrr function (aftgee package) - with original covariates
-  formula <- stats::as.formula(paste0("Surv(time,delta)~",paste(covnames, collapse="+")))
+  formula <- stats::as.formula(paste0("survival::Surv(time,delta)~",paste(covnames, collapse="+")))
   if (estMethod == "ls") {
     beta <- - aftgee::aftgee(formula, data = DF)$coef.res[-1]
   } else if (estMethod == "rr") {
@@ -233,7 +234,7 @@ afttest.formula <- function(object, data, npath = 200, testType = "omnibus",
   }
   
   # beta coefficients from aftsrr function (aftgee package) - with scaled covariates
-  formula <- stats::as.formula(paste0("Surv(time,delta)~",paste(covnames, collapse="+")))
+  formula <- stats::as.formula(paste0("survival::Surv(time,delta)~",paste(covnames, collapse="+")))
   if (estMethod == "ls") {
     b <- - aftgee::aftgee(formula, data = DF)$coef.res[-1]
     if (!eqType == "ls") {
@@ -424,7 +425,7 @@ afttest.aftsrr <- function(object, data, npath = 200, testType = "omnibus", eqTy
   }
   
   # beta coefficients from aftsrr function (aftgee package)
-  formula <- stats::as.formula(paste0("Surv(time,delta)~",paste(covnames, collapse="+")))
+  formula <- stats::as.formula(paste0("survival::Surv(time,delta)~",paste(covnames, collapse="+")))
   b <- - aftgee::aftsrr(formula, data = DF, eqType = eqType, rankWeights = "gehan")$beta
   
   # This function contains the core logic (the C++ calls)
@@ -604,7 +605,7 @@ afttest.aftgee <- function(object, data, npath = 200, testType = "omnibus", eqTy
   }
   
   # beta coefficients from aftsrr function (aftgee package)
-  formula <- stats::as.formula(paste0("Surv(time,delta)~",paste(covnames, collapse="+")))
+  formula <- stats::as.formula(paste0("survival::Surv(time,delta)~",paste(covnames, collapse="+")))
   b <- - aftgee::aftgee(formula, data = DF)$coef.res[-1]
   
   # This function contains the core logic (the C++ calls)

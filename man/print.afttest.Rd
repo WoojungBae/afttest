@@ -20,6 +20,7 @@ Print Method for Semiparametric AFT Model Diagnostics
 \examples{
 library(survival)
 library(aftgee)
+library(afttest)
 
 datgen <- function(n = 100) {
   z1 <- rbinom(n, 1, 0.5)
@@ -44,33 +45,33 @@ print(result_form)
 plot(result_form, std = TRUE)
 
 \donttest{
-  # --------------------------------------------------
-  # Method 2: Fitted aftsrr object (Induced Smoothing)
-  # --------------------------------------------------
-  fit_srr <- aftsrr(Surv(Time, status) ~ z1 + z2, data = simdata, 
-                    eqType = "is", rankWeights = "gehan")
-  result_srr <- afttest(fit_srr, data = simdata, npath = 100, testType = "covForm", 
-                        covTested = "z2", npathsave = 50, 
-                        linApprox = TRUE, seed = 1)
-  summary(result_srr)
-  plot(result_srr, std = FALSE)
-  
-  # --------------------------------------------------
-  # Method 3: Fitted aftgee object (Least Squares)
-  # --------------------------------------------------
-  fit_gee <- aftgee(Surv(Time, status) ~ z1 + z2, data = simdata)
-  result_gee <- afttest(fit_gee, data = simdata, npath = 100, testType = "covForm", 
-                        covTested = "z2", npathsave = 50, 
-                        linApprox = TRUE, seed = 1)
-  print(result_gee)
-  
-  # --------------------------------------------------
-  # Method 4: Standard Resampling (linApprox = FALSE)
-  # --------------------------------------------------
-  result_resamp <- afttest(Surv(Time, status) ~ z1 + z2, data = simdata,
-                           npath = 100, testType = "covForm", estMethod = "rr",
-                           eqType = "ns", covTested = "z2", npathsave = 50,
-                           linApprox = FALSE, seed = 1)
-  summary(result_resamp)
+# --------------------------------------------------
+# Method 2: Fitted aftsrr object (Induced Smoothing)
+# --------------------------------------------------
+fit_srr <- aftsrr(Surv(Time, status) ~ z1 + z2, data = simdata, 
+                  eqType = "is", rankWeights = "gehan")
+result_srr <- afttest(fit_srr, data = simdata, npath = 100, testType = "covForm", 
+                      covTested = "z2", npathsave = 50, 
+                      linApprox = TRUE, seed = 1)
+summary(result_srr)
+plot(result_srr, std = FALSE)
+
+# --------------------------------------------------
+# Method 3: Fitted aftgee object (Least Squares)
+# --------------------------------------------------
+fit_gee <- aftgee(Surv(Time, status) ~ z1 + z2, data = simdata)
+result_gee <- afttest(fit_gee, data = simdata, npath = 100, testType = "covForm", 
+                      covTested = "z2", npathsave = 50, 
+                      linApprox = TRUE, seed = 1)
+print(result_gee)
+
+# --------------------------------------------------
+# Method 4: Standard Resampling (linApprox = FALSE)
+# --------------------------------------------------
+result_resamp <- afttest(Surv(Time, status) ~ z1 + z2, data = simdata,
+                         npath = 100, testType = "covForm", estMethod = "rr",
+                         eqType = "ns", covTested = "z2", npathsave = 50,
+                         linApprox = FALSE, seed = 1)
+summary(result_resamp)
 }
 }

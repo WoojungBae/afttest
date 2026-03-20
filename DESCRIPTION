@@ -2,7 +2,7 @@ Package: afttest
 Type: Package
 Title: Model Diagnostics for Accelerated Failure Time Models
 Version: 4.5.3
-Date: 2026-3-16 EDT
+Date: 2026-3-20 EDT
 Authors@R: c(
     person(given = "Woojung", family = "Bae", 
            email = "matt.woojung@gmail.com", 
@@ -31,6 +31,8 @@ Description: A collection of model checking methods for semiparametric
     Computing, 34 (3), 117 <doi:10.1007/s11222-024-10431-7>; Diagnostics for 
     semiparametric accelerated failure time models with R package 'afttest', 
     arXiv, <doi:10.48550/arXiv.2511.09823>.
+Depends: 
+    R (>= 3.4.0)
 Imports: 
     survival, 
     aftgee, 
@@ -43,8 +45,6 @@ Suggests:
     knitr,
     rmarkdown,
     testthat (>= 3.0.0)
-Depends: 
-    R (>= 3.4.0)
 Config/testthat/edition: 3
 LazyData: true
 License: GPL (>= 3)
