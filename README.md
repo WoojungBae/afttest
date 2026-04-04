@@ -135,17 +135,3 @@ Accelerated Failure Time Models. *CRAN*, **CRAN.R-project.org/package=afttest**.
 Chiou, S., Kang, S., and Yan, J. (2014). Fitting accelerated failure time model 
 in routine survival analysis with R package aftgee. 
 *Journal of Statistical Software*, **61**(11): 1--23.
-Bae, W., Choi, D., Yan, J., Kang, S. (2025). afttest: model diagnostics for 
-semiparametric accelerated failure time models in R. *arXiv*, 
-**arxiv.org/abs/2511.09823**.
-
-Choi, D., Bae, W., Yan, J., and Kang, S. (2024). A general model-checking 
-procedure for semiparametric accelerated failure time models. 
-*Statistics and Computing*, **34**(3) 117
-
-Bae, W., Choi, D., Yan, J., Kang, S. (2022). afttest: Model Diagnostics for 
-Accelerated Failure Time Models. *CRAN*, **CRAN.R-project.org/package=afttest**.
-
-Chiou, S., Kang, S., and Yan, J. (2014). Fitting accelerated failure time model 
-in routine survival analysis with R package aftgee. 
-*Journal of Statistical Software*, **61**(11): 1--23. 
