@@ -83,10 +83,10 @@ parameter settings.
 ## Simulations reported in the paper
 
 - **Table 1:** Only the omnibus test was considered, with sample sizes 
-**n = 100** and **n = 300**, each based on **10 simulation runs**, comparing 
+**n = 100** and **n = 500**, each based on **10 simulation runs**, comparing 
 **`linApprox = TRUE`** versus **`linApprox = FALSE`**.
 - **Table 2:** For each combination of **omnibus**, **link**, and **covForm**, 
-simulations were run with sample sizes **n = 100** and **n = 300**, each based on 
+simulations were run with sample sizes **n = 100** and **n = 500**, each based on 
 **100 simulation runs**, with **`gamma = 0.0`** and **`0.5`**. Results report the 
 empirical **Type I error** and **power** for **`linApprox = TRUE`**.
 

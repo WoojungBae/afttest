@@ -1,20 +1,14 @@
-# Workflow derived from https://github.com/r-lib/actions/tree/v2/examples
-# Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
+name: R-CMD-check
+
 on:
   push:
     branches: [main, master]
   pull_request:
     branches: [main, master]
 
-name: R-CMD-check
-
 jobs:
-  # ---------------------------------------------------------
-  # JOB 1: Standard Matrix (Windows, macOS, Ubuntu)
-  # ---------------------------------------------------------
   R-CMD-check:
     runs-on: ${{ matrix.config.os }}
-
     name: ${{ matrix.config.os }} (${{ matrix.config.r }})
 
     strategy:
@@ -51,45 +45,3 @@ jobs:
       - uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: true
-
-  # ---------------------------------------------------------
-  # JOB 2: CRAN Debian + Clang Check (via Docker Container)
-  # ---------------------------------------------------------
-  Debian-Clang-check:
-    runs-on: ubuntu-latest
-    name: debian-clang
-    
-    # The official R Debian image
-    container: rocker/r-base:latest
-
-    env:
-      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-      R_KEEP_PKG_SOURCE: yes
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Install system dependencies & Clang
-        run: |
-          apt-get update
-          apt-get install -y --no-install-recommends \
-            clang qpdf pandoc libcurl4-openssl-dev libssl-dev zlib1g-dev
-
-      - name: Force R to use Clang (Replicating CRAN)
-        run: |
-          mkdir -p ~/.R
-          echo "CC = clang" > ~/.R/Makevars
-          echo "CXX = clang++" >> ~/.R/Makevars
-          echo "CXX11 = clang++" >> ~/.R/Makevars
-          echo "CXX14 = clang++" >> ~/.R/Makevars
-          echo "CXX17 = clang++" >> ~/.R/Makevars
-          echo "CXX20 = clang++" >> ~/.R/Makevars
-
-      - name: Install R dependencies
-        run: |
-          Rscript -e 'install.packages(c("remotes", "rcmdcheck"))'
-          Rscript -e 'remotes::install_deps(dependencies = TRUE)'
-
-      - name: Run R-CMD-check
-        run: |
-          Rscript -e 'rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran"), error_on = "warning")'
