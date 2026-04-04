@@ -14,3 +14,9 @@
 *.eps
 
 update.R
+Makefile
+*.bib
+*.tex
+*.bbl
+*.log
+*.synctex.gz

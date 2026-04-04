@@ -10,20 +10,23 @@ mirror](https://cranlogs.r-pkg.org/badges/afttest)](https://CRAN.R-project.org/p
 The R package **afttest** is intended to be a user-friendly *supplementary*
 package to the base package **aftgee**.
 
-## Features
+# Features
+
 In addition to the R interface, **afttest** provides a C++ header-only library 
 integrated with **Rcpp**, which allows the construction of spline basis 
 functions directly in C++ with the help of **Rcpp** and **RcppArmadillo**. 
 
-## Installation of CRAN Version
+# Installation of CRAN Version
+
 You can install the released version from
-[CRAN](https://CRAN.R-project.org/package=afttest).
+[CRAN](CRAN.R-project.org/package=afttest).
 
 ``` r
 install.packages("afttest")
 ```
 
-## Development
+# Development
+
 The latest version of the package is under development at
 [GitHub](https://github.com/WoojungBae/afttest). If it is able to pass
 the automated package checks, one may install it by
@@ -33,12 +36,105 @@ if (!require(devtools)) install.packages("devtools")
 devtools::install_github("WoojungBae/afttest")
 ```
 
-## Performance
+# Performance
+
 The implementation of the main functions has been written in C++ with the 
 help of the **Rcpp** and **RcppArmadillo** packages. The computational 
 performance has thus been boosted.
 
-## Reference 
+# Replication Materials & File Manifest
+
+As per the computational demands of the Monte Carlo simulations, the replication 
+materials for the empirical results are divided into the following 
+self-contained files.
+
+### 1. Main Analysis (Fast Execution)
+* **`afttest_replication_script.R`**
+* **Description:** This is the primary script containing the code to reproduce 
+the main empirical data analyses, summary statistics, and all **Figures** 
+presented in the manuscript (e.g., the Primary Biliary Cirrhosis dataset analysis).
+* **Execution Time:** Fast (Runs on a standard desktop in minutes).
+
+### 2. Table 1: Computational Time Simulation (Long-Running)
+* **`package_sim2_hpc_TIME.R`** & **`batchAFTsim2_hpc_TIME.sbatch`**
+* **Description:** These files generate the data required to reproduce 
+**Table 1** (Average running times comparing the asymptotic linear approximation 
+vs. standard resampling).
+* **Execution Time:** **[WARNING: EXTREMELY LONG-RUNNING]** These simulations 
+are highly computationally intensive. The provided `.sbatch` file is configured 
+for execution on a High-Performance Computing (HPC) cluster (e.g., University of 
+Florida HiPerGator).
+
+### 3. Table 2: Empirical Rejection Rates Simulation (Long-Running)
+* **`package_sim2_hpc.R`** & **`batchAFTsim2_hpc.sbatch`**
+* **Description:** These files generate the data required to reproduce 
+**Table 2** (Empirical Type I error and power/rejection rates).
+* **Execution Time:** **[WARNING: EXTREMELY LONG-RUNNING]** Similar to Table 1, 
+this script involves thousands of Monte Carlo replications and resampling paths. 
+It is designed to be submitted to an HPC cluster via the provided `.sbatch` file.
+
+# Important Note on the Simulations Reported in the Paper
+
+Due the journal’s time and computational constraints, the simulation results 
+reported in the paper were based on a reduced set of Monte Carlo runs and 
+parameter settings.
+
+## Simulations reported in the paper
+
+- **Table 1:** Only the omnibus test was considered, with sample sizes 
+**n = 100** and **n = 300**, each based on **10 simulation runs**, comparing 
+**`linApprox = TRUE`** versus **`linApprox = FALSE`**.
+- **Table 2:** For each combination of **omnibus**, **link**, and **covForm**, 
+simulations were run with sample sizes **n = 100** and **n = 300**, each based on 
+**100 simulation runs**, with **`gamma = 0.0`** and **`0.5`**. Results report the 
+empirical **Type I error** and **power** for **`linApprox = TRUE`**.
+
+# Extended Simulations Available in the Replication Folder
+
+Running the scripts in the replication folder produces a broader set of simulation 
+results than those reported in the paper.
+
+- **Table 1:** For each combination of **omnibus**, **link**, and **covForm**, 
+simulations are run with sample sizes **n = 100** and **n = 500**, each based on 
+**1000 simulation runs**.
+- **Table 2:** For each combination of **omnibus**, **link**, and **covForm**, 
+simulations are run with sample sizes **n = 100** and **n = 500**, each based on 
+**1000 simulation runs**, with **`gamma = 0.0, 0.1, 0.2, 0.3, 0.4,`** and **`0.5`**. 
+Results report the empirical **Type I error** and **power** for **`linApprox = TRUE`**.
+
+# Instructions for Execution
+1. **Ensure all files are in the same working directory.**
+2. **To reproduce the main text examples and figures:** Open R or RStudio, set 
+your working directory to this folder, and source the main script:
+   
+       source("afttest_replication_script.R")
+   
+3. **To reproduce Tables 1 and 2 (HPC environment):** If you have access to a 
+Slurm-based HPC cluster, submit the batch jobs directly from the terminal:
+   
+       sbatch batchAFTsim2_hpc_TIME.sbatch
+       sbatch batchAFTsim2_hpc.sbatch
+   
+   *Note: To run the simulation scripts locally for verification, open the 
+   respective `R` scripts, drastically reduce the `sim_per_file` parameter, and 
+   execute them in your R console.*
+
+# Reference
+
+Bae, W., Choi, D., Yan, J., Kang, S. (2025). afttest: model diagnostics for 
+semiparametric accelerated failure time models in R. *arXiv*, 
+**arxiv.org/abs/2511.09823**.
+
+Choi, D., Bae, W., Yan, J., and Kang, S. (2024). A general model-checking 
+procedure for semiparametric accelerated failure time models. 
+*Statistics and Computing*, **34**(3) 117.
+
+Bae, W., Choi, D., Yan, J., Kang, S. (2022). afttest: Model Diagnostics for 
+Accelerated Failure Time Models. *CRAN*, **CRAN.R-project.org/package=afttest**.
+
+Chiou, S., Kang, S., and Yan, J. (2014). Fitting accelerated failure time model 
+in routine survival analysis with R package aftgee. 
+*Journal of Statistical Software*, **61**(11): 1--23.
 Bae, W., Choi, D., Yan, J., Kang, S. (2025). afttest: model diagnostics for 
 semiparametric accelerated failure time models in R. *arXiv*, 
 **arxiv.org/abs/2511.09823**.
