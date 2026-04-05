@@ -49,6 +49,13 @@ materials for the empirical results are divided into the following
 self-contained files.
 
 ### 1. Main Analysis (Fast Execution)
+* **`afttest_replication_reduced_script.R`** 
+This is the main replication script for the manuscript. It reproduces the
+results reported in the paper that are intended for routine verification on a
+standard laptop or desktop computer. In particular, it generates the empirical
+analysis, summary outputs, and the reduced simulation results reported in the
+article.
+
 * **`afttest_replication_script.R`**
 * **Description:** This is the primary script containing the code to reproduce 
 the main empirical data analyses, summary statistics, and all **Figures** 
