@@ -20,3 +20,4 @@ Makefile
 *.bbl
 *.log
 *.synctex.gz
+.positai

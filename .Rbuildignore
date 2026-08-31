@@ -33,3 +33,5 @@
 
 update.R
 Replication
+^\.positai$
+^\.claude$

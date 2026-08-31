@@ -9,9 +9,11 @@
 #' This is a generic function with methods for formulas and fitted objects
 #' from the \pkg{aftgee} package.
 #'
-#' @param object A formula or a fitted model object (e.g., from \code{aftsrr} or \code{aftgee}).
+#' @param object A formula or a fitted model object (e.g., from \code{aftsrr} or 
+#'   \code{aftgee}).
 #' @param ... Other arguments passed to methods. See the documentation for
-#'   \code{afttest.formula} and \code{afttest.aftsrr} for details.
+#'   \code{afttest.formula}, \code{afttest.aftsrr}, and \code{afttest.aftgee} 
+#'   for details.
 #'
 #' @return An object of class \code{afttest} or \code{htest}.
 #'   An object is a list containing at least the following components:
@@ -104,6 +106,8 @@ afttest.formula <- function(object, data, npath = 200, testType = "omnibus",
                             estMethod = "rr", eqType = "ns", 
                             covTested = 1, npathsave = 50, linApprox = TRUE,
                             seed = NULL, ...) {
+  eqType_supplied <- !missing(eqType)
+  
   if (!is.null(seed)) {
     if (!is.numeric(seed) || length(seed) != 1) {
       stop("Argument 'seed' must be a single numeric value.")
@@ -148,18 +152,23 @@ afttest.formula <- function(object, data, npath = 200, testType = "omnibus",
   if (any(DF$time <= 0)) {
     return(warning("time must be positive number"))
   }
-  if (cov.length==1 && length(unique(covariates))==1) {
-    return(warning("Intercept-only model detected; The semiparametric AFT model is unable to handle an intercept-only model"))
-  }
   
   # beta coefficients from aftsrr function (aftgee package) - with original covariates
-  formula <- stats::as.formula(paste0("survival::Surv(time,delta)~",paste(covnames, collapse="+")))
+  formula <- stats::as.formula(paste0("survival::Surv(time,delta)~", paste(covnames, collapse="+")))
+  if (length(estMethod) != 1 || !estMethod %in% c("ls", "rr")) {
+    stop("estMethod must be either 'ls' or 'rr'.")
+  }
   if (estMethod == "ls") {
+    if (eqType_supplied && !identical(eqType, "ls")) {
+      warning("eqType is ignored when estMethod = 'ls'; eqType = 'ls' is used.")
+    }
+    eqType <- "ls"
     beta <- - aftgee::aftgee(formula, data = DF)$coef.res[-1]
-  } else if (estMethod == "rr") {
-    beta <- - aftgee::aftsrr(formula, data = DF, eqType = eqType, rankWeights = "gehan")$beta
   } else {
-    return(warning("estMethod needs to be one of 'ls' and 'rr'"))
+    if (length(eqType) != 1 || !eqType %in% c("ns", "is")) {
+      stop("eqType must be either 'ns' or 'is' when estMethod = 'rr'.")
+    }
+    beta <- - aftgee::aftsrr(formula, data = DF, eqType = eqType, rankWeights = "gehan")$beta
   }
   
   # Covariate Scaling
@@ -167,11 +176,6 @@ afttest.formula <- function(object, data, npath = 200, testType = "omnibus",
   delta <- DF$delta
   covariates <- scale(as.matrix(DF[, -(1:2)]))
   DF <- data.frame(time = time, delta = delta, covariates)
-  
-  # eqType
-  if (length(eqType) > 1){
-    return(warning("testType needs to be one of 'ns' and 'is'"))
-  }
   
   # npath
   if (length(npath) > 1){
@@ -213,17 +217,20 @@ afttest.formula <- function(object, data, npath = 200, testType = "omnibus",
   }
   
   # covTested
+  covTested.num <- 1L
   if (testType == "covForm") {
-    if (length(covTested) > 1){
-      return(warning("the length if covTested needs to be exactly 1."))
+    if (length(covTested) != 1) {
+      return(warning("covTested needs to have length 1."))
     } else {
       if (is.numeric(covTested)) {
-        if (covTested %%1 != 0 || covTested > cov.length) {
-          return(warning("covTested needs to be postivie integer and less than the lenght of covariates."))
+        if (covTested %% 1 != 0 || covTested < 1 || covTested > cov.length) {
+          return(warning("covTested needs to be a positive integer not greater than the number of covariates."))
+        } else {
+          covTested.num <- as.integer(covTested)
         }
       } else if (is.character(covTested)) {
         if (!covTested %in% covnames) {
-          return(warning("covTested needs to specified the one of the covariates in the formula."))
+          return(warning("covTested needs to specify one of the covariates in the formula."))
         } else {
           covTested.num <- which(covTested == covnames)
         }
@@ -237,9 +244,6 @@ afttest.formula <- function(object, data, npath = 200, testType = "omnibus",
   formula <- stats::as.formula(paste0("survival::Surv(time,delta)~",paste(covnames, collapse="+")))
   if (estMethod == "ls") {
     b <- - aftgee::aftgee(formula, data = DF)$coef.res[-1]
-    if (!eqType == "ls") {
-      warning("eqType must be 'ls' when estMethod is 'ls'")
-    }
   } else if (estMethod == "rr") {
     b <- - aftgee::aftsrr(formula, data = DF, eqType = eqType, rankWeights = "gehan")$beta
   } else {
@@ -277,16 +281,12 @@ afttest.formula <- function(object, data, npath = 200, testType = "omnibus",
 #'     \item{\code{link}}{a link function test}
 #'     \item{\code{covForm}}{a functional form of a covariate}
 #' }
-#' @param eqType A character string specifying the type of the 
-#'   estimating equation used to obtain the regression parameters.
-#'   The readers are referred to the \pkg{aftgee} package for details.
-#'   The following are permitted:
-#'   \describe{
-#'     \item{\code{ns}}{Regression parameters are estimated by directly solving 
-#'     the nonsmooth estimating equations.}
-#'     \item{\code{is}}{Regression parameters are estimated by directly solving 
-#'     the induced-smoothing estimating equations.}
-#' }
+#' @param eqType An optional character string specifying the type of the
+#'   estimating equation. For a fitted \code{aftsrr} object, the estimating
+#'   equation used in the fitted object is retained. If it cannot be identified
+#'   from the fitted object, \code{"ns"} is used. The permitted values are
+#'   \code{"ns"} and \code{"is"}. If a different value from that used in the
+#'   fitted object is supplied, it is ignored with a warning.
 #' @param covTested A character string specifying the covariate which will be tested.
 #'   The argument \code{covTested} is necessary only if \code{testType} is 
 #'   \code{covForm}. The default option for \code{covTested} is given by "1", which 
@@ -302,9 +302,36 @@ afttest.formula <- function(object, data, npath = 200, testType = "omnibus",
 #' @param ... Other arguments passed to methods. 
 #' 
 #' @export
-afttest.aftsrr <- function(object, data, npath = 200, testType = "omnibus", eqType = "ns", 
+afttest.aftsrr <- function(object, data, npath = 200, testType = "omnibus", eqType = NULL, 
                            covTested = 1, npathsave = 50, linApprox = TRUE,
                            seed = NULL, ...) {
+  dots <- list(...)
+  
+  if ("estMethod" %in% names(dots)) {
+    warning("estMethod = '", dots$estMethod, "' is ignored for an aftsrr object; ", "estMethod = 'rr' is used.")
+  }
+  
+  if (is.null(object$call$eqType)) {
+    fitted_eqType <- "ns"
+  } else {
+    fitted_eqType <- as.character(object$call$eqType)
+  }
+  
+  if (length(fitted_eqType) != 1 || !fitted_eqType %in% c("ns", "is")) {
+    stop("The fitted aftsrr object must use eqType = 'ns' or 'is'.")
+  }
+  
+  if (!is.null(eqType)) {
+    if (length(eqType) != 1 || !eqType %in% c("ns", "is")) {
+      stop("eqType must be either 'ns' or 'is'.")
+    }
+    if (eqType != fitted_eqType) {
+      warning("eqType = '", eqType, "' is ignored for this aftsrr object; eqType = '", fitted_eqType, "' used in the fitted object is used.")
+    }
+  }
+  
+  eqType <- fitted_eqType
+  
   if (!is.null(seed)) {
     if (!is.numeric(seed) || length(seed) != 1) {
       stop("Argument 'seed' must be a single numeric value.")
@@ -349,20 +376,12 @@ afttest.aftsrr <- function(object, data, npath = 200, testType = "omnibus", eqTy
   if (any(DF$time <= 0)) {
     return(warning("time must be positive number"))
   }
-  if (cov.length==1 && length(unique(covariates))==1) {
-    return(warning("Intercept-only model detected; The semiparametric AFT model is unable to handle an intercept-only model"))
-  }
   
   # Covariate Scaling
   time <- DF$time
   delta <- DF$delta
   covariates <- scale(as.matrix(DF[, -(1:2)]))
   DF <- data.frame(time = time, delta = delta, covariates)
-  
-  # eqType
-  if (length(eqType) > 1){
-    return(warning("testType needs to be one of 'ns' and 'is'"))
-  }
   
   # npath
   if (length(npath) > 1){
@@ -404,17 +423,20 @@ afttest.aftsrr <- function(object, data, npath = 200, testType = "omnibus", eqTy
   }
   
   # covTested
+  covTested.num <- 1L
   if (testType == "covForm") {
-    if (length(covTested) > 1){
-      return(warning("the length if covTested needs to be exactly 1."))
+    if (length(covTested) != 1) {
+      return(warning("covTested needs to have length 1."))
     } else {
       if (is.numeric(covTested)) {
-        if (covTested %%1 != 0 || covTested > cov.length) {
-          return(warning("covTested needs to be postivie integer and less than the lenght of covariates."))
+        if (covTested %% 1 != 0 || covTested < 1 || covTested > cov.length) {
+          return(warning("covTested needs to be a positive integer not greater than the number of covariates."))
+        } else {
+          covTested.num <- as.integer(covTested)
         }
       } else if (is.character(covTested)) {
         if (!covTested %in% covnames) {
-          return(warning("covTested needs to specified the one of the covariates in the formula."))
+          return(warning("covTested needs to specify one of the covariates in the formula."))
         } else {
           covTested.num <- which(covTested == covnames)
         }
@@ -459,16 +481,9 @@ afttest.aftsrr <- function(object, data, npath = 200, testType = "omnibus", eqTy
 #'     \item{\code{link}}{a link function test}
 #'     \item{\code{covForm}}{a functional form of a covariate}
 #' }
-#' @param eqType A character string specifying the type of the 
-#'   estimating equation used to obtain the regression parameters.
-#'   The readers are referred to the \pkg{aftgee} package for details.
-#'   The following are permitted:
-#'   \describe{
-#'     \item{\code{ns}}{Regression parameters are estimated by directly solving 
-#'     the nonsmooth estimating equations.}
-#'     \item{\code{is}}{Regression parameters are estimated by directly solving 
-#'     the induced-smoothing estimating equations.}
-#' }
+#' @param eqType The estimating-equation type used for the diagnostic
+#'   procedure. For a fitted \code{aftgee} object, this is fixed to
+#'   \code{"ls"}. Any other supplied value is ignored with a warning.
 #' @param covTested A character string specifying the covariate which will be tested.
 #'   The argument \code{covTested} is necessary only if \code{testType} is 
 #'   \code{covForm}. The default option for \code{covTested} is given by "1", which 
@@ -487,6 +502,19 @@ afttest.aftsrr <- function(object, data, npath = 200, testType = "omnibus", eqTy
 afttest.aftgee <- function(object, data, npath = 200, testType = "omnibus", eqType = "ls", 
                            covTested = 1, npathsave = 50, linApprox = TRUE,
                            seed = NULL, ...) {
+  dots <- list(...)
+  eqType_supplied <- !missing(eqType)
+  
+  if ("estMethod" %in% names(dots)) {
+    warning("estMethod = '", dots$estMethod, "' is ignored for an aftgee object; ", "estMethod = 'ls' is used.")
+  }
+  
+  if (eqType_supplied && !identical(eqType, "ls")) {
+    warning("eqType is ignored for an aftgee object; eqType = 'ls' is used.")
+  }
+  
+  eqType <- "ls"
+  
   if (!is.null(seed)) {
     if (!is.numeric(seed) || length(seed) != 1) {
       stop("Argument 'seed' must be a single numeric value.")
@@ -530,9 +558,6 @@ afttest.aftgee <- function(object, data, npath = 200, testType = "omnibus", eqTy
   
   if (any(DF$time <= 0)) {
     return(warning("time must be positive number"))
-  }
-  if (cov.length==1 && length(unique(covariates))==1) {
-    return(warning("Intercept-only model detected; The semiparametric AFT model is unable to handle an intercept-only model"))
   }
   
   # Covariate Scaling
@@ -584,17 +609,20 @@ afttest.aftgee <- function(object, data, npath = 200, testType = "omnibus", eqTy
   }
   
   # covTested
+  covTested.num <- 1L
   if (testType == "covForm") {
-    if (length(covTested) > 1){
-      return(warning("the length if covTested needs to be exactly 1."))
+    if (length(covTested) != 1) {
+      return(warning("covTested needs to have length 1."))
     } else {
       if (is.numeric(covTested)) {
-        if (covTested %%1 != 0 || covTested > cov.length) {
-          return(warning("covTested needs to be postivie integer and less than the lenght of covariates."))
+        if (covTested %% 1 != 0 || covTested < 1 || covTested > cov.length) {
+          return(warning("covTested needs to be a positive integer not greater than the number of covariates."))
+        } else {
+          covTested.num <- as.integer(covTested)
         }
       } else if (is.character(covTested)) {
         if (!covTested %in% covnames) {
-          return(warning("covTested needs to specified the one of the covariates in the formula."))
+          return(warning("covTested needs to specify one of the covariates in the formula."))
         } else {
           covTested.num <- which(covTested == covnames)
         }

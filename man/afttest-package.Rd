@@ -56,6 +56,7 @@ Useful links:
 
 Authors:
 \itemize{
+  \item Woojung Bae \email{matt.woojung@gmail.com} (\href{https://orcid.org/0000-0001-6760-9900}{ORCID})
   \item Dongrak Choi (\href{https://orcid.org/0000-0003-3280-3329}{ORCID})
   \item Jun Yan (\href{https://orcid.org/0000-0003-4401-7296}{ORCID})
   \item Sangwook Kang (\href{https://orcid.org/0000-0003-2658-481X}{ORCID})

@@ -1,4 +1,4 @@
-afttest: Model Diagnostics for AFT Models
+afttest: Model Diagnostics for Accelerated Failure Time Models
 ================
 
 [![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/afttest)](https://CRAN.R-project.org/package=afttest)
@@ -19,7 +19,7 @@ functions directly in C++ with the help of **Rcpp** and **RcppArmadillo**.
 # Installation of CRAN Version
 
 You can install the released version from
-[CRAN](CRAN.R-project.org/package=afttest).
+[CRAN](https://cran.r-project.org/web/packages/afttest).
 
 ``` r
 install.packages("afttest")
@@ -128,16 +128,17 @@ Slurm-based HPC cluster, submit the batch jobs directly from the terminal:
 
 # Reference
 
-Bae, W., Choi, D., Yan, J., Kang, S. (2025). afttest: model diagnostics for 
-semiparametric accelerated failure time models in R. *arXiv*, 
-**arxiv.org/abs/2511.09823**.
+Bae, W., Choi, D., Yan, J., Kang, S. (2026). Diagnostics for semiparametric 
+accelerated failure time models with R Package afttest. 
+*Journal of Statistical Software, to appear*, **arxiv.org/abs/2511.09823**.
 
 Choi, D., Bae, W., Yan, J., and Kang, S. (2024). A general model-checking 
 procedure for semiparametric accelerated failure time models. 
 *Statistics and Computing*, **34**(3) 117.
 
 Bae, W., Choi, D., Yan, J., Kang, S. (2022). afttest: Model Diagnostics for 
-Accelerated Failure Time Models. *CRAN*, **CRAN.R-project.org/package=afttest**.
+Accelerated Failure Time Models. *CRAN*, 
+**https://cran.r-project.org/web/packages/afttest**.
 
 Chiou, S., Kang, S., and Yan, J. (2014). Fitting accelerated failure time model 
 in routine survival analysis with R package aftgee. 

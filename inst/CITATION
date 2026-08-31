@@ -1,5 +1,5 @@
 bibentry(
-    key = "bae2025afttest",
+    key = "bae2026afttest",
     bibtype = "article",
     title = "Diagnostics for semiparametric accelerated failure time models with R Package afttest",
     author = c(
@@ -8,8 +8,8 @@ bibentry(
         as.person("Jun Yan"),
         as.person("Sangwook Kang")
         ),
-    journal = "arXiv",
-    year = "2025",
+    journal = "Journal of Statistical Software, to appear",
+    year = "2026",
     url = "https://arxiv.org/abs/2511.09823",
     doi = "10.48550/arXiv.2511.09823"
 )

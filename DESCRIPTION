@@ -1,8 +1,8 @@
 Package: afttest
 Type: Package
 Title: Model Diagnostics for Accelerated Failure Time Models
-Version: 4.5.3
-Date: 2026-4-4 EDT
+Version: 4.6.1
+Date: 2026-8-30 EDT
 Authors@R: c(
     person(given = "Woojung", family = "Bae", 
            email = "matt.woojung@gmail.com", 
@@ -30,7 +30,7 @@ Description: A collection of model checking methods for semiparametric
     procedure for semiparametric accelerated failure time models, Statistics and 
     Computing, 34 (3), 117 <doi:10.1007/s11222-024-10431-7>; Diagnostics for 
     semiparametric accelerated failure time models with R package 'afttest', 
-    arXiv, <doi:10.48550/arXiv.2511.09823>.
+    Journal of Statistical Software, to appear, <doi:10.48550/arXiv.2511.09823>.
 Depends: 
     R (>= 3.4.0)
 Imports: 
@@ -52,4 +52,4 @@ URL: https://github.com/WooJungBae/afttest
 BugReports: https://github.com/WooJungBae/afttest/issues
 Encoding: UTF-8
 Language: en-US
-RoxygenNote: 7.3.2
+Config/roxygen2/version: 8.1.0

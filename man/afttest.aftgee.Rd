@@ -34,16 +34,9 @@ The default is given by 200.}
     \item{\code{covForm}}{a functional form of a covariate}
 }}
 
-\item{eqType}{A character string specifying the type of the 
-  estimating equation used to obtain the regression parameters.
-  The readers are referred to the \pkg{aftgee} package for details.
-  The following are permitted:
-  \describe{
-    \item{\code{ns}}{Regression parameters are estimated by directly solving 
-    the nonsmooth estimating equations.}
-    \item{\code{is}}{Regression parameters are estimated by directly solving 
-    the induced-smoothing estimating equations.}
-}}
+\item{eqType}{The estimating-equation type used for the diagnostic
+procedure. For a fitted \code{aftgee} object, this is fixed to
+\code{"ls"}. Any other supplied value is ignored with a warning.}
 
 \item{covTested}{A character string specifying the covariate which will be tested.
 The argument \code{covTested} is necessary only if \code{testType} is 

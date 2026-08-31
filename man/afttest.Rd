@@ -7,10 +7,12 @@
 afttest(object, ...)
 }
 \arguments{
-\item{object}{A formula or a fitted model object (e.g., from \code{aftsrr} or \code{aftgee}).}
+\item{object}{A formula or a fitted model object (e.g., from \code{aftsrr} or 
+\code{aftgee}).}
 
 \item{...}{Other arguments passed to methods. See the documentation for
-\code{afttest.formula} and \code{afttest.aftsrr} for details.}
+\code{afttest.formula}, \code{afttest.aftsrr}, and \code{afttest.aftgee} 
+for details.}
 }
 \value{
 An object of class \code{afttest} or \code{htest}.
