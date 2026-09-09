@@ -131,9 +131,6 @@ summary.afttest <- function(object, ...) {
 #' @example inst/examples/ex_afttest.R
 #' @export
 plot.afttest <- function(x, npath = 50, std = TRUE, quantile = NULL, ...){
-  # eqType
-  eqType <- x$eqType
-  
   # testType
   testType <- x$testType
   
@@ -161,15 +158,6 @@ plot.afttest <- function(x, npath = 50, std = TRUE, quantile = NULL, ...){
     warning(sprintf("Requested npath (%d) exceeds stored paths (%d). Plotting all %d available paths.", 
                     npath, x$npathsave, x$npathsave))
     npath <- x$npathsave
-  }
-  
-  # eqType
-  if (eqType=="ns") {
-    testTypeQuote <- "non-smooth"
-  } else if (eqType=="ns") {
-    testTypeQuote <- "induced-smoothed"
-  } else if (eqType=="ns") {
-    testTypeQuote <- "least-squares"
   }
   
   stdTypeQuote <- ifelse(std=="std","standardized","unstandardized")

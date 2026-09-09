@@ -25,10 +25,10 @@ An object of class \code{afttest} or \code{htest}.
   \item{apprx_process}{approximated process}
   \item{obs_std_process}{standardized observed process}
   \item{apprx_std_process}{standardized approximated processes}
-\item{p_value}{finite-resampling Monte Carlo p-value for the
-unstandardized test}
-\item{p_std_value}{finite-resampling Monte Carlo p-value for the
-standardized test}
+  \item{p_value}{finite-resampling Monte Carlo p-value for the
+  unstandardized test}
+  \item{p_std_value}{finite-resampling Monte Carlo p-value for the
+  standardized test}
   \item{DF}{a data frame of observed failure time, right censoring indicator, 
   covariates (scaled), time-transformed residual based on beta estimates}
   \item{npath}{the number of sample paths}

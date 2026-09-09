@@ -41,14 +41,11 @@ from the fitted object, \code{"ns"} is used. The permitted values are
 \code{"ns"} and \code{"is"}. If a different value from that used in the
 fitted object is supplied, it is ignored with a warning.}
 
-\item{covTested}{A character string specifying the covariate which will be tested.
-The argument \code{covTested} is necessary only if \code{testType} is 
-\code{covForm}. The default option for \code{covTested} is given by "1", which 
-represents the first covariate in the formula argument.}
+\item{covTested}{A single design-matrix column to test when \code{testType}
+is \code{covForm}, supplied by position or name.}
 
-\item{npathsave}{An integer value specifying the number of paths saved among all the paths.
-The default is given by 50. Note that it requires a lot of memory if saving all
-sampled paths (N by N matrix for each npath, and so npath*N*N elements).}
+\item{npathsave}{An integer value specifying the number of simulated paths
+retained in the returned object. The default is 50.}
 
 \item{linApprox}{A logical value. If \code{TRUE}, the multiplier bootstrap is 
 computed using the asymptotic linear approximation, which is significantly 
