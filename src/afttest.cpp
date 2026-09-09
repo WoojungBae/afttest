@@ -833,11 +833,11 @@ using namespace Rcpp;
    double absmax_obs_std_npath = (abs(obs_std_npath)).max();
    
    uvec ind_unstd = (find(absmax_app_npath >= absmax_obs_npath));
-   double p_value = (static_cast<double>(ind_unstd.size()) + 1.0) /
+   double p_value = (static_cast<double>(ind_unstd.size()) + 0.5) /
      (static_cast<double>(npath) + 1.0);
    
    uvec ind_std = (find(absmax_app_std_npath >= absmax_obs_std_npath));
-   double p_std_value = (static_cast<double>(ind_std.size()) + 1.0) /
+   double p_std_value = (static_cast<double>(ind_std.size()) + 0.5) /
      (static_cast<double>(npath) + 1.0);
    
    if (npathsave<1){
@@ -1209,11 +1209,11 @@ using namespace Rcpp;
    double absmax_obs_std_npath = (abs(obs_std_npath)).max();
    
    uvec ind_unstd = (find(absmax_app_npath >= absmax_obs_npath));
-   double p_value = (static_cast<double>(ind_unstd.size()) + 1.0) /
+   double p_value = (static_cast<double>(ind_unstd.size()) + 0.5) /
      (static_cast<double>(npath) + 1.0);
    
    uvec ind_std = (find(absmax_app_std_npath >= absmax_obs_std_npath));
-   double p_std_value = (static_cast<double>(ind_std.size()) + 1.0) /
+   double p_std_value = (static_cast<double>(ind_std.size()) + 0.5) /
      (static_cast<double>(npath) + 1.0);
    
    if (npathsave<1){
@@ -1584,11 +1584,11 @@ using namespace Rcpp;
    double absmax_obs_std_npath = (abs(obs_std_npath)).max();
    
    uvec ind_unstd = (find(absmax_app_npath >= absmax_obs_npath));
-   double p_value = (static_cast<double>(ind_unstd.size()) + 1.0) /
+   double p_value = (static_cast<double>(ind_unstd.size()) + 0.5) /
      (static_cast<double>(npath) + 1.0);
    
    uvec ind_std = (find(absmax_app_std_npath >= absmax_obs_std_npath));
-   double p_std_value = (static_cast<double>(ind_std.size()) + 1.0) /
+   double p_std_value = (static_cast<double>(ind_std.size()) + 0.5) /
      (static_cast<double>(npath) + 1.0);
    
    if (npathsave<1){

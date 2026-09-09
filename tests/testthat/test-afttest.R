@@ -98,17 +98,19 @@ test_that("formula input supports factor covariates and saved-path limits", {
   expect_s3_class(fit, "afttest")
   expect_identical(fit$npathsave, 50L)
   expect_length(fit$apprx_npath, 50)
-  expect_gte(fit$p_value, 1 / 51)
-  expect_gte(fit$p_std_value, 1 / 51)
+  expect_gt(fit$p_value, 0)
+  expect_lt(fit$p_value, 1)
+  expect_gt(fit$p_std_value, 0)
+  expect_lt(fit$p_std_value, 1)
   unstd_max <- vapply(fit$apprx_npath, function(path) max(abs(path)), 0.0)
   std_max <- vapply(fit$apprx_std_npath, function(path) max(abs(path)), 0.0)
   expect_equal(
     fit$p_value,
-    (sum(unstd_max >= max(abs(fit$obs_npath))) + 1) / 51
+    (sum(unstd_max >= max(abs(fit$obs_npath))) + 0.5) / 51
   )
   expect_equal(
     fit$p_std_value,
-    (sum(std_max >= max(abs(fit$obs_std_npath))) + 1) / 51
+    (sum(std_max >= max(abs(fit$obs_std_npath))) + 0.5) / 51
   )
   plot_file <- tempfile(fileext = ".pdf")
   grDevices::pdf(plot_file)
