@@ -2,6 +2,65 @@
 ## User's Main Function
 ##############################################################################
 
+.afttest_design_formula <- function(covnames) {
+  terms <- paste0("`", gsub("`", "\\\\`", covnames, fixed = TRUE), "`")
+  stats::as.formula(paste("survival::Surv(time, delta) ~",
+                          paste(terms, collapse = " + ")))
+}
+
+.afttest_validate_args <- function(npath, testType, covTested, covnames,
+                                   npathsave, linApprox, seed) {
+  if (!is.numeric(npath) || length(npath) != 1 || is.na(npath) ||
+      !is.finite(npath) || npath < 50 || npath != as.integer(npath)) {
+    stop("npath must be a single integer of at least 50.")
+  }
+  npath <- as.integer(npath)
+
+  if (!is.character(testType) || length(testType) != 1 || is.na(testType) ||
+      !testType %in% c("omnibus", "link", "covForm")) {
+    stop("testType must be one of 'omnibus', 'link', or 'covForm'.")
+  }
+
+  if (!is.numeric(npathsave) || length(npathsave) != 1 || is.na(npathsave) ||
+      !is.finite(npathsave) || npathsave < 0 ||
+      npathsave != as.integer(npathsave)) {
+    stop("npathsave must be a single nonnegative integer.")
+  }
+  npathsave <- as.integer(npathsave)
+  if (npathsave > npath) {
+    warning("npathsave exceeds npath; only npath paths will be saved.")
+    npathsave <- npath
+  }
+
+  if (!is.logical(linApprox) || length(linApprox) != 1 || is.na(linApprox)) {
+    stop("linApprox must be a single logical value.")
+  }
+
+  if (!is.null(seed) && (!is.numeric(seed) || length(seed) != 1 ||
+                         is.na(seed) || !is.finite(seed) ||
+                         seed != as.integer(seed))) {
+    stop("seed must be a single finite integer.")
+  }
+
+  covTested.num <- 1L
+  if (testType == "covForm") {
+    if (is.numeric(covTested) && length(covTested) == 1 &&
+        !is.na(covTested) && is.finite(covTested) &&
+        covTested == as.integer(covTested) && covTested >= 1 &&
+        covTested <= length(covnames)) {
+      covTested.num <- as.integer(covTested)
+    } else if (is.character(covTested) && length(covTested) == 1 &&
+               !is.na(covTested) && covTested %in% covnames) {
+      covTested.num <- match(covTested, covnames)
+    } else {
+      stop("covTested must identify one design-matrix column for covForm.")
+    }
+  }
+
+  list(npath = npath, testType = testType, npathsave = npathsave,
+       linApprox = linApprox, covTested.num = covTested.num)
+}
+
 #' Model Diagnostics for Semiparametric AFT Models
 #'
 #' @description
@@ -109,8 +168,9 @@ afttest.formula <- function(object, data, npath = 200, testType = "omnibus",
   eqType_supplied <- !missing(eqType)
   
   if (!is.null(seed)) {
-    if (!is.numeric(seed) || length(seed) != 1) {
-      stop("Argument 'seed' must be a single numeric value.")
+    if (!is.numeric(seed) || length(seed) != 1 || is.na(seed) ||
+        !is.finite(seed) || seed != as.integer(seed)) {
+      stop("seed must be a single finite integer.")
     }
     if (exists(".Random.seed", envir = .GlobalEnv)) {
       old_seed <- get(".Random.seed", envir = .GlobalEnv)
@@ -132,8 +192,15 @@ afttest.formula <- function(object, data, npath = 200, testType = "omnibus",
   if (ncol(X) == 0) {
     stop("No covariates found in the formula. Intercept-only models are not supported.")
   }
-  covnames <- all.vars(object[[3]])
+  covnames <- colnames(X)
   cov.length <- length(covnames)
+  args <- .afttest_validate_args(npath, testType, covTested, covnames,
+                                 npathsave, linApprox, seed)
+  npath <- args$npath
+  testType <- args$testType
+  npathsave <- args$npathsave
+  linApprox <- args$linApprox
+  covTested.num <- args$covTested.num
   DF <- data.frame(unclass(Y), X)
   colnames(DF) <- c("time", "delta", covnames)
   
@@ -154,7 +221,7 @@ afttest.formula <- function(object, data, npath = 200, testType = "omnibus",
   }
   
   # beta coefficients from aftsrr function (aftgee package) - with original covariates
-  formula <- stats::as.formula(paste0("survival::Surv(time,delta)~", paste(covnames, collapse="+")))
+  formula <- .afttest_design_formula(covnames)
   if (length(estMethod) != 1 || !estMethod %in% c("ls", "rr")) {
     stop("estMethod must be either 'ls' or 'rr'.")
   }
@@ -174,7 +241,7 @@ afttest.formula <- function(object, data, npath = 200, testType = "omnibus",
   # Covariate Scaling
   time <- DF$time
   delta <- DF$delta
-  covariates <- scale(as.matrix(DF[, -(1:2)]))
+  covariates <- scale(as.matrix(DF[, -(1:2), drop = FALSE]))
   DF <- data.frame(time = time, delta = delta, covariates)
   
   # npath
@@ -217,31 +284,8 @@ afttest.formula <- function(object, data, npath = 200, testType = "omnibus",
   }
   
   # covTested
-  covTested.num <- 1L
-  if (testType == "covForm") {
-    if (length(covTested) != 1) {
-      return(warning("covTested needs to have length 1."))
-    } else {
-      if (is.numeric(covTested)) {
-        if (covTested %% 1 != 0 || covTested < 1 || covTested > cov.length) {
-          return(warning("covTested needs to be a positive integer not greater than the number of covariates."))
-        } else {
-          covTested.num <- as.integer(covTested)
-        }
-      } else if (is.character(covTested)) {
-        if (!covTested %in% covnames) {
-          return(warning("covTested needs to specify one of the covariates in the formula."))
-        } else {
-          covTested.num <- which(covTested == covnames)
-        }
-      } else {
-        return(warning("covTested needs to be specified correctly."))
-      }
-    }
-  }
-  
   # beta coefficients from aftsrr function (aftgee package) - with scaled covariates
-  formula <- stats::as.formula(paste0("survival::Surv(time,delta)~",paste(covnames, collapse="+")))
+  formula <- .afttest_design_formula(covnames)
   if (estMethod == "ls") {
     b <- - aftgee::aftgee(formula, data = DF)$coef.res[-1]
   } else if (estMethod == "rr") {
@@ -333,8 +377,9 @@ afttest.aftsrr <- function(object, data, npath = 200, testType = "omnibus", eqTy
   eqType <- fitted_eqType
   
   if (!is.null(seed)) {
-    if (!is.numeric(seed) || length(seed) != 1) {
-      stop("Argument 'seed' must be a single numeric value.")
+    if (!is.numeric(seed) || length(seed) != 1 || is.na(seed) ||
+        !is.finite(seed) || seed != as.integer(seed)) {
+      stop("seed must be a single finite integer.")
     }
     if (exists(".Random.seed", envir = .GlobalEnv)) {
       old_seed <- get(".Random.seed", envir = .GlobalEnv)
@@ -358,6 +403,13 @@ afttest.aftsrr <- function(object, data, npath = 200, testType = "omnibus", eqTy
   }
   covnames <- colnames(X)
   cov.length <- length(covnames)
+  args <- .afttest_validate_args(npath, testType, covTested, covnames,
+                                 npathsave, linApprox, seed)
+  npath <- args$npath
+  testType <- args$testType
+  npathsave <- args$npathsave
+  linApprox <- args$linApprox
+  covTested.num <- args$covTested.num
   DF <- data.frame(unclass(Y), X)
   colnames(DF) <- c("time", "delta", covnames)
   
@@ -380,7 +432,7 @@ afttest.aftsrr <- function(object, data, npath = 200, testType = "omnibus", eqTy
   # Covariate Scaling
   time <- DF$time
   delta <- DF$delta
-  covariates <- scale(as.matrix(DF[, -(1:2)]))
+  covariates <- scale(as.matrix(DF[, -(1:2), drop = FALSE]))
   DF <- data.frame(time = time, delta = delta, covariates)
   
   # npath
@@ -423,31 +475,8 @@ afttest.aftsrr <- function(object, data, npath = 200, testType = "omnibus", eqTy
   }
   
   # covTested
-  covTested.num <- 1L
-  if (testType == "covForm") {
-    if (length(covTested) != 1) {
-      return(warning("covTested needs to have length 1."))
-    } else {
-      if (is.numeric(covTested)) {
-        if (covTested %% 1 != 0 || covTested < 1 || covTested > cov.length) {
-          return(warning("covTested needs to be a positive integer not greater than the number of covariates."))
-        } else {
-          covTested.num <- as.integer(covTested)
-        }
-      } else if (is.character(covTested)) {
-        if (!covTested %in% covnames) {
-          return(warning("covTested needs to specify one of the covariates in the formula."))
-        } else {
-          covTested.num <- which(covTested == covnames)
-        }
-      } else {
-        return(warning("covTested needs to be specified correctly."))
-      }
-    }
-  }
-  
   # beta coefficients from aftsrr function (aftgee package)
-  formula <- stats::as.formula(paste0("survival::Surv(time,delta)~",paste(covnames, collapse="+")))
+  formula <- .afttest_design_formula(covnames)
   b <- - aftgee::aftsrr(formula, data = DF, eqType = eqType, rankWeights = "gehan")$beta
   
   # This function contains the core logic (the C++ calls)
@@ -516,8 +545,9 @@ afttest.aftgee <- function(object, data, npath = 200, testType = "omnibus", eqTy
   eqType <- "ls"
   
   if (!is.null(seed)) {
-    if (!is.numeric(seed) || length(seed) != 1) {
-      stop("Argument 'seed' must be a single numeric value.")
+    if (!is.numeric(seed) || length(seed) != 1 || is.na(seed) ||
+        !is.finite(seed) || seed != as.integer(seed)) {
+      stop("seed must be a single finite integer.")
     }
     if (exists(".Random.seed", envir = .GlobalEnv)) {
       old_seed <- get(".Random.seed", envir = .GlobalEnv)
@@ -541,6 +571,13 @@ afttest.aftgee <- function(object, data, npath = 200, testType = "omnibus", eqTy
   }
   covnames <- colnames(X)
   cov.length <- length(covnames)
+  args <- .afttest_validate_args(npath, testType, covTested, covnames,
+                                 npathsave, linApprox, seed)
+  npath <- args$npath
+  testType <- args$testType
+  npathsave <- args$npathsave
+  linApprox <- args$linApprox
+  covTested.num <- args$covTested.num
   DF <- data.frame(unclass(Y), X)
   colnames(DF) <- c("time", "delta", covnames)
   
@@ -563,7 +600,7 @@ afttest.aftgee <- function(object, data, npath = 200, testType = "omnibus", eqTy
   # Covariate Scaling
   time <- DF$time
   delta <- DF$delta
-  covariates <- scale(as.matrix(DF[, -(1:2)]))
+  covariates <- scale(as.matrix(DF[, -(1:2), drop = FALSE]))
   DF <- data.frame(time = time, delta = delta, covariates)
   
   # estMethod
@@ -609,31 +646,8 @@ afttest.aftgee <- function(object, data, npath = 200, testType = "omnibus", eqTy
   }
   
   # covTested
-  covTested.num <- 1L
-  if (testType == "covForm") {
-    if (length(covTested) != 1) {
-      return(warning("covTested needs to have length 1."))
-    } else {
-      if (is.numeric(covTested)) {
-        if (covTested %% 1 != 0 || covTested < 1 || covTested > cov.length) {
-          return(warning("covTested needs to be a positive integer not greater than the number of covariates."))
-        } else {
-          covTested.num <- as.integer(covTested)
-        }
-      } else if (is.character(covTested)) {
-        if (!covTested %in% covnames) {
-          return(warning("covTested needs to specify one of the covariates in the formula."))
-        } else {
-          covTested.num <- which(covTested == covnames)
-        }
-      } else {
-        return(warning("covTested needs to be specified correctly."))
-      }
-    }
-  }
-  
   # beta coefficients from aftsrr function (aftgee package)
-  formula <- stats::as.formula(paste0("survival::Surv(time,delta)~",paste(covnames, collapse="+")))
+  formula <- .afttest_design_formula(covnames)
   b <- - aftgee::aftgee(formula, data = DF)$coef.res[-1]
   
   # This function contains the core logic (the C++ calls)

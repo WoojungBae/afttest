@@ -73,3 +73,74 @@ test_that("afttest linApprox=FALSE runs correctly", {
   expect_equal(result$p_value, 0.01, tolerance=1e-1)
   expect_equal(result$p_std_value, 0.00, tolerance=1e-1)
 })
+
+test_that("formula input supports factor covariates and saved-path limits", {
+  set.seed(11)
+  dat <- data.frame(
+    time = rexp(60) + 0.1,
+    status = rbinom(60, 1, 0.7),
+    group = factor(rep(c("a", "b", "c"), 20)),
+    x = rnorm(60)
+  )
+
+  fit <- NULL
+  expect_warning(
+    fit <- afttest(
+      Surv(time, status) ~ group + x,
+      data = dat,
+      npath = 50,
+      npathsave = 100,
+      seed = 1
+    ),
+    "npathsave exceeds npath"
+  )
+
+  expect_s3_class(fit, "afttest")
+  expect_identical(fit$npathsave, 50L)
+  expect_length(fit$apprx_npath, 50)
+  expect_silent(plot(fit, npath = 50))
+})
+
+test_that("invalid resampling arguments fail before model fitting", {
+  dat <- data.frame(time = 1:60, status = rep(1, 60), x = 1:60)
+
+  expect_error(
+    afttest(Surv(time, status) ~ x, data = dat, npath = 49),
+    "npath must be a single integer"
+  )
+  expect_error(
+    afttest(Surv(time, status) ~ x, data = dat, npathsave = -1),
+    "npathsave must be a single nonnegative integer"
+  )
+  expect_error(
+    afttest(Surv(time, status) ~ x, data = dat, linApprox = NA),
+    "linApprox must be a single logical value"
+  )
+})
+
+test_that("a fixed seed reproduces the diagnostic calculation", {
+  set.seed(21)
+  dat <- data.frame(
+    time = rexp(60) + 0.1,
+    status = rbinom(60, 1, 0.7),
+    x = rnorm(60)
+  )
+
+  fit1 <- afttest(
+    Surv(time, status) ~ x,
+    data = dat,
+    npath = 50,
+    npathsave = 0,
+    seed = 99
+  )
+  fit2 <- afttest(
+    Surv(time, status) ~ x,
+    data = dat,
+    npath = 50,
+    npathsave = 0,
+    seed = 99
+  )
+
+  expect_identical(fit1$p_value, fit2$p_value)
+  expect_identical(fit1$p_std_value, fit2$p_std_value)
+})
