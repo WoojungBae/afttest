@@ -21,3 +21,10 @@ Makefile
 *.log
 *.synctex.gz
 .positai
+
+# Local R build and test artifacts
+*.tar.gz
+*.Rcheck/
+Rplots.pdf
+tests/testthat/Rplots.pdf
+tmp/
