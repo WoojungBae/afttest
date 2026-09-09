@@ -42,28 +42,21 @@ The implementation of the main functions has been written in C++ with the
 help of the **Rcpp** and **RcppArmadillo** packages. The computational 
 performance has thus been boosted.
 
-# Replication Materials & File Manifest
+# Replication Materials for the JSS Manuscript
 
-As per the computational demands of the Monte Carlo simulations, the replication 
-materials for the empirical results are divided into the following 
-self-contained files.
+The `Replication/` directory contains the replication material for the JSS
+manuscript, including the Primary Biliary Cirrhosis analysis, the figures, and
+the simulations underlying Tables 1 and 2. The components have different
+computational requirements.
 
-### 1. Main Analysis (Fast Execution)
-* **`afttest_replication_reduced_script.R`** 
-This is the main replication script for the manuscript. It reproduces the
-results reported in the paper that are intended for routine verification on a
-standard laptop or desktop computer. In particular, it generates the empirical
-analysis, summary outputs, and the reduced simulation results reported in the
-article.
-
-* **`afttest_replication_script.R`**
-* **Description:** This is the primary script containing the code to reproduce 
-the main empirical data analyses, summary statistics, and all **Figures** 
-presented in the manuscript (e.g., the Primary Biliary Cirrhosis dataset analysis).
-* **Execution Time:** Fast (Runs on a standard desktop in minutes).
+### 1. Main Replication Script
+* **`Replication/afttest_replication_script.R`**
+* **Description:** This script reproduces the empirical analysis and figures
+  in the manuscript and includes the code for the simulation studies.
 
 ### 2. Table 1: Computational Time Simulation (Long-Running)
-* **`package_sim2_hpc_TIME.R`** & **`batchAFTsim2_hpc_TIME.sbatch`**
+* **`Replication/package_sim2_hpc_TIME.R`** &
+  **`Replication/batchAFTsim2_hpc_TIME.sbatch`**
 * **Description:** These files generate the data required to reproduce 
 **Table 1** (Average running times comparing the asymptotic linear approximation 
 vs. standard resampling).
@@ -73,7 +66,8 @@ for execution on a High-Performance Computing (HPC) cluster (e.g., University of
 Florida HiPerGator).
 
 ### 3. Table 2: Empirical Rejection Rates Simulation (Long-Running)
-* **`package_sim2_hpc.R`** & **`batchAFTsim2_hpc.sbatch`**
+* **`Replication/package_sim2_hpc.R`** &
+  **`Replication/batchAFTsim2_hpc.sbatch`**
 * **Description:** These files generate the data required to reproduce 
 **Table 2** (Empirical Type I error and power/rejection rates).
 * **Execution Time:** **[WARNING: EXTREMELY LONG-RUNNING]** Similar to Table 1, 
@@ -110,17 +104,18 @@ simulations are run with sample sizes **n = 100** and **n = 500**, each based on
 Results report the empirical **Type I error** and **power** for **`linApprox = TRUE`**.
 
 # Instructions for Execution
-1. **Ensure all files are in the same working directory.**
-2. **To reproduce the main text examples and figures:** Open R or RStudio, set 
-your working directory to this folder, and source the main script:
+1. **Run from the package root.** The replication scripts reside in
+   `Replication/`.
+2. **To reproduce the manuscript analyses, figures, and simulation code:** Open R or RStudio,
+   set the working directory to the package root, and source:
    
-       source("afttest_replication_script.R")
+       source("Replication/afttest_replication_script.R")
    
 3. **To reproduce Tables 1 and 2 (HPC environment):** If you have access to a 
 Slurm-based HPC cluster, submit the batch jobs directly from the terminal:
    
-       sbatch batchAFTsim2_hpc_TIME.sbatch
-       sbatch batchAFTsim2_hpc.sbatch
+       sbatch Replication/batchAFTsim2_hpc_TIME.sbatch
+       sbatch Replication/batchAFTsim2_hpc.sbatch
    
    *Note: To run the simulation scripts locally for verification, open the 
    respective `R` scripts, drastically reduce the `sim_per_file` parameter, and 
