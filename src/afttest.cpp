@@ -832,11 +832,13 @@ using namespace Rcpp;
    double absmax_obs_npath = (abs(obs_npath)).max();
    double absmax_obs_std_npath = (abs(obs_std_npath)).max();
    
-   uvec ind_unstd = (find(absmax_app_npath>absmax_obs_npath));
-   double p_value = (ind_unstd.size()); p_value = p_value/npath;
+   uvec ind_unstd = (find(absmax_app_npath >= absmax_obs_npath));
+   double p_value = (static_cast<double>(ind_unstd.size()) + 1.0) /
+     (static_cast<double>(npath) + 1.0);
    
-   uvec ind_std = (find(absmax_app_std_npath>absmax_obs_std_npath));
-   double p_std_value = (ind_std.size()); p_std_value = p_std_value/npath;
+   uvec ind_std = (find(absmax_app_std_npath >= absmax_obs_std_npath));
+   double p_std_value = (static_cast<double>(ind_std.size()) + 1.0) /
+     (static_cast<double>(npath) + 1.0);
    
    if (npathsave<1){
      return List::create(_["p_std_value"]=p_std_value,_["p_value"]=p_value);
@@ -1206,11 +1208,13 @@ using namespace Rcpp;
    double absmax_obs_npath = (abs(obs_npath)).max();
    double absmax_obs_std_npath = (abs(obs_std_npath)).max();
    
-   uvec ind_unstd = (find(absmax_app_npath>absmax_obs_npath));
-   double p_value = (ind_unstd.size()); p_value = p_value/npath;
+   uvec ind_unstd = (find(absmax_app_npath >= absmax_obs_npath));
+   double p_value = (static_cast<double>(ind_unstd.size()) + 1.0) /
+     (static_cast<double>(npath) + 1.0);
    
-   uvec ind_std = (find(absmax_app_std_npath>absmax_obs_std_npath));
-   double p_std_value = (ind_std.size()); p_std_value = p_std_value/npath;
+   uvec ind_std = (find(absmax_app_std_npath >= absmax_obs_std_npath));
+   double p_std_value = (static_cast<double>(ind_std.size()) + 1.0) /
+     (static_cast<double>(npath) + 1.0);
    
    if (npathsave<1){
      return List::create(_["p_std_value"]=p_std_value,_["p_value"]=p_value);
@@ -1579,11 +1583,13 @@ using namespace Rcpp;
    double absmax_obs_npath = (abs(obs_npath)).max();
    double absmax_obs_std_npath = (abs(obs_std_npath)).max();
    
-   uvec ind_unstd = (find(absmax_app_npath>absmax_obs_npath));
-   double p_value = (ind_unstd.size()); p_value = p_value/npath;
+   uvec ind_unstd = (find(absmax_app_npath >= absmax_obs_npath));
+   double p_value = (static_cast<double>(ind_unstd.size()) + 1.0) /
+     (static_cast<double>(npath) + 1.0);
    
-   uvec ind_std = (find(absmax_app_std_npath>absmax_obs_std_npath));
-   double p_std_value = (ind_std.size()); p_std_value = p_std_value/npath;
+   uvec ind_std = (find(absmax_app_std_npath >= absmax_obs_std_npath));
+   double p_std_value = (static_cast<double>(ind_std.size()) + 1.0) /
+     (static_cast<double>(npath) + 1.0);
    
    if (npathsave<1){
      return List::create(_["p_std_value"]=p_std_value,_["p_value"]=p_value);
@@ -1752,9 +1758,7 @@ using namespace Rcpp;
    {"_afttest_form_cpp", (DL_FUNC) &_afttest_form_cpp, 10},
    {NULL, NULL, 0}
  };
- 
- RcppExport void R_init_afttest(DllInfo *dll) {
+RcppExport void R_init_afttest(DllInfo *dll) {
    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
    R_useDynamicSymbols(dll, FALSE);
- }
- 
+}
